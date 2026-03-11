@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.5.1 — March 2026
+
+### Known Issues
+
+- Execute flow stops (if Safe Mode is 'Safe' or 'Advanced') after approval in chat instead of continuing
+  the task chain. Workaround: type "continue" to resume. Fix in v5.6.
+- Telegram 'Sage Mode' Approve/Decline buttons missing for shell command approvals.
+  Workaround: confirm directly in the Skales chat interface. Fix in v5.6.
+
 ## v5.5.0 — March 2026
 
 ### Security
