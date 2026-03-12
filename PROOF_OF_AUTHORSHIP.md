@@ -14,3 +14,4 @@ This project is the original work of Mario Simic.
 Any fork, clone, or derivative must retain this attribution.
 
 © 2025-2026 Mario Simic. All rights reserved under BSL-1.1.
+ 
