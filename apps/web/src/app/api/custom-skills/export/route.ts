@@ -86,7 +86,7 @@ export async function GET(req: Request) {
                 menuName:    skill.menuName    ?? '',
                 menuRoute:   skill.menuRoute   ?? '',
                 exportedAt:  new Date().toISOString(),
-                exportedBy:  'Skales v5.5.0',
+                exportedBy:  'Skales v6.0.0',
             }, null, 2);
             archive.append(metaJson, { name: 'meta.json' });
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import Link from 'next/link';
 import { ChevronLeft, Plus, Trash2, Save, AlertCircle, Info } from 'lucide-react';
 import { loadGroupChatConfig, saveGroupChatConfig } from '@/actions/skills';
@@ -49,6 +50,7 @@ const DEFAULT_PARTICIPANT: GroupChatParticipant = {
 // ─── Component ───────────────────────────────────────────────
 
 export default function GroupChatSettingsPage() {
+    const { t } = useTranslation();
     const [config, setConfig] = useState<GroupChatConfig | null>(null);
     const [configuredProviders, setConfiguredProviders] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
@@ -133,14 +135,14 @@ export default function GroupChatSettingsPage() {
                     className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-foreground transition-colors"
                 >
                     <ChevronLeft size={16} />
-                    Back to Group Chat
+                    {t('groupChat.settings.back')}
                 </Link>
             </div>
 
             <div>
-                <h1 className="text-2xl font-bold">Group Chat Settings</h1>
+                <h1 className="text-2xl font-bold">{t('groupChat.settings.title')}</h1>
                 <p className="text-text-secondary mt-1 text-sm">
-                    Configure participants, their personas, and discussion parameters.
+                    {t('groupChat.settings.subtitle')}
                 </p>
             </div>
 
@@ -155,13 +157,13 @@ export default function GroupChatSettingsPage() {
 
             {/* General Settings */}
             <section className="bg-surface border border-border rounded-2xl p-6 space-y-5">
-                <h2 className="text-base font-semibold">Discussion Settings</h2>
+                <h2 className="text-base font-semibold">{t('groupChat.sections.discussion')}</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Language */}
                     <div>
                         <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                            Discussion Language
+                            {t('groupChat.language')}
                         </label>
                         <select
                             value={config.language}
@@ -177,7 +179,7 @@ export default function GroupChatSettingsPage() {
                     {/* Rounds */}
                     <div>
                         <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                            Discussion Rounds
+                            {t('groupChat.rounds')}
                         </label>
                         <select
                             value={config.rounds}
@@ -185,28 +187,28 @@ export default function GroupChatSettingsPage() {
                             className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-lime-500"
                         >
                             {[1, 2, 3, 4, 5].map(n => (
-                                <option key={n} value={n}>{n} round{n > 1 ? 's' : ''}</option>
+                                <option key={n} value={n}>{n === 1 ? t('groupChat.roundsOptions.one') : t('groupChat.roundsOptions.n', { n })}</option>
                             ))}
                         </select>
                         <p className="text-[11px] text-text-muted mt-1">
-                            Each participant speaks once per round.
+                            {t('groupChat.perParticipantHint')}
                         </p>
                     </div>
 
                     {/* Response Timeout */}
                     <div>
                         <label className="block text-xs font-medium text-text-secondary mb-1.5">
-                            Response timeout
+                            {t('groupChat.timeout')}
                         </label>
                         <select
                             value={config.participantTimeoutSeconds ?? 120}
                             onChange={e => setConfig(prev => prev ? { ...prev, participantTimeoutSeconds: parseInt(e.target.value) } : prev)}
                             className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-lime-500"
                         >
-                            <option value={60}>60 seconds</option>
-                            <option value={120}>120 seconds (recommended)</option>
-                            <option value={180}>180 seconds</option>
-                            <option value={300}>300 seconds</option>
+                            <option value={60}>{t('groupChat.timeoutOptions.60')}</option>
+                            <option value={120}>{t('groupChat.timeoutOptions.120')}</option>
+                            <option value={180}>{t('groupChat.timeoutOptions.180')}</option>
+                            <option value={300}>{t('groupChat.timeoutOptions.300')}</option>
                         </select>
                         <p className="text-[11px] text-text-muted mt-1">
                             Per-participant limit. Slow models (Kimi, GLM, deep reasoning) need more time. If a participant times out, they are skipped for that round.
@@ -218,7 +220,7 @@ export default function GroupChatSettingsPage() {
             {/* Participants */}
             <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold">Participants</h2>
+                    <h2 className="text-base font-semibold">{t('groupChat.sections.participants')}</h2>
                     <span className="text-xs text-text-secondary">{config.participants.length}/5</span>
                 </div>
 
@@ -244,14 +246,14 @@ export default function GroupChatSettingsPage() {
                                             placeholder="e.g. Devil's Advocate, Optimist, Tech Expert..."
                                             className="bg-transparent text-sm font-medium border-b border-dashed border-border focus:outline-none focus:border-lime-500 pb-0.5 w-64"
                                         />
-                                        <p className="text-[10px] text-text-muted mt-0.5">Give each participant a unique name and personality</p>
+                                        <p className="text-[10px] text-text-muted mt-0.5">{t('groupChat.participantNameHint')}</p>
                                     </div>
                                 </div>
                                 {index >= 3 && (
                                     <button
                                         onClick={() => removeParticipant(index)}
                                         className="p-1.5 text-text-muted hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
-                                        title="Remove participant"
+                                        title={t('groupChat.removeParticipant')}
                                     >
                                         <Trash2 size={15} />
                                     </button>
@@ -262,7 +264,7 @@ export default function GroupChatSettingsPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-[11px] font-medium text-text-secondary mb-1">
-                                        Provider
+                                        {t('groupChat.provider')}
                                     </label>
                                     <select
                                         value={participant.provider}
@@ -278,7 +280,7 @@ export default function GroupChatSettingsPage() {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-medium text-text-secondary mb-1">
-                                        Model
+                                        {t('groupChat.model')}
                                     </label>
                                     <input
                                         type="text"
@@ -293,7 +295,7 @@ export default function GroupChatSettingsPage() {
                             {/* Persona */}
                             <div>
                                 <label className="block text-[11px] font-medium text-text-secondary mb-1">
-                                    Persona
+                                    {t('groupChat.persona')}
                                 </label>
                                 <textarea
                                     value={participant.persona}
@@ -314,7 +316,7 @@ export default function GroupChatSettingsPage() {
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border text-text-secondary hover:text-foreground hover:border-lime-500/50 transition-all text-sm"
                     >
                         <Plus size={16} />
-                        Add Participant ({config.participants.length}/5)
+                        {t('groupChat.addParticipant')} ({config.participants.length}/5)
                     </button>
                 )}
             </section>
@@ -336,10 +338,10 @@ export default function GroupChatSettingsPage() {
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-black font-semibold text-sm transition-all disabled:opacity-60"
                 >
                     <Save size={16} />
-                    {saving ? 'Saving...' : 'Save Settings'}
+                    {saving ? t('groupChat.settings.saving') : t('groupChat.settings.save')}
                 </button>
                 {saveSuccess && (
-                    <span className="text-sm text-lime-400">Settings saved!</span>
+                    <span className="text-sm text-lime-400">{t('groupChat.settings.saved')}</span>
                 )}
                 {saveError && (
                     <span className="text-sm text-red-400">{saveError}</span>

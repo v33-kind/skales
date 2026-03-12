@@ -17,8 +17,15 @@ const crypto = require('crypto');
 const os = require('os');
 
 const http = require('http');
+const { t } = require('./telegram-i18n');
 
 const DATA_DIR = process.env.SKALES_DATA_DIR || path.join(os.homedir(), '.skales-data');
+
+// Dynamic API base URL — reads the port Electron/Next.js is actually bound to.
+// SKALES_PORT is injected by telegram.ts when spawning this process.
+// Fallback to 3000 for backwards compatibility and standalone invocations.
+const API_BASE = `http://localhost:${process.env.SKALES_PORT || 3000}`;
+
 const TELEGRAM_FILE = path.join(DATA_DIR, 'integrations', 'telegram.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const INBOX_FILE = path.join(DATA_DIR, 'integrations', 'telegram-inbox.json');
@@ -247,10 +254,14 @@ async function sendAnimation(token, chatId, gifUrl, caption) {
 /** Send a message with inline keyboard buttons. */
 async function sendMessageWithKeyboard(token, chatId, text, keyboard) {
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    // NOTE: parse_mode is intentionally omitted here.
+    // Telegram's Markdown parser silently drops the entire reply_markup
+    // (inline keyboard) when the message text contains emojis or special
+    // characters — which approval messages always do. Sending as plain text
+    // guarantees the inline keyboard is always delivered.
     const payload = {
         chat_id: chatId,
         text,
-        parse_mode: 'Markdown',
         reply_markup: { inline_keyboard: keyboard },
     };
     try {
@@ -260,13 +271,11 @@ async function sendMessageWithKeyboard(token, chatId, text, keyboard) {
             body: JSON.stringify(payload),
         });
         if (!res.ok) {
-            // Retry without Markdown (special chars can fail parsing)
-            const plain = Object.assign({}, payload);
-            delete plain.parse_mode;
+            // Retry once on transient HTTP errors
             res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(plain),
+                body: JSON.stringify(payload),
             });
         }
         return await res.json();
@@ -774,7 +783,7 @@ async function processCallbackQuery(token, callbackQuery, config) {
     if (data.startsWith('task:retry:')) {
         const taskId = data.replace('task:retry:', '');
         try {
-            const res = await fetch('http://localhost:3000/api/autopilot', {
+            const res = await fetch(`${API_BASE}/api/autopilot`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'retry_task', taskId }),
@@ -796,7 +805,7 @@ async function processCallbackQuery(token, callbackQuery, config) {
     if (data.startsWith('task:cancel:')) {
         const taskId = data.replace('task:cancel:', '');
         try {
-            const res = await fetch('http://localhost:3000/api/autopilot', {
+            const res = await fetch(`${API_BASE}/api/autopilot`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'cancel_task', taskId }),
@@ -898,7 +907,7 @@ async function processCallbackQuery(token, callbackQuery, config) {
     // ── Killswitch: Cancel ────────────────────────────────────
     if (data === 'ks:cancel') {
         await answerCbQuery(token, cbId, '✅ Cancelled');
-        await sendMessage(token, chatId, '✅ Killswitch cancelled.');
+        await sendMessage(token, chatId, t('system.killswitch.deactivated'));
         return;
     }
 
@@ -907,14 +916,14 @@ async function processCallbackQuery(token, callbackQuery, config) {
         const shutdownPC = data.endsWith(':1');
         await answerCbQuery(token, cbId, '🛑 Triggering killswitch...');
         await sendMessage(token, chatId,
-            `🛑 *Killswitch triggered*\n\n` +
+            `🛑 *${t('system.killswitch.activated')}*\n\n` +
             `Skales is shutting down now.\n` +
             (shutdownPC ? '⚠️ PC shutdown also initiated.' : '💻 PC will stay on.') + '\n\n' +
             `_A killswitch log has been written to your Desktop._`
         );
         // Call the Next.js API to actually stop the server process
         try {
-            await fetch('http://localhost:3000/api/killswitch', {
+            await fetch(`${API_BASE}/api/killswitch`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -935,14 +944,14 @@ async function processCallbackQuery(token, callbackQuery, config) {
         const approvalId = data.split(':').slice(2).join(':'); // UUID may contain colons
         await answerCbQuery(token, cbId, decision === 'approve' ? '✅ Approving...' : '❌ Denied');
         try {
-            const res = await fetch('http://localhost:3000/api/chat/telegram/approval', {
+            const res = await fetch(`${API_BASE}/api/chat/telegram/approval`, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ approvalId, decision }),
                 signal:  AbortSignal.timeout(120_000),
             });
             const data = await res.json();
-            const reply = data.response || (decision === 'approve' ? '✅ Done!' : '❌ Cancelled.');
+            const reply = data.response || (decision === 'approve' ? t('system.approval.approved') : t('system.approval.declined'));
             await sendMessage(token, chatId, reply);
         } catch (e) {
             await sendMessage(token, chatId, `⚠️ Could not process approval: ${e.message}`);
@@ -1023,7 +1032,7 @@ function startTypingKeepalive(token, chatId) {
 }
 
 async function callAgentAPI(userMessage, telegramChatId, telegramUserName, token, imageDataUri = null) {
-    const API_URL = 'http://localhost:3000/api/chat/telegram';
+    const API_URL = `${API_BASE}/api/chat/telegram`;
 
     // Start typing keepalive so user sees "..." while agent works
     const stopTyping = token ? startTypingKeepalive(token, telegramChatId) : () => { };
@@ -1551,35 +1560,23 @@ async function processUpdate(token, update, config) {
             config.pairedUserName = fullName || userName;
             saveTelegramConfig(config);
             log(`✅ PAIRED with ${userName} (chat ${chatId})`);
-            await sendMessage(token, chatId,
-                `✅ *Successfully connected!*\n\n` +
-                `Hi ${userName}, you are now connected to Skales.\n` +
-                `Just send me a message and I'll respond.\n\n` +
-                `Your messages will also appear in the Skales Dashboard.`
-            );
+            await sendMessage(token, chatId, t('system.telegram.pairingSuccess', { name: userName }));
             return;
         } else {
-            await sendMessage(token, chatId,
-                `❌ Incorrect pairing code.\n\n` +
-                `Check your code in the Skales Dashboard → Settings → Telegram.`
-            );
+            await sendMessage(token, chatId, t('system.telegram.pairingFailed'));
             return;
         }
     }
 
     // ── Check if user is paired ──
     if (!config.pairedChatId || config.pairedChatId !== chatId) {
-        await sendMessage(token, chatId,
-            `🔒 You are not connected to this Skales instance.\n\n` +
-            `Get your code from the Skales Dashboard → Settings → Telegram, then type:\n` +
-            `/pair YOUR_CODE`
-        );
+        await sendMessage(token, chatId, t('system.telegram.notPaired'));
         return;
     }
 
     // ── /clear command ──
     if (userText === '/clear') {
-        await sendMessage(token, chatId, '🧹 Context cleared!');
+        await sendMessage(token, chatId, t('system.telegram.contextCleared'));
         return;
     }
 
@@ -1637,7 +1634,7 @@ async function processUpdate(token, update, config) {
         await sendTyping(token, chatId);
         try {
             // Trigger export generation via the Next.js API
-            const genRes = await fetch('http://localhost:3000/api/export-backup/generate', {
+            const genRes = await fetch(`${API_BASE}/api/export-backup/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: AbortSignal.timeout(30000),
@@ -1695,11 +1692,11 @@ async function processUpdate(token, update, config) {
         if (result.requiresApproval && result.approvalId) {
             const keyboard = [
                 [
-                    { text: '✅ Approve', callback_data: `approval:approve:${result.approvalId}` },
-                    { text: '❌ Cancel',  callback_data: `approval:deny:${result.approvalId}` },
+                    { text: `✅ ${t('system.telegram.approve')}`,  callback_data: `approval:approve:${result.approvalId}` },
+                    { text: `❌ ${t('system.telegram.decline')}`, callback_data: `approval:deny:${result.approvalId}` },
                 ],
             ];
-            await sendMessageWithKeyboard(token, chatId, result.response || '🔐 Approval required', keyboard);
+            await sendMessageWithKeyboard(token, chatId, result.response || `🔐 ${t('system.telegram.approvalPrompt')}`, keyboard);
             return;
         }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { FileText, AlertCircle, Info, CheckCircle, XCircle, RefreshCw, Trash2, Download, FolderOpen } from 'lucide-react';
 import { getRecentLogs, clearOldLogs, exportAllLogs, getLogFilePath, type LogEntry } from '@/actions/logs';
 
@@ -10,6 +11,7 @@ const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
 };
 
 export default function LogsPage() {
+    const { t } = useTranslation();
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'info' | 'warn' | 'error' | 'success'>('all');
@@ -89,14 +91,14 @@ export default function LogsPage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={FileText} size={28} />
-                        System Logs
+                        {t('logs.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Monitor Skales activity and system events ({logs.length} entries)
+                        {t('logs.subtitle', { count: logs.length })}
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={loadLogs} className="p-2 rounded-lg hover:bg-[var(--surface-light)]" title="Refresh">
+                    <button onClick={loadLogs} className="p-2 rounded-lg hover:bg-[var(--surface-light)]" title={t('logs.refresh')}>
                         <Icon icon={RefreshCw} size={18} className={loading ? 'animate-spin' : ''} style={{ color: 'var(--text-muted)' }} />
                     </button>
                     <button
@@ -106,7 +108,7 @@ export default function LogsPage() {
                         title="Download log report"
                     >
                         <Icon icon={Download} size={14} />
-                        Download Report
+                        {t('logs.download')}
                     </button>
                     <button onClick={handleClearOld} className="p-2 rounded-lg hover:bg-red-500/10 text-red-500" title="Clear old logs">
                         <Icon icon={Trash2} size={18} />
@@ -119,7 +121,7 @@ export default function LogsPage() {
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                     <Icon icon={FolderOpen} size={12} />
-                    <span>Log file: <code className="font-mono">{logFilePath}</code></span>
+                    <span>{t('logs.logFile')} <code className="font-mono">{logFilePath}</code></span>
                 </div>
             )}
 
@@ -148,10 +150,10 @@ export default function LogsPage() {
             {/* Logs */}
             <div className="rounded-2xl border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 {loading && logs.length === 0 ? (
-                    <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Loading logs...</p>
+                    <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>{t('logs.loading')}</p>
                 ) : filteredLogs.length === 0 ? (
                     <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>
-                        {logs.length === 0 ? 'No logs yet. Start using Skales to generate activity logs.' : 'No logs match this filter.'}
+                        {logs.length === 0 ? t('logs.empty') : t('logs.noMatch')}
                     </p>
                 ) : (
                     <div className="space-y-2 max-h-[600px] overflow-y-auto">

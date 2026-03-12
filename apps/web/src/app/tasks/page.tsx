@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { listTasks, createTask, deleteTask, executeTask, stopTask, type Task } from '@/actions/tasks';
 import { listAgents, type AgentDefinition } from '@/actions/agents';
 import {
@@ -14,6 +15,7 @@ const Icon = ({ icon: I, ...props }: { icon: any; [key: string]: any }) => {
 };
 
 export default function TasksPage() {
+    const { t } = useTranslation();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [agents, setAgents] = useState<AgentDefinition[]>([]);
     const [loading, setLoading] = useState(true);
@@ -134,11 +136,11 @@ export default function TasksPage() {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'running': return 'Running...';
-            case 'completed': return 'Done';
-            case 'failed': return 'Failed';
-            case 'stopped': return 'Stopped';
-            default: return 'Pending';
+            case 'running': return t('tasks.status.running');
+            case 'completed': return t('tasks.status.done');
+            case 'failed': return t('tasks.status.failed');
+            case 'stopped': return t('tasks.status.stopped');
+            default: return t('tasks.status.pending');
         }
     };
 
@@ -204,7 +206,7 @@ export default function TasksPage() {
                                     <Icon icon={Users} size={9} />
                                     {task.parentId
                                         ? `Agent ${task.subtaskIndex ?? ''}/${task.subtaskTotal ?? ''}`
-                                        : 'Multi-Agent'}
+                                        : t('tasks.multiAgent')}
                                 </span>
                             )}
                         </div>
@@ -326,7 +328,7 @@ export default function TasksPage() {
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20"
                                 >
                                     <Icon icon={StopCircle} size={12} className="inline mr-1" />
-                                    Stop All
+                                    {t('tasks.stopAll')}
                                 </button>
                             )}
                             {/* Expand/collapse */}
@@ -355,7 +357,7 @@ export default function TasksPage() {
                             {children.map(c => (
                                 <div
                                     key={c.id}
-                                    title={`${c.subtaskIndex}. ${c.title} — ${c.status}`}
+                                    title={`${c.subtaskIndex}. ${c.title} - ${c.status}`}
                                     className={`w-3 h-3 rounded-full transition-all ${c.status === 'completed' ? 'bg-green-500' :
                                         c.status === 'failed' ? 'bg-red-500' :
                                             c.status === 'running' ? 'bg-lime-500 animate-pulse' :
@@ -387,14 +389,14 @@ export default function TasksPage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={CheckSquare} size={28} />
-                        Tasks & Workflows
+                        {t('tasks.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Background tasks & multi-agent jobs — run while you use chat or schedule
+                        {t('tasks.subtitle')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={loadTasks} className="p-2 rounded-lg hover:bg-[var(--surface-light)] transition-colors" title="Refresh">
+                    <button onClick={loadTasks} className="p-2 rounded-lg hover:bg-[var(--surface-light)] transition-colors" title={t('common.refresh')}>
                         <Icon icon={RefreshCw} size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
                     <button
@@ -416,10 +418,10 @@ export default function TasksPage() {
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-bold text-lime-500">
-                            {runningCount} task{runningCount > 1 ? 's' : ''} running in background
+                            {t('tasks.runningBanner', { count: runningCount })}
                         </p>
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            You can use Chat, Schedule, or other features while tasks execute
+                            {t('tasks.runningDesc')}
                         </p>
                     </div>
                     <div className="flex gap-1">
@@ -442,10 +444,10 @@ export default function TasksPage() {
                             <p className="text-sm font-bold text-purple-400">
                                 {multiAgentRunning.length > 1
                                     ? `${multiAgentRunning.length} Multi-Agent jobs running`
-                                    : `Multi-Agent job running — ${multiAgentRunning[0].title}`}
+                                    : `Multi-Agent job running - ${multiAgentRunning[0].title}`}
                             </p>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                Agents are working in parallel. Expand a job below to see each agent's status. You can return to Chat — messages are queued.
+                                Agents are working in parallel. Expand a job below to see each agent's status. You can return to Chat - messages are queued.
                             </p>
                         </div>
                         <div className="flex gap-1">
@@ -462,7 +464,7 @@ export default function TasksPage() {
             {!hasAnyTask ? (
                 <div className="rounded-2xl border p-12 text-center" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <Icon icon={CheckSquare} size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No tasks yet. Create your first task or ask Skales to dispatch a Multi-Agent job!</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('tasks.noTasks')}</p>
                     <p className="text-xs mt-2" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
                         💡 Try: "Create 5 landing pages for my SaaS products" and Skales will automatically run them in parallel.
                     </p>
@@ -475,7 +477,7 @@ export default function TasksPage() {
                             <h2 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"
                                 style={{ color: 'var(--text-muted)' }}>
                                 <Icon icon={Users} size={13} className="text-purple-400" />
-                                Multi-Agent Jobs
+                                {t('tasks.sections.multiAgentJobs')}
                             </h2>
                             <div className="space-y-3">
                                 {parentTasks.map(parent => renderMultiAgentParent(parent))}
@@ -490,7 +492,7 @@ export default function TasksPage() {
                                 <h2 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"
                                     style={{ color: 'var(--text-muted)' }}>
                                     <Icon icon={CheckSquare} size={13} />
-                                    Individual Tasks
+                                    {t('tasks.sections.individualTasks')}
                                 </h2>
                             )}
                             <div className="grid grid-cols-1 gap-3">
@@ -508,10 +510,10 @@ export default function TasksPage() {
                     <div className="max-w-2xl w-full rounded-2xl border p-6 animate-scaleIn"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
                         onClick={e => e.stopPropagation()}>
-                        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Create Task</h2>
+                        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{t('tasks.modal.createTitle')}</h2>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Title</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('tasks.modal.titleLabel')}</label>
                                 <input
                                     value={newTask.title}
                                     onChange={e => setNewTask({ ...newTask, title: e.target.value })}
@@ -522,7 +524,7 @@ export default function TasksPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Description</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('tasks.modal.descLabel')}</label>
                                 <textarea
                                     value={newTask.description}
                                     onChange={e => setNewTask({ ...newTask, description: e.target.value })}
@@ -534,27 +536,27 @@ export default function TasksPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Priority</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('tasks.modal.priorityLabel')}</label>
                                     <select
                                         value={newTask.priority}
                                         onChange={e => setNewTask({ ...newTask, priority: e.target.value as any })}
                                         className="w-full px-3 py-2 rounded-lg border text-sm"
                                         style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     >
-                                        <option value="high">🔴 High</option>
-                                        <option value="medium">🟡 Medium</option>
-                                        <option value="low">🔵 Low</option>
+                                        <option value="high">{t('tasks.priorities.high')}</option>
+                                        <option value="medium">{t('tasks.priorities.medium')}</option>
+                                        <option value="low">{t('tasks.priorities.low')}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Assign Agent</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('tasks.modal.agentLabel')}</label>
                                     <select
                                         value={newTask.agent}
                                         onChange={e => setNewTask({ ...newTask, agent: e.target.value })}
                                         className="w-full px-3 py-2 rounded-lg border text-sm"
                                         style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     >
-                                        <option value="">🦎 Skales (Default)</option>
+                                        <option value="">{t('tasks.defaultAgent')}</option>
                                         {agents.map(a => (
                                             <option key={a.id} value={a.id}>{a.emoji} {a.name}</option>
                                         ))}
@@ -568,14 +570,14 @@ export default function TasksPage() {
                                 className="flex-1 px-4 py-2 rounded-xl font-medium transition-all hover:bg-[var(--surface-light)]"
                                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={handleCreate}
                                 disabled={!newTask.title}
                                 className="flex-1 px-4 py-2 rounded-xl font-bold bg-lime-500 hover:bg-lime-400 text-black transition-all shadow-lg shadow-lime-500/20 disabled:opacity-30"
                             >
-                                Create Task
+                                {t('tasks.createTask')}
                             </button>
                         </div>
                     </div>

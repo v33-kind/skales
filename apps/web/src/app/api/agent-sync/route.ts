@@ -77,7 +77,7 @@ async function buildAgentCard(reqUrl: string): Promise<AgentCard> {
     return {
         agentId,
         name:         agentName,
-        version:      '5.5.0',
+        version:      '6.0.0',
         protocol:     'skales-agent-sync/1.0',
         capabilities: [
             'chat', 'task-delegation', 'web-search', 'file-read', 'file-write',

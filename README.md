@@ -10,7 +10,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **Download. Install. Done**
 
-[![Version](https://img.shields.io/badge/version-5.5.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
+[![Version](https://img.shields.io/badge/version-6.0.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
 [![License](https://img.shields.io/badge/license-BSL_1.1-1DB954?style=for-the-badge&labelColor=0D1117)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Windows_+_macOS-1DB954?style=for-the-badge&labelColor=0D1117&logo=windows&logoColor=white)](https://skales.app)
 [![GitHub](https://img.shields.io/badge/GitHub-skalesapp%2Fskales-1DB954?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)](https://github.com/skalesapp/skales)
@@ -37,7 +37,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **🖥️ Native Desktop App** - Runs as a proper desktop application. System tray, auto-start, graceful shutdown. No browser needed.
 
-**Multi-Provider Hub** - 11+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Cerebras, and local Ollama.
+**Multi-Provider Hub** - 13+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Replicate (BYOK), Custom OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM), and local Ollama.
 
 **🦁 Lio AI - Code Builder** - Multi-AI code builder. Architect designs, Reviewer improves, Builder executes. Live preview. Build entire projects from plain language.
 
@@ -63,7 +63,13 @@ If you find this useful, a ⭐ helps others discover it
 
 **🛑 Killswitch** - Emergency stop via dashboard, Telegram, or automatic trigger.
 
-**🎨 Image & Video Generation** - Google Imagen 3 and Veo 2 built into the chat.
+**🌍 Multilingual** - Full UI in English, Deutsch (German), Espanol (Spanish), and Francais (French). Language picker on first launch.
+
+**🎨 Image & Video Generation** - Google Imagen 3, Veo 2, Replicate SDXL, FLUX, and 50+ more models via your own Replicate API key.
+
+**🔌 Custom AI Endpoint** - Connect any OpenAI-compatible local server (llama.cpp, LM Studio, vLLM, koboldcpp). Tool-calling toggle for local models.
+
+**👑 Skales+** - Coming soon. Free tier stays free forever. Join the waitlist from Settings.
 
 **🔍 Live Web Search** - Real-time, cited search results via Tavily.
 
@@ -85,7 +91,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **📺 Media Casting** - Cast any media URL to DLNA/UPnP renderers on your network (smart TVs, speakers, Chromecast).
 
-**🦎 Desktop Buddy** - A transparent, frameless Electron window that sits in the corner of your desktop. Animated mascot with a Finite State Machine (Intro → Idle → Action). Click to open a glassmorphism Spotlight input - ask Skales anything from your desktop without opening the main window. Responses appear as auto-dismissing speech bubbles. Enable in **Settings → Desktop App → 🦎 Desktop Buddy**.
+**🦎 Desktop Buddy** - A transparent, frameless Electron window that sits in the corner of your desktop. Animated mascot with a Finite State Machine (Intro → Idle → Action). Click to open a glassmorphism Spotlight input. Ask Skales anything - or ask it to do something. The buddy can execute tools (write files, send emails, browse, manage calendar) with Approve/Decline buttons directly in the speech bubble. No need to open the main window. Customizable skins: drop a folder in `public/mascot/`, and it appears in Settings. Enable in **Settings → Desktop App → 🦎 Desktop Buddy**.
 
 **🤝 Agent-to-Agent Protocol** - `/api/agent-sync` endpoint for multi-Skales collaboration. Supports `ping`, `handshake`, `delegate`, and `status` operations so multiple Skales instances can coordinate on the same local network.
 
@@ -148,7 +154,7 @@ npm run build
 # Copy standalone assets (required)
 cp -r .next/static       .next/standalone/.next/static
 cp -r public/*           .next/standalone/public/
-cp -r public/mascot/*    .next/standalone/public/mascot/
+cp -r public/mascot/     .next/standalone/public/mascot/
 
 cd ../..
 
@@ -161,13 +167,19 @@ Output is in `dist/`.
 
 ---
 
-## What's New in v5.5
+## What's New in v6.0
 
-- **Approval System** — Skales asks before sending emails, deleting files, or changing your calendar
-- **Accessibility** — Screen reader support, keyboard navigation, ARIA labels (NVDA/VoiceOver compatible)
-- **Desktop Buddy** — Friendly error handling, smooth video transitions
-- **Security** — Browser blacklist now covers Playwright, screenshot auto-Telegram removed
-- **Spellcheck** — Disabled globally, no more red underlines
+- **4 Languages** - Full UI in English, Deutsch, Espanol, and Francais. Language picker on first launch, switcher always in Settings
+- **Replicate (BYOK)** - 50+ image and video models with one API key. SDXL, FLUX, Stable Video Diffusion, and more
+- **Custom AI Endpoint** - Connect llama.cpp, LM Studio, vLLM, koboldcpp, or any OpenAI-compatible server. Includes tool-calling toggle for local models
+- **Buddy Tool Execution** - The Desktop Buddy can now DO things, not just answer questions. Write files, send emails, browse, manage calendar - all from the buddy overlay. Approve/Decline buttons appear inside the speech bubble for actions that need confirmation
+- **Dynamic Buddy Skins** - Full skin system. Create a folder in `public/mascot/<name>/`, add your .webm clips, restart Skales. The skin selector appears automatically in Settings when more than one skin is installed
+- **Anonymous Telemetry (opt-in)** - Off by default. Prompted during onboarding. Only collects: app version, OS type, start/crash events. No conversations, no API keys, no personal data
+- **In-app Bug Reporting** - Report Bug button in the sidebar. Reports sent to the developer with optional system info. Local fallback if offline
+- **Buddy Flicker Fix** - Eliminated 300-500ms blank flash between animations using direct DOM opacity sync with requestVideoFrameCallback
+- **Skales+ Teaser** - Tier comparison page with waitlist. All features stay free and unlocked during beta
+- **Approval System** - Tool safety default changed to 'confirm'. create_document tool added. Telegram inline buttons fixed
+- **Build Automation** - post-nextjs-build.js automates standalone asset copy and mascot folder verification
 
 ---
 
@@ -216,7 +228,7 @@ I'm **Mario Simic** - 10+ years in Marketing & Design. I know how software shoul
 
 See [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md) for details.
 
-**Local AI Agent (Source Available) — v5.5.0 is the latest release under BSL-1.1.**
+**Local AI Agent (Source Available) - v6.0.0 is the latest release under BSL-1.1.**
 
 ---
 

@@ -1,5 +1,5 @@
 // ‌‍‌‌‍‌‍‍‌‌‍‍‌‍‌‍‍‍‌‌‍‍‍‌‌‍‌‍‍‌‌‍‌‍‍‌‍‌‌‍‍‌‌‌‍‍‌‌‍‌‌‍‌‍‌‍‌‌‍‌
-// Skales v5.5.0 — BSL 1.1 — Mario Simic
+// Skales v6.0.0 — BSL 1.1 — Mario Simic
 // ‌‍‌‌‍‌‍‍‌‌‍‍‌‍‌‍‍‍‌‌‍‍‍‌‌‍‌‍‍‌‌‍‌‍‍‌‍‌‌‍‍‌‌‌‍‍‌‌‍‌‌‍‌‍‌‍‌‌‍‌
 import './globals.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
@@ -8,7 +8,7 @@ import { NotificationManager } from '@/components/system/notification-manager';
 import { ErrorBoundary } from '@/components/error-boundary';
 
 export const metadata = {
-    title: 'Skales — Your AI Buddy',
+    title: 'Skales - Your AI Buddy',
     description: 'Your personal autonomous AI assistant. Simple. Smart. Private.',
     icons: {
         icon: [

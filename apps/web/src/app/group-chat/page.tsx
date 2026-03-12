@@ -9,6 +9,7 @@ import {
 import { loadGroupChatConfig } from '@/actions/skills';
 import type { GroupChatConfig } from '@/actions/skills';
 import type { GroupChatEvent } from '@/skills/group-chat/group-chat-engine';
+import { useTranslation } from '@/lib/i18n';
 
 // ─── Participant Color Palette ─────────────────────────────────
 // A=lime, B=blue, C=orange, D=purple, E=pink
@@ -78,6 +79,7 @@ interface ProgressState {
 // ─── Component ───────────────────────────────────────────────
 
 export default function GroupChatPage() {
+    const { t } = useTranslation();
     const [config, setConfig] = useState<GroupChatConfig | null>(null);
     const [question, setQuestion] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
@@ -482,7 +484,7 @@ export default function GroupChatPage() {
                         onChange={e => setQuestion(e.target.value)}
                         onKeyDown={handleKeyDown}
                         disabled={isRunning}
-                        placeholder={isRunning ? 'Discussion in progress...' : 'Ask a question or pose a topic for discussion...'}
+                        placeholder={isRunning ? t('groupChat.input.inProgress') : t('groupChat.input.placeholder')}
                         rows={1}
                         className="flex-1 bg-surface-light border border-border rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-lime-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     />

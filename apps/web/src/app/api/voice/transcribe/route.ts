@@ -167,7 +167,7 @@ export async function POST(req: Request) {
         try { formData = await req.formData(); } catch {
             return NextResponse.json({
                 success: false,
-                error: 'Audio upload failed — recording may be too large or format unsupported.',
+                error: 'Audio upload failed - recording may be too large or format unsupported.',
             }, { status: 400 });
         }
         const audioFile = formData.get('audio') as File | null;
@@ -183,7 +183,7 @@ export async function POST(req: Request) {
     if (audioBuffer.length === 0) {
         return NextResponse.json({
             success: false,
-            error: 'Empty recording — please speak into the microphone before stopping.',
+            error: 'Empty recording - please speak into the microphone before stopping.',
         }, { status: 400 });
     }
 

@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useTranslation, SUPPORTED_LOCALES } from '@/lib/i18n';
 import { useRouter } from 'next/navigation';
 import { completeBootstrap } from '@/actions/identity';
-import { saveApiKey } from '@/actions/chat';
+import { saveApiKey, saveAllSettings } from '@/actions/chat';
 
 export default function BootstrapPage() {
     const router = useRouter();
+    const { t, setLocale } = useTranslation();
+    const [showLangPicker, setShowLangPicker] = useState(true); // shown before step 0
     const [step, setStep] = useState(0); // 0 = Security Disclaimer (mandatory)
     const [saving, setSaving] = useState(false);
     const [securityAccepted, setSecurityAccepted] = useState(false);
@@ -19,6 +22,7 @@ export default function BootstrapPage() {
         interests: '',
         language: 'auto',
         openrouterKey: '',
+        telemetryEnabled: false, // opt-in default OFF
     });
 
     const handleSubmit = async () => {
@@ -32,6 +36,9 @@ export default function BootstrapPage() {
             if (formData.openrouterKey.trim()) {
                 await saveApiKey('openrouter', formData.openrouterKey.trim());
             }
+
+            // Save telemetry preference (opt-in only)
+            await saveAllSettings({ telemetry_enabled: formData.telemetryEnabled } as any);
 
             await completeBootstrap({
                 name: formData.name || undefined,
@@ -67,7 +74,43 @@ export default function BootstrapPage() {
         }
     };
 
-    const SETUP_STEPS = 4; // Steps 1–4 (step 0 is the disclaimer)
+    const SETUP_STEPS = 5; // Steps 1–5 (step 0 is the disclaimer, step 4 = telemetry, step 5 = confirm)
+
+    if (showLangPicker) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
+                <div className="max-w-md w-full rounded-3xl border p-8 shadow-2xl animate-fadeIn"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                    <div className="text-center mb-8">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-lime-400 to-green-600 flex items-center justify-center text-4xl shadow-lg shadow-lime-500/20">
+                            🦎
+                        </div>
+                        <h1 className="text-xl font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>
+                            Choose your language
+                        </h1>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                            Wähle deine Sprache · Elige tu idioma · Choisissez votre langue
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        {SUPPORTED_LOCALES.map(loc => (
+                            <button
+                                key={loc.code}
+                                onClick={() => {
+                                    setLocale(loc.code);
+                                    setShowLangPicker(false);
+                                }}
+                                className="flex items-center justify-center p-4 rounded-2xl border transition-all hover:border-lime-500 hover:bg-lime-500/5 active:scale-95"
+                                style={{ borderColor: 'var(--border)', background: 'var(--surface-light)' }}
+                            >
+                                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{loc.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
@@ -80,16 +123,16 @@ export default function BootstrapPage() {
                         🦎
                     </div>
                     <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-lime-400 to-green-600 bg-clip-text text-transparent">
-                        Welcome to Skales!
+                        {t('onboarding.bootstrap.welcome')}
                     </h1>
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                         {step === 0
-                            ? 'Please read and accept before continuing'
-                            : `Let's get you set up • Step ${step} of ${SETUP_STEPS}`}
+                            ? t('onboarding.bootstrap.step0.readAndAccept')
+                            : t('onboarding.bootstrap.setupProgress', { step, total: SETUP_STEPS })}
                     </p>
                 </div>
 
-                {/* Progress Bar — only shown after disclaimer */}
+                {/* Progress Bar - only shown after disclaimer */}
                 {step > 0 && (
                     <div className="mb-8 h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface-light)' }}>
                         <div className="h-full bg-gradient-to-r from-lime-400 to-green-600 transition-all duration-500"
@@ -103,12 +146,12 @@ export default function BootstrapPage() {
                         {/* Privacy */}
                         <div className="p-4 rounded-xl border" style={{ background: 'rgba(132,204,22,0.05)', borderColor: 'rgba(132,204,22,0.25)' }}>
                             <p className="font-bold text-sm mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                🔒 Privacy by Design — Local-First Architecture
+                                🔒 Privacy by Design - Local-First Architecture
                             </p>
                             <ul className="text-xs space-y-1.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                 <li>✅ <strong>Runs 100% locally</strong> on your machine. No Skales cloud servers.</li>
                                 <li>✅ <strong>No telemetry.</strong> Your data, chat history, and files never pass through our servers.</li>
-                                <li>✅ <strong>Bring Your Own Keys (BYOK).</strong> API keys are saved locally. When using cloud models (OpenAI, Google, etc.), your computer communicates directly with their APIs — not ours.</li>
+                                <li>✅ <strong>Bring Your Own Keys (BYOK).</strong> API keys are saved locally. When using cloud models (OpenAI, Google, etc.), your computer communicates directly with their APIs - not ours.</li>
                                 <li>✅ <strong>Offline mode:</strong> Select an Ollama model and disconnect from the internet for a fully air-gapped agent.</li>
                             </ul>
                         </div>
@@ -116,11 +159,11 @@ export default function BootstrapPage() {
                         {/* Autonomy Warning */}
                         <div className="p-4 rounded-xl border" style={{ background: 'rgba(234,179,8,0.06)', borderColor: 'rgba(234,179,8,0.3)' }}>
                             <p className="font-bold text-sm mb-2 flex items-center gap-2 text-amber-400">
-                                ⚠️ Autonomous Agent — Understand the Risks
+                                ⚠️ Autonomous Agent - Understand the Risks
                             </p>
                             <ul className="text-xs space-y-1.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                 <li>⚡ Skales can <strong>execute terminal commands</strong>, read and write files, and browse the web.</li>
-                                <li>🔑 When using cloud AI providers, Skales sends the necessary context (e.g. file contents, your instructions) to <strong>the provider you selected</strong> — not to us.</li>
+                                <li>🔑 When using cloud AI providers, Skales sends the necessary context (e.g. file contents, your instructions) to <strong>the provider you selected</strong> - not to us.</li>
                                 <li>🛡️ Skales has built-in safeguards: system folders are blocked, destructive commands are filtered, and critical actions require your confirmation.</li>
                                 <li>🚨 <strong>Prompt injection risk:</strong> Malicious content in web pages or files could attempt to hijack Skales. Never run Skales against untrusted content with elevated permissions.</li>
                                 <li>📂 <strong>File access:</strong> By default, Skales is NOT sandboxed to its own Workspace folder. You can change this in Settings.</li>
@@ -146,7 +189,7 @@ export default function BootstrapPage() {
                                 </div>
                             </div>
                             <span className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                                I understand that Skales is an autonomous agent with access to my local files and terminal. I accept responsibility for the tasks I assign to it, and I understand how my data is handled.
+                                {t('onboarding.bootstrap.step0.checkboxLabel')}
                             </span>
                         </label>
 
@@ -161,10 +204,10 @@ export default function BootstrapPage() {
                                 opacity: securityAccepted ? 1 : 0.5,
                             }}
                         >
-                            I Understand — Continue to Setup →
+                            {t('onboarding.bootstrap.step0.continueButton')}
                         </button>
                         <p className="text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-                            This confirmation cannot be skipped. It will not appear again after setup.
+                            {t('onboarding.bootstrap.step0.cannotSkip')}
                         </p>
                     </div>
                 )}
@@ -174,7 +217,7 @@ export default function BootstrapPage() {
                     <div className="space-y-6 animate-fadeIn">
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                What's your name? <span style={{ color: 'var(--text-muted)' }}>(Optional)</span>
+                                {t('onboarding.bootstrap.steps.name')} <span style={{ color: 'var(--text-muted)' }}>{t('common.optional')}</span>
                             </label>
                             <input
                                 type="text"
@@ -187,7 +230,7 @@ export default function BootstrapPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                What do you do?
+                                {t('onboarding.bootstrap.steps.occupation')}
                             </label>
                             <input
                                 type="text"
@@ -206,7 +249,7 @@ export default function BootstrapPage() {
                     <div className="space-y-6 animate-fadeIn">
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                What are your main goals?
+                                {t('onboarding.bootstrap.steps.goals')}
                             </label>
                             <textarea
                                 value={formData.goals}
@@ -216,11 +259,11 @@ export default function BootstrapPage() {
                                 className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:border-lime-500 transition-colors resize-none"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
-                            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Separate with commas</p>
+                            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('onboarding.bootstrap.separateWithCommas')}</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                What interests you?
+                                {t('onboarding.bootstrap.steps.interests')}
                             </label>
                             <textarea
                                 value={formData.interests}
@@ -230,11 +273,11 @@ export default function BootstrapPage() {
                                 className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:border-lime-500 transition-colors resize-none"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
-                            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Separate with commas</p>
+                            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('onboarding.bootstrap.separateWithCommas')}</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                Native Language
+                                {t('onboarding.bootstrap.steps.nativeLang')}
                             </label>
                             <select
                                 value={formData.language}
@@ -269,7 +312,7 @@ export default function BootstrapPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                OpenRouter API Key <span style={{ color: 'var(--text-muted)' }}>(Optional — add later in Settings)</span>
+                                OpenRouter API Key <span style={{ color: 'var(--text-muted)' }}>(Optional - add later in Settings)</span>
                             </label>
                             <input
                                 type="password"
@@ -297,17 +340,56 @@ export default function BootstrapPage() {
                         <div className="p-3 rounded-xl border" style={{ background: 'rgba(59,130,246,0.05)', borderColor: 'rgba(59,130,246,0.15)' }}>
                             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                                 <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>🦙 Prefer local AI?</span>{' '}
-                                Skip this step and use <strong>Ollama</strong> — runs 100% offline. Configure it later in <strong>Settings → AI Provider → Ollama</strong>.
+                                Skip this step and use <strong>Ollama</strong> - runs 100% offline. Configure it later in <strong>Settings → AI Provider → Ollama</strong>.
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* ── Step 4: Confirmation ── */}
+                {/* ── Step 4: Telemetry opt-in ── */}
                 {step === 4 && (
                     <div className="space-y-6 animate-fadeIn">
                         <div className="p-6 rounded-xl" style={{ background: 'var(--surface-light)' }}>
-                            <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Ready to go! 🚀</h3>
+                            <div className="text-3xl mb-3 text-center">📊</div>
+                            <h3 className="font-bold mb-3 text-center" style={{ color: 'var(--text-primary)' }}>
+                                {t('onboarding.bootstrap.stepTitle') || t('telemetry.title')}
+                            </h3>
+                            <p className="text-xs mb-5 text-center leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                                {t('telemetry.description')}
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => setFormData({ ...formData, telemetryEnabled: true })}
+                                    className="w-full px-6 py-3 rounded-xl font-medium transition-all text-sm"
+                                    style={{
+                                        background: formData.telemetryEnabled ? 'rgba(132,204,22,0.15)' : 'var(--surface)',
+                                        border: `1px solid ${formData.telemetryEnabled ? 'rgba(132,204,22,0.6)' : 'var(--border)'}`,
+                                        color: formData.telemetryEnabled ? '#84cc16' : 'var(--text-secondary)',
+                                    }}
+                                >
+                                    {formData.telemetryEnabled ? '✓ ' : ''}{t('telemetry.optIn')}
+                                </button>
+                                <button
+                                    onClick={() => setFormData({ ...formData, telemetryEnabled: false })}
+                                    className="w-full px-6 py-3 rounded-xl font-medium transition-all text-sm"
+                                    style={{
+                                        background: !formData.telemetryEnabled ? 'var(--surface-light)' : 'var(--surface)',
+                                        border: `1px solid ${!formData.telemetryEnabled ? 'rgba(99,102,241,0.5)' : 'var(--border)'}`,
+                                        color: !formData.telemetryEnabled ? 'var(--text-primary)' : 'var(--text-muted)',
+                                    }}
+                                >
+                                    {!formData.telemetryEnabled ? '✓ ' : ''}{t('telemetry.optOut')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Step 5: Confirmation ── */}
+                {step === 5 && (
+                    <div className="space-y-6 animate-fadeIn">
+                        <div className="p-6 rounded-xl" style={{ background: 'var(--surface-light)' }}>
+                            <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{t('onboarding.bootstrap.ready')}</h3>
                             <div className="space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                                 {formData.name && <p>👤 <strong>Name:</strong> {formData.name}</p>}
                                 {formData.occupation && <p>💼 <strong>Occupation:</strong> {formData.occupation}</p>}
@@ -315,7 +397,7 @@ export default function BootstrapPage() {
                                 {formData.interests && <p>⭐ <strong>Interests:</strong> {formData.interests}</p>}
                                 {formData.openrouterKey.trim()
                                     ? <p>🔑 <strong>OpenRouter:</strong> <span style={{ color: '#84cc16' }}>Key configured ✓</span></p>
-                                    : <p>🔑 <strong>OpenRouter:</strong> <span style={{ color: 'var(--text-muted)' }}>Not set — add later in Settings</span></p>
+                                    : <p>🔑 <strong>OpenRouter:</strong> <span style={{ color: 'var(--text-muted)' }}>Not set - add later in Settings</span></p>
                                 }
                             </div>
                         </div>
@@ -334,14 +416,14 @@ export default function BootstrapPage() {
                                 className="px-6 py-3 rounded-xl font-medium transition-all hover:bg-[var(--surface-light)]"
                                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                             >
-                                Back
+                                {t('onboarding.bootstrap.back')}
                             </button>
                             {step < SETUP_STEPS ? (
                                 <button
                                     onClick={() => setStep(step + 1)}
                                     className="flex-1 px-6 py-3 rounded-xl font-bold bg-lime-500 hover:bg-lime-400 text-black transition-all shadow-lg shadow-lime-500/20"
                                 >
-                                    Continue →
+                                    {t('onboarding.bootstrap.continue')}
                                 </button>
                             ) : (
                                 <button
@@ -349,7 +431,7 @@ export default function BootstrapPage() {
                                     disabled={saving}
                                     className="flex-1 px-6 py-3 rounded-xl font-bold bg-lime-500 hover:bg-lime-400 text-black transition-all shadow-lg shadow-lime-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {saving ? 'Setting up...' : "Let's Go! 🎉"}
+                                    {saving ? t('onboarding.bootstrap.settingUp') : t('onboarding.bootstrap.letsGo')}
                                 </button>
                             )}
                         </div>
@@ -359,7 +441,7 @@ export default function BootstrapPage() {
                             className="w-full mt-4 text-xs hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ color: 'var(--text-muted)' }}
                         >
-                            {saving ? 'Please wait...' : 'Skip setup for now'}
+                            {saving ? t('onboarding.bootstrap.pleaseWait') : t('onboarding.bootstrap.skip')}
                         </button>
                     </>
                 )}

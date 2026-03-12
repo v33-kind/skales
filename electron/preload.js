@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld('skales', {
   /**
    * App version from package.json, injected by main process.
    */
-  version: process.env.npm_package_version || '5.5.0',
+  version: process.env.npm_package_version || '6.0.0',
 
   /**
    * Send a fire-and-forget message to the main process.

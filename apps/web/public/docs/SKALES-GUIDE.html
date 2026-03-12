@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skales v3.5.0 - Complete Guide</title>
+    <title>Skales v6.0.0 - Complete Guide</title>
     <style>
         /* --- CSS VARIABLES & RESET --- */
         :root {
@@ -174,18 +174,60 @@
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
+            gap: 1.25rem;
+            flex-wrap: nowrap;
+            align-items: center;
         }
 
-        .nav-links a {
+        .nav-links a,
+        .nav-dropdown > span {
             font-size: 0.85rem;
             color: var(--text-secondary);
             font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
-        .nav-links a:hover {
+        .nav-links a:hover,
+        .nav-dropdown:hover > span {
             color: var(--accent-lime);
+        }
+
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .nav-dropdown .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 15, 25, 0.97);
+            border: 1px solid var(--border-subtle);
+            border-radius: 0.75rem;
+            padding: 0.5rem 0;
+            min-width: 170px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 1001;
+        }
+
+        .nav-dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.45rem 1rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.15s, background 0.15s;
+        }
+
+        .dropdown-menu a:hover {
+            color: var(--accent-lime);
+            background: rgba(132,204,22,0.08);
         }
 
         /* --- HERO SECTION --- */
@@ -537,12 +579,27 @@
                 <span>🦎</span> Skales
             </a>
             <div class="nav-links">
-                <a href="#what">What is Skales?</a>
-                <a href="#quick-start">Quick Start</a>
-                <a href="#features">Features</a>
-                <a href="#integrations">Integrations</a>
-                <a href="#advanced">Advanced</a>
-                <a href="#killswitch" style="color: var(--accent-red);">⚠ Killswitch</a>
+                <a href="#quick-start">Start</a>
+                <div class="nav-dropdown">
+                    <span>Features ▾</span>
+                    <div class="dropdown-menu">
+                        <a href="#features">Overview</a>
+                        <a href="#buddy">Desktop Buddy</a>
+                        <a href="#language">Languages</a>
+                        <a href="#replicate">Replicate</a>
+                        <a href="#custom-endpoint">Custom AI</a>
+                        <a href="#skales-plus">Skales+</a>
+                    </div>
+                </div>
+                <div class="nav-dropdown">
+                    <span>Integrations ▾</span>
+                    <div class="dropdown-menu">
+                        <a href="#integrations">Overview</a>
+                        <a href="#advanced">Advanced</a>
+                        <a href="#killswitch" style="color: var(--accent-red);">⚠ Killswitch</a>
+                    </div>
+                </div>
+                <a href="#privacy">Privacy</a>
                 <a href="#faq">FAQ</a>
             </div>
         </div>
@@ -551,11 +608,11 @@
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="container">
-            <div class="badge">v3.5.0 — Complete Guide</div>
+            <div class="badge">v6.0.0 - Complete Guide</div>
             <div class="hero-logo">🦎</div>
-            <h1>Skales v3.5.0<br>Your AI Companion<br>For Everyday Life</h1>
+            <h1>Skales v6.0.0<br>Your AI Companion<br>For Everyday Life</h1>
             <p class="hero-subtitle">
-                A powerful local AI agent with memory, integrations, and an emergency brake. Runs entirely on your computer. No cloud. No subscriptions. Just your AI, your way.
+                A powerful native desktop AI agent with memory, integrations, and an emergency brake. Runs entirely on your computer as a native app - no browser, no terminal, no cloud. Just your AI, your way.
             </p>
             <div>
                 <a href="#quick-start" class="btn btn-primary">Get Started</a>
@@ -569,14 +626,14 @@
         <div class="container">
             <h2>What is Skales?</h2>
             <p>
-                Skales is a friendly AI agent that runs right on your computer. Think of it as your personal AI assistant — one that remembers you, connects to your apps, and acts on your behalf. It's private, powerful, and completely source-available under the <strong>Business Source License 1.1 (BSL)</strong>.
+                Skales is a friendly AI agent that runs right on your computer. Think of it as your personal AI assistant - one that remembers you, connects to your apps, and acts on your behalf. It's private, powerful, and completely source-available under the <strong>Business Source License 1.1 (BSL)</strong>.
             </p>
             <p style="margin-bottom: 0.5rem;"><strong>Source-available, not open source.</strong> You can read and modify the code for personal use. Commercial use requires a separate license.</p>
 
             <div class="grid" style="margin-top: 2rem;">
                 <div class="card">
                     <h3>💻 Local &amp; Private</h3>
-                    <p>Everything stays on your machine. Conversations, settings, API keys — none of it goes to any Skales server. Only your chosen AI provider sees your prompts.</p>
+                    <p>Everything stays on your machine. Conversations, settings, API keys - none of it goes to any Skales server. Only your chosen AI provider sees your prompts.</p>
                 </div>
                 <div class="card">
                     <h3>🤖 Choose Your Brain</h3>
@@ -588,15 +645,15 @@
                 </div>
                 <div class="card">
                     <h3>📱 Multi-Platform</h3>
-                    <p>Chat in the browser, on Telegram, WhatsApp, or Discord. Your AI is wherever you need it — even from your phone via Tailscale.</p>
+                    <p>Skales is a native desktop app with Telegram, WhatsApp, and Discord integration. Access from your phone via Tailscale - no cloud required.</p>
                 </div>
                 <div class="card">
                     <h3>🔧 Agent Tools</h3>
-                    <p>Skales can act — browse the web, read files, send emails, check your calendar, write and run scripts, manage tasks. With your approval for anything sensitive.</p>
+                    <p>Skales can act - browse the web, read files, send emails, check your calendar, write and run scripts, manage tasks. With your approval for anything sensitive.</p>
                 </div>
                 <div class="card">
                     <h3>⚡ Execute Mode</h3>
-                    <p>Let Skales plan and execute multi-step tasks autonomously. You approve the plan first, then watch it work — with checkpoints you can pause or cancel anytime.</p>
+                    <p>Let Skales plan and execute multi-step tasks autonomously. You approve the plan first, then watch it work - with checkpoints you can pause or cancel anytime.</p>
                 </div>
             </div>
         </div>
@@ -606,57 +663,67 @@
     <section id="quick-start" class="section">
         <div class="container">
             <h2>Quick Start (2 Minutes)</h2>
-            <p>You don't need to be technical. Just follow these steps.</p>
+            <p>You don't need to be technical. No Terminal. No npm. Just download and install.</p>
 
             <h3 style="margin-top: 2rem;">Requirements</h3>
             <div class="highlight-box">
                 <ul class="feature-list">
-                    <li><strong>Node.js v18+</strong> — Download from <a href="https://nodejs.org/" style="color: var(--accent-lime); text-decoration: underline;">nodejs.org</a> if you don't have it</li>
-                    <li><strong>npm</strong> — Comes with Node.js automatically</li>
-                    <li><strong>Chrome browser</strong> — Only if you plan to use WhatsApp integration</li>
+                    <li><strong>A computer</strong> - Windows 10+ or macOS 12+</li>
+                    <li><strong>An API key</strong> from any LLM provider (we recommend OpenRouter - free to start)</li>
+                    <li>That's it. No Node.js, no Terminal, no npm.</li>
                 </ul>
             </div>
 
-            <h3 style="margin-top: 2rem;">Installation (First Time Only)</h3>
+            <h3 style="margin-top: 2rem;">Installation</h3>
             <div class="grid">
                 <div class="card">
                     <h3>🪟 Windows</h3>
                     <ol class="step-list">
-                        <li>Open the Skales folder</li>
-                        <li>Double-click <code>install.bat</code></li>
-                        <li>Wait for installation to finish</li>
-                        <li>Press <strong>Enter</strong> when prompted — Skales starts automatically</li>
-                        <li>Open <code>http://localhost:3000</code> in your browser</li>
+                        <li>Download <code>Skales-Setup-6.0.0.exe</code> from skales.app</li>
+                        <li>Double-click the installer</li>
+                        <li>Windows may show <em>"Windows protected your PC"</em> - this appears because Skales is not code-signed yet (code signing costs $200–400/year). Click <strong>More info → Run anyway</strong>. This is safe.</li>
+                        <li>Skales installs and creates a Desktop shortcut</li>
+                        <li>Launch Skales from the Desktop icon</li>
                     </ol>
                 </div>
                 <div class="card">
-                    <h3>🍏 macOS</h3>
+                    <h3>🍏 macOS (Apple Silicon M1–M4)</h3>
                     <ol class="step-list">
-                        <li>Download and unzip Skales</li>
-                        <li>Right-click <code>install.command</code> → select <strong>"Open"</strong></li>
-                        <li>macOS will ask <em>"Are you sure?"</em> → Click <strong>"Open"</strong></li>
-                        <li>That's it. Only needed once.</li>
+                        <li>Download <code>Skales-6.0.0-arm64.dmg</code> from skales.app</li>
+                        <li>Open the DMG and drag Skales into Applications</li>
+                        <li>First launch: macOS will say <em>"Skales can't be opened because it is from an unidentified developer"</em></li>
+                        <li>Fix: Right-click Skales in Applications → click <strong>Open</strong> → click <strong>Open</strong> in the dialog. This is only needed once.</li>
+                        <li>Why? Apple requires a $99/year Developer certificate for signed apps. As a solo indie developer, Skales doesn't have this yet.</li>
                     </ol>
-                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;">The "Right-click → Open" step bypasses Gatekeeper on first run only.</p>
+                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;"><strong>Intel Mac:</strong> Download <code>Skales-5.0.0.dmg</code> instead - same steps.</p>
                 </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 1.5rem;">
+                <h3>🔒 macOS: Full Disk Access (if needed)</h3>
+                <p style="margin-bottom: 0.5rem;">If Skales can't access certain folders:</p>
+                <ol class="step-list" style="margin-bottom: 0;">
+                    <li>Open <strong>System Settings → Privacy &amp; Security → Full Disk Access</strong></li>
+                    <li>Click the lock icon (🔒) to unlock</li>
+                    <li>Click <strong>+</strong> and add Skales from Applications</li>
+                    <li>Restart Skales</li>
+                </ol>
             </div>
 
             <h3 style="margin-top: 2rem;">Every Day After That</h3>
-            <div class="grid">
-                <div class="card">
-                    <h3>🪟 Windows</h3>
-                    <p>Double-click <code>start-dashboard.bat</code>, then open <code>http://localhost:3000</code>.</p>
-                </div>
-                <div class="card">
-                    <h3>🍏 macOS</h3>
-                    <p>Double-click <code>start-dashboard.command</code> — Skales opens automatically in your browser.</p>
-                </div>
+            <div class="highlight-box">
+                <p style="margin-bottom: 0;">Launch Skales from your <strong>Desktop shortcut</strong> (Windows) or <strong>Applications folder</strong> (macOS). Skales minimizes to your system tray (🦎 icon) when you close the window - it keeps running in the background.</p>
             </div>
 
-            <h3 style="margin-top: 2rem;">Something Wrong? Clean Start</h3>
+            <h3 style="margin-top: 2rem;">Something Wrong?</h3>
             <div class="highlight-box warning">
-                <h3>🔄 Clean Start</h3>
-                <p>If Skales won't start, behaves strangely, or a WhatsApp/integration broke: run <strong><code>clean-start.bat</code></strong> (Windows) or double-click <strong><code>clean-start.command</code></strong> (macOS). This clears caches, reinstalls dependencies, and starts Skales fresh. Your conversations and settings are NOT deleted.</p>
+                <h3>🔄 Troubleshooting</h3>
+                <ol class="step-list" style="margin-bottom: 0;">
+                    <li><strong>Quick fix:</strong> Close Skales completely (right-click the 🦎 tray icon → <strong>Quit</strong>), then relaunch</li>
+                    <li><strong>Data issues after import:</strong> Restart Skales - the app needs a fresh start to read imported data</li>
+                    <li><strong>Nuclear option:</strong> Go to <strong>Settings → Danger Zone → Delete All Data</strong>. This removes <code>~/.skales-data</code> entirely and restarts Skales with a fresh onboarding. Export your backup first!</li>
+                    <li><strong>Reinstall:</strong> Uninstall Skales (Windows: Settings → Apps → Skales / macOS: drag to Trash), re-download from skales.app, install again. Your data in <code>~/.skales-data</code> is preserved unless you manually delete it.</li>
+                </ol>
             </div>
 
             <h3 style="margin-top: 2rem;">Get Your First API Key</h3>
@@ -669,6 +736,96 @@
                     <li>Save and start chatting</li>
                 </ol>
                 <p style="margin: 0; opacity: 0.8;"><strong>Other options:</strong> OpenAI, Anthropic Claude, Google Gemini, Groq, xAI Grok, and Ollama (fully local) all work.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DESKTOP APP FEATURES -->
+    <section id="desktop-app" class="section">
+        <div class="container">
+            <h2>🖥️ Desktop App</h2>
+            <p>Skales runs as a native desktop application - no browser required.</p>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>🦎 System Tray</h3>
+                    <p>When you close the Skales window, it minimizes to your system tray (🦎 icon). Right-click to <strong>Show</strong>, <strong>Hide</strong>, or <strong>Quit</strong>. Skales keeps running quietly in the background.</p>
+                </div>
+                <div class="card">
+                    <h3>⚡ Auto-Start</h3>
+                    <p>Enable <strong>Launch at Login</strong> in Settings → Desktop App to start Skales automatically when your computer boots. No manual launching needed.</p>
+                </div>
+                <div class="card">
+                    <h3>📁 Your Data Location</h3>
+                    <p>All your data - settings, memories, chat history, integrations - is stored locally:<br>
+                    <strong>Windows:</strong> <code>C:\Users\YourName\.skales-data\</code><br>
+                    <strong>macOS:</strong> <code>~/.skales-data/</code><br>
+                    This folder is never touched by updates or reinstalls. Back it up via <strong>Settings → Export Backup</strong>.</p>
+                </div>
+                <div class="card">
+                    <h3>🔄 Auto-Updates</h3>
+                    <p>Skales checks for updates automatically on launch and every 4 hours. When an update is available, you'll see a notification. Click to download and install - your data is always preserved.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DESKTOP BUDDY (V6) -->
+    <section id="buddy" class="section">
+        <div class="container">
+            <h2>🦎 Desktop Buddy</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+            <p>The Desktop Buddy is a transparent, always-on overlay widget that floats in the corner of your screen. It's a compact glassmorphism window with an animated mascot - click it to open a Spotlight-style input, ask Skales anything, or ask it to <strong>do</strong> something for you. No need to open the main window.</p>
+
+            <h3 style="margin-top: 2rem;">How to Enable the Buddy</h3>
+            <ol class="step-list">
+                <li>Open <strong>Settings → Desktop App</strong>.</li>
+                <li>Toggle on <strong>Desktop Buddy</strong>.</li>
+                <li>A floating mascot appears in the corner of your screen. Click it to open the Spotlight input.</li>
+                <li>Type your question or request and press Enter.</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">Tool Execution - The Buddy Can DO Things</h3>
+            <p>In v6.0, the buddy graduated from a simple Q&amp;A widget to a full action agent. When you ask it to do something, it uses the same tool pipeline as the main chat - write files, search the web, send emails, manage calendar events, and more.</p>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>⚡ Auto-Executed Tools</h3>
+                    <p>Safe, read-only actions run immediately with no prompt. Examples: web search, check weather, read a file, look up information. The result appears in the speech bubble.</p>
+                </div>
+                <div class="card">
+                    <h3>✅ Approval-Required Tools</h3>
+                    <p>Actions with side effects pause and show <strong>Approve</strong> / <strong>Decline</strong> buttons directly inside the speech bubble. Examples: write a file, send an email, create a calendar event. You stay in control without opening the main window.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box info" style="margin-top: 2rem;">
+                <h3>How the Approval Flow Works</h3>
+                <ol class="feature-list" style="margin: 0.5rem 0 0 1rem;">
+                    <li>You type a request: <em>"Send a reminder email to John about our 3pm call"</em></li>
+                    <li>The buddy processes the request and detects it needs to send an email.</li>
+                    <li>The speech bubble shows the action description + <strong>Approve</strong> and <strong>Decline</strong> buttons.</li>
+                    <li>Click <strong>Approve</strong> - the email is sent. Click <strong>Decline</strong> - nothing happens.</li>
+                </ol>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Buddy Conversations in Main Chat</h3>
+            <p>Every buddy conversation is automatically appended to your active chat session in the main window. You can open the main chat at any time to see the full history of what the buddy did, including tool results and approval decisions.</p>
+
+            <h3 style="margin-top: 2rem;">Custom Skins</h3>
+            <p>The buddy mascot supports multiple skins. By default it ships with the <strong>Skales</strong> lizard skin. If you have multiple skins installed, a skin selector appears in <strong>Settings → Desktop App → Buddy Skin</strong>.</p>
+
+            <h3 style="margin-top: 1.5rem;">How to Add a Custom Skin</h3>
+            <ol class="step-list">
+                <li>Create a folder inside <code>public/mascot/</code> in your Skales installation directory. The folder name becomes the skin ID (e.g. <code>public/mascot/mybuddy/</code>).</li>
+                <li>Inside it, create four subfolders: <code>intro/</code>, <code>idle/</code>, <code>action/</code>, <code>outro/</code>.</li>
+                <li>Add <code>.webm</code> video clips to each subfolder (one or more per state).</li>
+                <li>Optionally add an <code>icon.png</code> in the root skin folder for the settings preview thumbnail.</li>
+                <li>Restart Skales. Your new skin will automatically appear in the skin selector in Settings.</li>
+            </ol>
+
+            <div class="highlight-box">
+                <p style="margin: 0;"><strong>Tip:</strong> The skin system is hot-detected on startup - Skales scans the <code>public/mascot/</code> directory every time it launches, so adding a new skin folder just requires a restart, no code changes needed.</p>
             </div>
         </div>
     </section>
@@ -693,6 +850,8 @@
                 <div class="provider-badge"><span>🟦</span><strong>Google</strong></div>
                 <div class="provider-badge"><span>⚡</span><strong>Groq</strong></div>
                 <div class="provider-badge"><span>🦙</span><strong>Ollama</strong></div>
+                <div class="provider-badge"><span>🎨</span><strong>Replicate</strong></div>
+                <div class="provider-badge"><span>🔌</span><strong>Custom Endpoint</strong></div>
             </div>
 
             <h3 style="margin-top: 2rem;">Step 2: Pick Your Persona</h3>
@@ -706,7 +865,7 @@
             </ul>
 
             <h3 style="margin-top: 2rem;">Step 3: Enable Friend Mode (Optional)</h3>
-            <p>Friend Mode (in Settings → Persona) makes Skales more conversational and casual. It's great for everyday use. When enabled, you can also choose which channels Skales is "friendly" on — Browser, Telegram, or WhatsApp.</p>
+            <p>Friend Mode (in Settings → Persona) makes Skales more conversational and casual. It's great for everyday use. When enabled, you can also choose which channels Skales is "friendly" on - Browser, Telegram, or WhatsApp.</p>
 
             <h3 style="margin-top: 2rem;">Step 4: Start Chatting</h3>
             <p>Go to the Chat tab and type your first message. You can attach files, drop images, use voice, or just type. Skales handles the rest.</p>
@@ -721,7 +880,7 @@
             <h3 style="margin-top: 2rem;">💬 Chat Interface</h3>
             <ul class="feature-list">
                 <li><strong>Text chat:</strong> Type naturally, have real conversations</li>
-                <li><strong>File attachments:</strong> TXT, MD, HTML, JSON, PDF — drag &amp; drop or click the paperclip</li>
+                <li><strong>File attachments:</strong> TXT, MD, HTML, JSON, PDF - drag &amp; drop or click the paperclip</li>
                 <li><strong>Image uploads:</strong> Vision-capable models can analyze screenshots, photos, diagrams</li>
                 <li><strong>Voice input/output:</strong> Speak to Skales and hear replies (requires TTS configuration)</li>
                 <li><strong>Session history:</strong> All conversations are saved and searchable</li>
@@ -732,17 +891,17 @@
             <div class="highlight-box info">
                 <h3>How the Queue Works</h3>
                 <ul class="feature-list">
-                    <li><strong>Automatic:</strong> If Skales is busy, your message is placed in a queue automatically — you don't need to do anything</li>
+                    <li><strong>Automatic:</strong> If Skales is busy, your message is placed in a queue automatically - you don't need to do anything</li>
                     <li><strong>Visual indicator:</strong> A small "queued" badge appears on your message so you know it's waiting</li>
                     <li><strong>Cancel button:</strong> A <strong>Cancel</strong> button appears next to queued messages. Click it to remove the message from the queue before it's processed</li>
                     <li><strong>Order preserved:</strong> Messages are always processed in the order they were sent</li>
-                    <li><strong>Live updates:</strong> Once the current task finishes, the next queued message is picked up automatically — no need to resend</li>
+                    <li><strong>Live updates:</strong> Once the current task finishes, the next queued message is picked up automatically - no need to resend</li>
                 </ul>
             </div>
             <p>The queue is especially useful in Execute Mode, where tasks can take several minutes. You can keep sending follow-up instructions and they'll be processed in order.</p>
 
             <h3 style="margin-top: 2rem;">🧠 Bi-Temporal Memory</h3>
-            <p>Skales has a sophisticated memory system that works in two time dimensions — when things happened and when Skales learned about them.</p>
+            <p>Skales has a sophisticated memory system that works in two time dimensions - when things happened and when Skales learned about them.</p>
             <div class="grid">
                 <div class="card">
                     <h3>🔵 Short-Term Memory</h3>
@@ -781,7 +940,7 @@
                 </div>
                 <div class="card">
                     <h3>⚡ Execute Mode</h3>
-                    <p>For complex, multi-step tasks. Skales creates a plan, shows it to you for approval, then executes it step by step — searching the web, writing files, running commands, and more.</p>
+                    <p>For complex, multi-step tasks. Skales creates a plan, shows it to you for approval, then executes it step by step - searching the web, writing files, running commands, and more.</p>
                 </div>
             </div>
             <p>In Execute Mode:</p>
@@ -797,7 +956,7 @@
                 <li><strong>Image Generation:</strong> Create images with Google Imagen 3 (requires Google API key)</li>
                 <li><strong>Video Generation:</strong> Generate short videos with Google Veo 2 (requires Google API key)</li>
                 <li><strong>GIF Search:</strong> Search and share GIFs in chat and via Telegram</li>
-                <li><strong>Web Search:</strong> Look up current information (Tavily API — free tier available)</li>
+                <li><strong>Web Search:</strong> Look up current information (Tavily API - free tier available)</li>
                 <li><strong>Weather:</strong> 7-day forecasts worldwide via Open-Meteo (completely free, no API key)</li>
             </ul>
 
@@ -834,14 +993,14 @@
             <ol class="step-list">
                 <li>Go to <strong>Settings → Skills → WhatsApp</strong></li>
                 <li>Click <strong>"Start WhatsApp"</strong></li>
-                <li>A QR code appears — open WhatsApp on your phone</li>
+                <li>A QR code appears - open WhatsApp on your phone</li>
                 <li>Go to <strong>Settings → Linked Devices → Link a Device</strong></li>
                 <li>Scan the QR code</li>
                 <li>Configure which contacts can interact with Skales (contact permissions in the same section)</li>
             </ol>
             <div class="highlight-box warning">
                 <h3>⚠ QR Code Not Appearing?</h3>
-                <p style="margin-bottom: 0;">Close everything and restart Skales. Go to <code>.skales-data/integrations/</code> and delete all WhatsApp-related files and folders. Then run <code>clean-start.bat</code> (Windows) or double-click <code>clean-start.command</code> (macOS). This resets the WhatsApp connection cleanly.</p>
+                <p style="margin-bottom: 0;">Quit Skales completely (tray icon → Quit). Go to <code>~/.skales-data/integrations/whatsapp-session/</code> and delete that folder. Then relaunch Skales and run the setup again from <strong>Settings → Skills → WhatsApp</strong>. This resets the WhatsApp connection cleanly.</p>
             </div>
 
             <!-- DISCORD -->
@@ -856,7 +1015,7 @@
 
             <!-- EMAIL -->
             <h3 style="margin-top: 2rem;">✉️ Email (IMAP/SMTP)</h3>
-            <p>Connect any standard email account — Gmail, Outlook, iCloud, Fastmail, ProtonMail, or any custom IMAP/SMTP server.</p>
+            <p>Connect any standard email account - Gmail, Outlook, iCloud, Fastmail, ProtonMail, or any custom IMAP/SMTP server.</p>
 
             <h4 style="margin-top: 1.5rem;">Gmail Setup</h4>
             <ol class="step-list">
@@ -910,12 +1069,12 @@
 
             <h4 style="margin-top: 1.5rem;">What Skales Can Do With Email</h4>
             <ul class="feature-list">
-                <li><strong>List emails:</strong> Ask "What's in my inbox?" — no approval needed</li>
-                <li><strong>Read emails:</strong> "Read the email from John" — no approval needed. HTML emails are automatically converted to readable text</li>
+                <li><strong>List emails:</strong> Ask "What's in my inbox?" - no approval needed</li>
+                <li><strong>Read emails:</strong> "Read the email from John" - no approval needed. HTML emails are automatically converted to readable text</li>
                 <li><strong>Send email:</strong> Skales always asks for your approval before sending. You see the recipient, subject, and body before it goes out</li>
-                <li><strong>Reply to email:</strong> Same as send — requires your approval</li>
+                <li><strong>Reply to email:</strong> Same as send - requires your approval</li>
                 <li><strong>Move to Trash:</strong> "Delete that email" moves it to Trash (not permanent). Requires approval</li>
-                <li><strong>Move to folder:</strong> "Move that to the Archive folder" — no approval needed (non-destructive)</li>
+                <li><strong>Move to folder:</strong> "Move that to the Archive folder" - no approval needed (non-destructive)</li>
                 <li><strong>Empty Trash:</strong> Requires explicit approval with a clear warning: <em>"This will permanently delete all emails in Trash. This cannot be undone."</em></li>
             </ul>
 
@@ -935,7 +1094,7 @@
 
             <!-- GOOGLE CALENDAR -->
             <h3 style="margin-top: 2rem;">📅 Google Calendar</h3>
-            <p>Let Skales help you manage your schedule. Skales can view events and create/update them — but always with your approval for changes.</p>
+            <p>Let Skales help you manage your schedule. Skales can view events and create/update them - but always with your approval for changes.</p>
             <ol class="step-list">
                 <li>Go to <strong>Settings → Skills → Google Calendar</strong></li>
                 <li>In <strong>Mode: OAuth (Read/Write)</strong>, enter your Google OAuth Client ID and Client Secret
@@ -954,8 +1113,8 @@
             <div class="highlight-box info">
                 <h3>Calendar Permissions</h3>
                 <ul class="feature-list" style="margin-bottom: 0;">
-                    <li><strong>List events:</strong> No approval needed — Skales can show you upcoming events freely</li>
-                    <li><strong>Create event:</strong> Requires your approval — Skales shows you the event details before saving</li>
+                    <li><strong>List events:</strong> No approval needed - Skales can show you upcoming events freely</li>
+                    <li><strong>Create event:</strong> Requires your approval - Skales shows you the event details before saving</li>
                     <li><strong>Update event:</strong> Requires approval</li>
                     <li><strong>Delete event:</strong> Requires approval</li>
                 </ul>
@@ -963,13 +1122,13 @@
 
             <!-- OLLAMA -->
             <h3 style="margin-top: 2rem;">🏠 Local AI with Ollama</h3>
-            <p>Use completely local AI models — no internet required for the actual AI inference.</p>
+            <p>Use completely local AI models - no internet required for the actual AI inference.</p>
             <ol class="step-list">
                 <li>Download and install <a href="https://ollama.ai/" style="color: var(--accent-lime);">Ollama</a></li>
                 <li>Start Ollama (it runs silently on port 11434)</li>
                 <li>Pull a model: <code>ollama pull llama3</code> (or gemma3, phi4, etc.)</li>
                 <li>In Skales → Settings → AI Providers → Ollama, select your model</li>
-                <li>All AI responses now run 100% on your hardware — no API costs</li>
+                <li>All AI responses now run 100% on your hardware - no API costs</li>
             </ol>
         </div>
     </section>
@@ -981,7 +1140,7 @@
 
             <!-- TELEGRAM ADMIN -->
             <h3 style="margin-top: 2rem;">📱 Telegram Admin Interface</h3>
-            <p>Your Telegram bot isn't just for chatting. It doubles as a full admin interface for Skales — even when you're away from your computer.</p>
+            <p>Your Telegram bot isn't just for chatting. It doubles as a full admin interface for Skales - even when you're away from your computer.</p>
 
             <table class="cmd-table">
                 <thead>
@@ -995,23 +1154,23 @@
                     <tr><td>/skills</td><td>See which skills are enabled and toggle them on/off remotely</td></tr>
                     <tr><td>/status</td><td>Check if Skales is running, which provider is active, connection status</td></tr>
                     <tr><td>/export</td><td>Trigger an immediate backup export from your phone</td></tr>
-                    <tr><td>/killswitch</td><td><strong style="color: var(--accent-red);">Emergency stop</strong> — immediately halts all Skales processes</td></tr>
+                    <tr><td>/killswitch</td><td><strong style="color: var(--accent-red);">Emergency stop</strong> - immediately halts all Skales processes</td></tr>
                     <tr><td>/help</td><td>Show all available commands</td></tr>
                 </tbody>
             </table>
 
             <div class="highlight-box info">
                 <h3>Inline Keyboards</h3>
-                <p style="margin-bottom: 0;">Many Telegram responses include interactive buttons (inline keyboards). When Skales needs your approval in Execute Mode, it sends a message with ✅ <strong>Approve</strong> and ❌ <strong>Reject</strong> buttons. Tap directly in Telegram — no need to type a response.</p>
+                <p style="margin-bottom: 0;">Many Telegram responses include interactive buttons (inline keyboards). When Skales needs your approval in Execute Mode, it sends a message with ✅ <strong>Approve</strong> and ❌ <strong>Reject</strong> buttons. Tap directly in Telegram - no need to type a response.</p>
             </div>
 
             <!-- GROUP CHAT -->
             <h3 style="margin-top: 2rem;">👥 Group Chat</h3>
-            <p>Group Chat is a unique feature where multiple AI personas hold a conversation with each other — and you can watch, join, or just read the transcript.</p>
+            <p>Group Chat is a unique feature where multiple AI personas hold a conversation with each other - and you can watch, join, or just read the transcript.</p>
 
             <div class="highlight-box">
                 <h3>What it is</h3>
-                <p>You define 3–5 AI participants, each with their own name, model, and persona. You set a topic or question. Skales orchestrates rounds of conversation between them — each participant responds to the previous one, building a real multi-perspective discussion.</p>
+                <p>You define 3–5 AI participants, each with their own name, model, and persona. You set a topic or question. Skales orchestrates rounds of conversation between them - each participant responds to the previous one, building a real multi-perspective discussion.</p>
             </div>
 
             <h4 style="margin-top: 1.5rem;">How to Configure</h4>
@@ -1033,7 +1192,7 @@
 
             <!-- BLACKLISTS -->
             <h3 style="margin-top: 2rem;">🛡️ Website &amp; Search Blacklists</h3>
-            <p>Skales has a built-in security layer that prevents the AI from visiting dangerous websites or performing unsafe web searches — even if someone tricks it into trying.</p>
+            <p>Skales has a built-in security layer that prevents the AI from visiting dangerous websites or performing unsafe web searches - even if someone tricks it into trying.</p>
 
             <div class="grid">
                 <div class="card">
@@ -1055,7 +1214,7 @@
                 <li>Click ✕ next to any entry to remove it</li>
             </ol>
 
-            <p>Both filters are <strong>enabled by default</strong>. If Skales blocks something you legitimately need, just remove that entry from the list. Changes take effect immediately — no restart needed.</p>
+            <p>Both filters are <strong>enabled by default</strong>. If Skales blocks something you legitimately need, just remove that entry from the list. Changes take effect immediately - no restart needed.</p>
 
             <!-- VIRUSTOTAL -->
             <h3 style="margin-top: 2rem;">🦠 VirusTotal Integration</h3>
@@ -1065,11 +1224,11 @@
                 <li>In Skales → Settings → Skills → VirusTotal, paste your key and enable it</li>
                 <li>Now you can ask Skales to scan any file, or click "Scan with VirusTotal" next to email attachments</li>
             </ol>
-            <p>VirusTotal first checks its hash database (1 API call, instant). If the file is unknown, it uploads and scans (uses more of your free quota). The free tier allows 500 lookups/day — more than enough for personal use.</p>
+            <p>VirusTotal first checks its hash database (1 API call, instant). If the file is unknown, it uploads and scans (uses more of your free quota). The free tier allows 500 lookups/day - more than enough for personal use.</p>
 
             <!-- WEBHOOK -->
             <h3 style="margin-top: 2rem;">🪝 Webhooks</h3>
-            <p>Trigger Skales from external services — home automation, CI/CD pipelines, custom apps. When an HTTP POST arrives at your webhook URL with a message payload, Skales processes it and can respond or take action.</p>
+            <p>Trigger Skales from external services - home automation, CI/CD pipelines, custom apps. When an HTTP POST arrives at your webhook URL with a message payload, Skales processes it and can respond or take action.</p>
             <ol class="step-list">
                 <li>Go to <strong>Settings → Skills → Webhooks</strong> and enable it</li>
                 <li>Skales generates a unique secret key and webhook URL</li>
@@ -1079,7 +1238,7 @@
         </div>
     </section>
 
-    <!-- KILLSWITCH — CRITICAL SECTION -->
+    <!-- KILLSWITCH - CRITICAL SECTION -->
     <section id="killswitch" class="section">
         <div class="container">
             <div class="badge badge-red">Critical Safety Feature</div>
@@ -1088,7 +1247,7 @@
                 Skales is powerful. So powerful it needs an emergency brake.
             </p>
             <p>
-                The Killswitch is an emergency stop mechanism that immediately halts <strong>all</strong> Skales processes — no questions asked, no waiting. It is designed for situations where something has gone wrong, or you simply need everything to stop right now.
+                The Killswitch is an emergency stop mechanism that immediately halts <strong>all</strong> Skales processes - no questions asked, no waiting. It is designed for situations where something has gone wrong, or you simply need everything to stop right now.
             </p>
 
             <div class="highlight-box danger">
@@ -1098,7 +1257,7 @@
                     <li><strong>Terminates</strong> any background processes started by Skales (scripts, commands, file operations)</li>
                     <li><strong>Writes a log file</strong> to your Desktop: <code>skales-killswitch-[timestamp].log</code> with a full record of what was running</li>
                     <li><strong>Shuts down</strong> the Skales server gracefully. You will need to restart it manually</li>
-                    <li>No data is deleted — your conversations and settings are preserved</li>
+                    <li>No data is deleted - your conversations and settings are preserved</li>
                 </ul>
             </div>
 
@@ -1110,7 +1269,7 @@
                 </div>
                 <div class="card danger">
                     <h3>📱 Telegram Command</h3>
-                    <p>Send <code>/killswitch</code> to your Skales Telegram bot. This is the fastest way to stop Skales remotely — from your phone, anywhere in the world, even if you can't reach <code>localhost:3000</code>.</p>
+                    <p>Send <code>/killswitch</code> to your Skales Telegram bot. This is the fastest way to stop Skales remotely - from your phone, anywhere in the world, even if the Skales app is unresponsive.</p>
                 </div>
             </div>
 
@@ -1136,8 +1295,8 @@
                 <p style="margin-bottom: 0.5rem;">Skales shuts down completely after a killswitch trigger. To restart:</p>
                 <ul class="feature-list" style="margin-bottom: 0;">
                     <li>Check the log file on your Desktop to understand what happened</li>
-                    <li>Run <code>start-dashboard.bat</code> (Windows) or double-click <code>start-dashboard.command</code> (macOS) to restart normally</li>
-                    <li>If the issue persists, run <code>clean-start.bat</code> / double-click <code>clean-start.command</code></li>
+                    <li>Relaunch Skales from your <strong>Desktop shortcut</strong> (Windows) or <strong>Applications folder</strong> (macOS) to restart normally</li>
+                    <li>If the issue persists: right-click the tray icon → Quit, wait a moment, then relaunch</li>
                 </ul>
             </div>
         </div>
@@ -1162,32 +1321,37 @@
             <div class="card" style="margin-bottom: 1.5rem;">
                 <h3>Skales won't start</h3>
                 <ol class="step-list">
-                    <li>Check Node.js is installed: open Terminal and type <code>node --version</code></li>
-                    <li>If not found, install from <a href="https://nodejs.org/" style="color: var(--accent-lime);">nodejs.org</a></li>
-                    <li>Run <code>clean-start.bat</code> / double-click <code>clean-start.command</code></li>
-                    <li>If still broken, delete <code>.skales-data</code> to reset completely (export backup first!)</li>
+                    <li><strong>Windows:</strong> Right-click the Skales shortcut → <strong>Run as administrator</strong> (once)</li>
+                    <li><strong>macOS:</strong> Right-click → <strong>Open</strong> → <strong>Open</strong> (Gatekeeper bypass, first time only)</li>
+                    <li>Check the 🦎 tray icon - Skales may already be running in the background</li>
+                    <li>If nothing works: uninstall, delete <code>~/.skales-data</code>, reinstall for a clean start</li>
                 </ol>
             </div>
 
             <div class="card" style="margin-bottom: 1.5rem;">
-                <h3>Can't connect to localhost:3000</h3>
+                <h3>Skales shows a blank or black screen</h3>
                 <ol class="step-list">
-                    <li>Check Skales is still running in its command window</li>
-                    <li>Try a different browser (Chrome recommended)</li>
-                    <li>Allow Skales through your firewall if prompted</li>
-                    <li>Another app might be using port 3000 — stop it or restart your computer</li>
+                    <li>Close Skales completely (Quit from tray icon), wait 5 seconds, relaunch</li>
+                    <li>If the problem persists: another app may be using port 3000 - Skales auto-detects ports 3000–3009 but a restart usually resolves this</li>
+                    <li>Last resort: uninstall, re-download from skales.app, reinstall</li>
                 </ol>
             </div>
 
             <div class="card" style="margin-bottom: 1.5rem;">
-                <h3>WhatsApp keeps disconnecting</h3>
+                <h3>WhatsApp keeps disconnecting / QR code won't load</h3>
                 <ol class="step-list">
-                    <li>In Skales Settings, click <strong>Disconnect</strong> (not just disable — actually disconnect)</li>
-                    <li>Wait 5 seconds</li>
-                    <li>Reconnect and scan the QR code again</li>
-                    <li>Make sure Chrome is open and Skales is running</li>
-                    <li>If it keeps happening: in WhatsApp on your phone, go to Linked Devices, remove the Skales device, then reconnect from scratch</li>
+                    <li>Go to <strong>Settings → Skills → WhatsApp</strong></li>
+                    <li>Click <strong>Disconnect</strong> (or Stop)</li>
+                    <li>Quit Skales completely (tray icon → Quit)</li>
+                    <li>Delete the WhatsApp session folder manually:<br>
+                        <strong>Windows:</strong> <code>C:\Users\YourName\.skales-data\integrations\whatsapp-session\</code><br>
+                        <strong>macOS:</strong> <code>~/.skales-data/integrations/whatsapp-session/</code>
+                    </li>
+                    <li>Relaunch Skales</li>
+                    <li>Go to <strong>Settings → Skills → WhatsApp → Start Setup</strong></li>
+                    <li>A fresh QR code should appear - scan with your phone</li>
                 </ol>
+                <p style="margin-top: 0.75rem; margin-bottom: 0;"><strong>WhatsApp won't connect on a new machine:</strong> If you imported a backup from another computer, the WhatsApp session is tied to the old machine. Delete the <code>whatsapp-session</code> folder (see above) and pair fresh.</p>
             </div>
 
             <div class="card" style="margin-bottom: 1.5rem;">
@@ -1196,7 +1360,7 @@
                     <li>Your API key might be wrong, expired, or out of credits</li>
                     <li>Go to your provider's website and generate a new key</li>
                     <li>In Settings → AI Providers, remove the old key and add the new one</li>
-                    <li>Check your account balance — many providers are pay-as-you-go</li>
+                    <li>Check your account balance - many providers are pay-as-you-go</li>
                 </ol>
             </div>
 
@@ -1207,6 +1371,17 @@
                     <li>Make sure your browser has microphone permission (check browser settings)</li>
                     <li>In Skales Settings → TTS Configuration, check your TTS provider is configured</li>
                     <li>Groq TTS requires a valid Groq API key</li>
+                </ol>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h3>Telegram bot not responding</h3>
+                <ol class="step-list">
+                    <li>Go to <strong>Settings → Skills → Telegram</strong></li>
+                    <li>Verify your Bot Token is correct (get it from @BotFather on Telegram)</li>
+                    <li>Toggle Telegram <strong>OFF</strong>, wait 5 seconds, toggle <strong>ON</strong></li>
+                    <li>If still not working: Quit Skales completely (tray icon → Quit), then relaunch</li>
+                    <li>The bot needs a full app restart after the initial token setup</li>
                 </ol>
             </div>
 
@@ -1225,11 +1400,11 @@
             <div class="highlight-box">
                 <p><strong>Nuclear option:</strong></p>
                 <ol class="step-list" style="margin-bottom: 0;">
-                    <li>Export a backup first: Settings → Export Backup</li>
-                    <li>Stop Skales completely</li>
-                    <li>Delete the <code>.skales-data</code> folder</li>
-                    <li>Run <code>clean-start.bat</code> / double-click <code>clean-start.command</code></li>
-                    <li>Restore from your backup</li>
+                    <li>Export a backup first: <strong>Settings → Export Backup</strong></li>
+                    <li>Quit Skales completely (tray icon → Quit)</li>
+                    <li>Delete the <code>~/.skales-data</code> folder</li>
+                    <li>Relaunch Skales from your Desktop shortcut (Windows) or Applications folder (macOS)</li>
+                    <li>Restore from your backup in the onboarding wizard</li>
                 </ol>
             </div>
         </div>
@@ -1247,27 +1422,27 @@
 
             <div class="faq-item">
                 <h4>📱 WhatsApp QR code not generating</h4>
-                <p>Close everything and restart Skales. Go to <code>.skales-data/integrations/</code> and delete all WhatsApp-related files and folders inside that folder. Then run <code>clean-start.bat</code> (Windows) or double-click <code>clean-start.command</code> (macOS). This resets the WhatsApp connection completely and should fix the issue.</p>
+                <p>Quit Skales completely (tray icon → Quit). Delete the WhatsApp session folder: <strong>Windows:</strong> <code>C:\Users\YourName\.skales-data\integrations\whatsapp-session\</code> / <strong>macOS:</strong> <code>~/.skales-data/integrations/whatsapp-session/</code>. Then relaunch Skales and go to <strong>Settings → Skills → WhatsApp → Start Setup</strong>. A fresh QR code will appear.</p>
             </div>
 
             <div class="faq-item">
                 <h4>📡 How to access Skales remotely from my phone</h4>
-                <p>Use <strong>Tailscale</strong> — it's the safest and simplest way. Install Tailscale on both your PC and your phone. They'll join the same private Tailscale network automatically. Access Skales via your PC's Tailscale IP address (e.g. <code>http://100.x.x.x:3000</code>). No VPS needed, no port forwarding, no public exposure. Everything is encrypted end-to-end. This is the recommended approach for remote access.</p>
+                <p>Skales is a desktop app - the primary interface is the app itself. For mobile access, use <strong>Tailscale</strong>: install it on your PC and phone, then open your PC's Tailscale IP in your phone's browser (e.g. <code>http://100.x.x.x:3000</code>). On the same Wi-Fi, you can also use your PC's local IP. No VPS needed, no port forwarding, no public exposure. Everything is encrypted end-to-end.</p>
             </div>
 
             <div class="faq-item">
                 <h4>📧 Email shows raw HTML</h4>
-                <p>Skales now automatically converts HTML emails to readable plain text before showing them. If you still see HTML tags, try asking Skales to "re-read that email" — it will fetch and convert it again. If the issue persists, the email may use non-standard HTML encoding that the converter doesn't handle yet.</p>
+                <p>Skales now automatically converts HTML emails to readable plain text before showing them. If you still see HTML tags, try asking Skales to "re-read that email" - it will fetch and convert it again. If the issue persists, the email may use non-standard HTML encoding that the converter doesn't handle yet.</p>
             </div>
 
             <div class="faq-item">
                 <h4>💰 Group Chat is expensive</h4>
-                <p>Yes — each round makes one API call per participant, plus a final summary call. The math: 3 participants × 3 rounds = <strong>10 API calls</strong>. 5 participants × 5 rounds = <strong>26 API calls</strong>. For experimentation, use cheap models (Llama 3, Gemini Flash, Mistral 7B via OpenRouter). Save premium models for sessions where quality matters. You can also reduce rounds to 1–2 for a quick discussion.</p>
+                <p>Yes - each round makes one API call per participant, plus a final summary call. The math: 3 participants × 3 rounds = <strong>10 API calls</strong>. 5 participants × 5 rounds = <strong>26 API calls</strong>. For experimentation, use cheap models (Llama 3, Gemini Flash, Mistral 7B via OpenRouter). Save premium models for sessions where quality matters. You can also reduce rounds to 1–2 for a quick discussion.</p>
             </div>
 
             <div class="faq-item">
                 <h4>🧠 How does Skales decide what to remember?</h4>
-                <p>Every 90 minutes, Skales automatically scans recent conversations and extracts facts, preferences, names, recurring topics, and significant events. It uses your AI model to determine what's worth remembering. You can manually trigger this scan from the Memory page. You can also delete any memory Skales has saved — it won't use it again.</p>
+                <p>Every 90 minutes, Skales automatically scans recent conversations and extracts facts, preferences, names, recurring topics, and significant events. It uses your AI model to determine what's worth remembering. You can manually trigger this scan from the Memory page. You can also delete any memory Skales has saved - it won't use it again.</p>
             </div>
 
             <div class="faq-item">
@@ -1282,7 +1457,7 @@
 
             <div class="faq-item">
                 <h4>⚡ What's the difference between Execute Mode and normal chat?</h4>
-                <p>Normal chat: one message, one response, Skales waits for you between each exchange. Execute Mode: you describe a complex goal, Skales creates a step-by-step plan, shows it to you for approval, then executes it autonomously — using tools, writing files, running searches, etc. — until the task is done or it hits a checkpoint requiring your input. Use normal mode for conversations, Execute Mode for multi-step projects.</p>
+                <p>Normal chat: one message, one response, Skales waits for you between each exchange. Execute Mode: you describe a complex goal, Skales creates a step-by-step plan, shows it to you for approval, then executes it autonomously - using tools, writing files, running searches, etc. - until the task is done or it hits a checkpoint requiring your input. Use normal mode for conversations, Execute Mode for multi-step projects.</p>
             </div>
 
             <div class="faq-item">
@@ -1292,9 +1467,316 @@
 
             <div class="faq-item">
                 <h4>🔴 I triggered the Killswitch by accident. How do I restart?</h4>
-                <p>Check the log file on your Desktop (<code>skales-killswitch-[timestamp].log</code>) to see what was running. Then restart normally: run <code>start-dashboard.bat</code> (Windows) or double-click <code>start-dashboard.command</code> (macOS) and open <code>http://localhost:3000</code>. Your conversations and settings are completely intact — the killswitch only stops processes, never deletes data.</p>
+                <p>Check the log file on your Desktop (<code>skales-killswitch-[timestamp].log</code>) to see what was running. Then relaunch Skales from your <strong>Desktop shortcut</strong> (Windows) or <strong>Applications folder</strong> (macOS). Your conversations and settings are completely intact - the killswitch only stops processes, never deletes data.</p>
             </div>
 
+        </div>
+    </section>
+
+    <!-- SAFETY MODE -->
+    <section id="safety-mode" class="section">
+        <div class="container">
+            <h2>🛡️ Safety Mode</h2>
+            <p>Safety Mode controls how Skales handles potentially dangerous shell commands (mass deletion, system shutdown, disk formatting, fork bombs, etc.). Configure it in <strong>Settings → Safety Mode</strong>.</p>
+
+            <h3 style="margin-top: 2rem;">Three Levels</h3>
+            <table class="cmd-table">
+                <thead>
+                    <tr><th>Mode</th><th>Behaviour</th><th>Use Case</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>🟢 <strong>Safe</strong> (default)</td><td>Dangerous commands are blocked outright. Skales explains why and suggests safe alternatives.</td><td>Daily use - recommended for most users</td></tr>
+                    <tr><td>🟡 <strong>Advanced</strong></td><td>Dangerous commands are paused and shown to you. You approve or reject before execution.</td><td>Power users who want control without auto-blocking</td></tr>
+                    <tr><td>🔴 <strong>Unrestricted</strong></td><td>No blocking. Skales runs any command without asking. Full responsibility on the user.</td><td>Trusted automation pipelines, advanced scripting</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 2rem;">What Gets Blocked</h3>
+            <div class="highlight-box danger">
+                <ul class="feature-list" style="margin-bottom: 0;">
+                    <li><code>rm -rf</code>, <code>del /f /s</code> - recursive deletion</li>
+                    <li><code>format C:</code>, <code>mkfs.</code>, <code>dd if=... of=...</code> - disk formatting</li>
+                    <li><code>shutdown</code>, <code>reboot</code> - system power commands</li>
+                    <li><code>curl | bash</code> - remote script execution</li>
+                    <li>Fork bombs: <code>:(){ :|:&amp; };</code></li>
+                </ul>
+            </div>
+            <p><em>Note: Safety Mode only applies to the <code>execute_command</code> tool. File read/write operations use the separate Workspace Security toggle in Settings.</em></p>
+        </div>
+    </section>
+
+    <!-- X / TWITTER INTEGRATION -->
+    <section id="twitter" class="section">
+        <div class="container">
+            <h2>🐦 X / Twitter Integration</h2>
+            <p>Connect your Twitter/X account so Skales can post tweets, read your timeline, fetch @mentions, and reply - from the chat interface or via Telegram.</p>
+
+            <h3 style="margin-top: 2rem;">Getting API Keys</h3>
+            <ol class="step-list">
+                <li>Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank" style="color: var(--accent-lime);">developer.twitter.com</a> and create a new Project + App.</li>
+                <li>Under <strong>User authentication settings</strong>, enable OAuth 1.0a with <em>Read and Write</em> permissions.</li>
+                <li>Copy your <strong>API Key</strong> and <strong>API Secret</strong> (Consumer Keys section).</li>
+                <li>Generate an <strong>Access Token</strong> and <strong>Access Token Secret</strong> (with Read &amp; Write permissions).</li>
+                <li>Paste all four values into <strong>Settings → X / Twitter</strong> and click <em>Test Connection</em>.</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">Permission Modes</h3>
+            <table class="cmd-table">
+                <thead>
+                    <tr><th>Mode</th><th>What Skales Can Do</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>📤 <strong>Send Only</strong></td><td>Post new tweets, reply to tweets</td></tr>
+                    <tr><td>📖 <strong>Read &amp; Write</strong></td><td>All of the above + read timeline &amp; @mentions</td></tr>
+                    <tr><td>🤖 <strong>Full Autonomous</strong></td><td>All of the above + proactive posting when relevant</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 2rem;">Available Commands</h3>
+            <ul class="feature-list">
+                <li><em>"Post a tweet: [text]"</em> - publishes a tweet (max 280 chars)</li>
+                <li><em>"Show my Twitter mentions"</em> - fetches recent @mentions</li>
+                <li><em>"What's on my Twitter timeline?"</em> - summarises latest tweets from accounts you follow</li>
+                <li><em>"Reply to tweet [ID] with [text]"</em> - posts a reply</li>
+            </ul>
+            <div class="highlight-box">
+                <p style="margin: 0;"><strong>Security:</strong> API credentials are stored locally in <code>.skales-data/integrations/twitter.json</code> and never sent to any third party.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- LANGUAGE / MULTILINGUAL (V6) -->
+    <section id="language" class="section">
+        <div class="container">
+            <h2>🌍 Language / Multilingual</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+            <p>Skales v6.0 ships with full UI translations for <strong>English, Deutsch (German), Espanol (Spanish), and Francais (French)</strong>. Every visible string is translated: settings labels, chat prompts, approval dialogs, error messages, and Desktop Buddy speech bubbles.</p>
+
+            <h3 style="margin-top: 2rem;">How to Change Language</h3>
+            <ol class="step-list">
+                <li>On <strong>first launch</strong>, the onboarding wizard shows a language picker as the very first screen. Select your preferred language and continue.</li>
+                <li>At any time, go to <strong>Settings → Language</strong> and select a different language from the dropdown. Changes take effect immediately - no restart required.</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">What Gets Translated</h3>
+            <ul class="feature-list">
+                <li>All Settings labels and descriptions</li>
+                <li>Chat placeholder text and UI controls</li>
+                <li>Approval dialog messages (e.g. "Send this email to...")</li>
+                <li>Error messages and status notifications</li>
+                <li>Telegram bot responses</li>
+                <li>Desktop Buddy speech bubbles</li>
+                <li>Onboarding wizard screens</li>
+            </ul>
+
+            <div class="highlight-box info">
+                <p style="margin: 0;"><strong>Note:</strong> AI responses are in the language the model decides to use (usually matching your prompt). The UI language and AI response language are independent settings.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- REPLICATE INTEGRATION (V6) -->
+    <section id="replicate" class="section">
+        <div class="container">
+            <h2>🎨 Replicate Integration</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0 - BYOK</div>
+            <p>Replicate gives you access to 50+ open-source AI models for image and video generation - SDXL, FLUX, Stable Video Diffusion, and many more. You bring your own Replicate API key (BYOK) and pay Replicate directly for usage.</p>
+
+            <h3 style="margin-top: 2rem;">Getting a Replicate API Key</h3>
+            <ol class="step-list">
+                <li>Go to <a href="https://replicate.com" target="_blank" style="color: var(--accent-lime);">replicate.com</a> and create a free account.</li>
+                <li>Navigate to <strong>Account → API Tokens</strong> and create a new token.</li>
+                <li>Copy the token (starts with <code>r8_</code>).</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">Setup in Skales</h3>
+            <ol class="step-list">
+                <li>Open <strong>Settings → AI Providers → Replicate</strong>.</li>
+                <li>Paste your API token and click <strong>Test Connection</strong>.</li>
+                <li>In the chat toolbar, click the image/video generation icon to access Replicate models.</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">Supported Models</h3>
+            <ul class="feature-list">
+                <li><strong>Image generation:</strong> SDXL, FLUX.1 Schnell, FLUX.1 Dev, Stable Diffusion 3, and more</li>
+                <li><strong>Video generation:</strong> Stable Video Diffusion, AnimateDiff, and more</li>
+                <li><strong>New models are added automatically</strong> - any public Replicate model can be referenced by ID</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p style="margin: 0;"><strong>Cost:</strong> Replicate bills per prediction. Image generation typically costs $0.002-$0.05 per image depending on the model. Video is higher. Check <a href="https://replicate.com/pricing" target="_blank" style="color: var(--accent-lime);">replicate.com/pricing</a> for current rates. Skales never charges you for this - you pay Replicate directly.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CUSTOM OPENAI-COMPATIBLE ENDPOINT (V6) -->
+    <section id="custom-endpoint" class="section">
+        <div class="container">
+            <h2>🔌 Custom OpenAI-Compatible Endpoint</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+            <p>Connect any OpenAI-compatible local server to Skales: <strong>llama.cpp, LM Studio, vLLM, koboldcpp, text-generation-webui</strong>, or any server that speaks the OpenAI chat completions API format.</p>
+
+            <h3 style="margin-top: 2rem;">Setup</h3>
+            <ol class="step-list">
+                <li>Start your local model server (e.g. LM Studio, llama.cpp with <code>--server</code> flag).</li>
+                <li>In Skales, go to <strong>Settings → AI Providers → Custom (OpenAI-compatible)</strong>.</li>
+                <li>Enter the <strong>Base URL</strong> (e.g. <code>http://localhost:1234</code> for LM Studio or <code>http://localhost:8080</code> for llama.cpp). Skales automatically appends <code>/v1</code> if needed.</li>
+                <li>Optionally enter an API key if your server requires one.</li>
+                <li>Click <strong>Fetch Models</strong> to load available models, or type a model name manually.</li>
+                <li>Click <strong>Test Connection</strong> to verify everything is working.</li>
+            </ol>
+
+            <h3 style="margin-top: 2rem;">Tool Calling Toggle</h3>
+            <p>Many local models do not support OpenAI-style function calling (tool use). If your model crashes or returns errors when Skales tries to use tools, enable the <strong>Disable tool calling</strong> toggle in the Custom Endpoint settings. This removes the <code>tools</code> parameter from requests so the model receives plain prompts only.</p>
+
+            <h3 style="margin-top: 2rem;">Compatible Servers</h3>
+            <div class="provider-grid">
+                <div class="provider-badge"><span>🦙</span><strong>llama.cpp</strong></div>
+                <div class="provider-badge"><span>🖥️</span><strong>LM Studio</strong></div>
+                <div class="provider-badge"><span>⚡</span><strong>vLLM</strong></div>
+                <div class="provider-badge"><span>🧠</span><strong>koboldcpp</strong></div>
+                <div class="provider-badge"><span>🌐</span><strong>text-gen-webui</strong></div>
+                <div class="provider-badge"><span>🔌</span><strong>Any /v1 API</strong></div>
+            </div>
+
+            <div class="highlight-box info">
+                <p style="margin: 0;"><strong>URL normalization:</strong> Skales automatically normalizes the base URL. You can enter <code>http://localhost:1234</code> or <code>http://localhost:1234/v1</code> - both work. Trailing slashes are stripped.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRIVACY & FEEDBACK (V6) -->
+    <section id="privacy" class="section">
+        <div class="container">
+            <h2>🔒 Privacy &amp; Feedback</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+
+            <h3 style="margin-top: 2rem;">Anonymous Telemetry (Opt-In)</h3>
+            <p>Skales includes an <strong>optional, anonymous telemetry</strong> system to help improve the app. It is <strong>off by default</strong> - you choose whether to enable it.</p>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>✅ What IS Collected</h3>
+                    <ul class="feature-list" style="margin: 0.5rem 0 0 1rem;">
+                        <li>App version number</li>
+                        <li>Operating system type (Windows / macOS)</li>
+                        <li>App start and crash events (timestamps only)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>🚫 What is NEVER Collected</h3>
+                    <ul class="feature-list" style="margin: 0.5rem 0 0 1rem;">
+                        <li>Your conversations or messages</li>
+                        <li>API keys or credentials</li>
+                        <li>Personal data or file contents</li>
+                        <li>Your name, email, or IP address</li>
+                        <li>Any identifiable information</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem;">How to Enable or Disable Telemetry</h3>
+            <ol class="step-list">
+                <li>During the <strong>onboarding wizard</strong> on first launch, you'll see a clear opt-in prompt. You can enable or decline at that point.</li>
+                <li>At any time, go to <strong>Settings → Privacy</strong> and toggle <strong>Anonymous Telemetry</strong> on or off.</li>
+            </ol>
+
+            <div class="highlight-box info">
+                <p style="margin: 0;"><strong>Note:</strong> Telemetry data is sent to a Skales-controlled endpoint only. It is never sold or shared with third parties. The sole purpose is to understand crash patterns and version adoption to improve app stability.</p>
+            </div>
+
+            <h3 style="margin-top: 2rem;">In-App Bug Reporting</h3>
+            <p>Found a bug? You can report it without leaving Skales. Click the <strong>Report Bug</strong> button at the bottom of the sidebar (🐛 icon, above the Stop Server button).</p>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>What the Report Contains</h3>
+                    <ul class="feature-list" style="margin: 0.5rem 0 0 1rem;">
+                        <li>Your written description (required, 20-2000 characters)</li>
+                        <li>Skales version number</li>
+                        <li>OS type (Windows / macOS) - optional, can be unchecked</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>What Is Never Included</h3>
+                    <ul class="feature-list" style="margin: 0.5rem 0 0 1rem;">
+                        <li>Your conversations or chat history</li>
+                        <li>API keys or credentials</li>
+                        <li>Screenshots or screen captures</li>
+                        <li>Your email or personal info</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 1.5rem;">Reports are sent to a Skales-controlled server. If the connection fails (e.g. you're offline), the report is saved locally in <code>~/.skales-data/bugreports.jsonl</code> and can be sent manually if desired.</p>
+
+            <h3 style="margin-top: 2rem;">Core Privacy Principles</h3>
+            <ul class="feature-list">
+                <li><strong>BYOK (Bring Your Own Key):</strong> All API requests go directly from your machine to the AI provider. Skales never sees your API keys in transit.</li>
+                <li><strong>Local-first storage:</strong> All data stays on your computer in <code>~/.skales-data</code>. Nothing is synced to the cloud automatically.</li>
+                <li><strong>Offline capable:</strong> With a local Ollama model, Skales works with zero internet access.</li>
+                <li><strong>Sandboxed file access:</strong> File operations are limited to your configured workspace folder.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- SKALES+ (V6) -->
+    <section id="skales-plus" class="section">
+        <div class="container">
+            <h2>👑 Skales+</h2>
+            <div class="badge" style="margin-bottom: 1.5rem;">Beta - All Features Unlocked</div>
+            <p><strong>Right now, every feature in Skales is free and fully unlocked.</strong> No subscription, no trial, no lock-in. Skales+ is a planned future tier for users and teams who want premium extras - but it will never take away what you already have for free today.</p>
+
+            <h3 style="margin-top: 2rem;">Tier Overview</h3>
+            <div class="grid">
+                <div class="card">
+                    <h3>Free Forever</h3>
+                    <p>All core features. Chat, memory, integrations, Desktop Buddy, custom skills, all 11+ providers. Always free, no time limit.</p>
+                </div>
+                <div class="card">
+                    <h3>Skales+ Personal</h3>
+                    <p>Coming soon. Priority support, upcoming exclusive features, and early access to new capabilities.</p>
+                </div>
+                <div class="card">
+                    <h3>Skales+ Business</h3>
+                    <p>Coming soon. Multi-seat licensing, team features, and dedicated support.</p>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Join the Waitlist</h3>
+            <p>To get notified when Skales+ launches, go to <strong>Settings → scroll to the Skales+ section → View Plans</strong>. You can enter your email to join the waitlist directly from the app.</p>
+
+            <div class="highlight-box">
+                <p style="margin: 0;"><strong>Important:</strong> Skales will never remove features that are currently free. The Free Forever tier is a genuine commitment, not a limited trial.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MOBILE USAGE & TAILSCALE -->
+    <section id="mobile" class="section">
+        <div class="container">
+            <h2>📱 Mobile Usage &amp; Tailscale</h2>
+            <p>Skales is a <strong>desktop-first app</strong> - the primary interface is the native desktop application on your PC or Mac. Mobile access is a secondary method via your browser.</p>
+
+            <h3 style="margin-top: 2rem;">Accessing on Mobile (Secondary)</h3>
+            <div class="grid">
+                <div class="card">
+                    <h3>🏠 Same Wi-Fi</h3>
+                    <p>Open <code>http://&lt;your-pc-ip&gt;:3000</code> in any mobile browser. Find your PC's IP in network settings or ask Skales: <em>"What's my local IP?"</em></p>
+                </div>
+                <div class="card">
+                    <h3>🌍 Remote via Tailscale</h3>
+                    <p>Install <a href="https://tailscale.com" style="color: var(--accent-lime);">Tailscale</a> on your PC and phone. Open <code>http://&lt;tailscale-ip&gt;:3000</code> from anywhere. Encrypted, no port forwarding, no public exposure.</p>
+                </div>
+            </div>
+            <p style="margin-top: 1rem;">The UI is fully responsive - swipe-friendly sidebar, mobile input bar, and touch-optimized controls.</p>
+
+            <h3 style="margin-top: 2rem;">Known Limitations on HTTP</h3>
+            <ul class="feature-list">
+                <li><strong>Clipboard copy:</strong> The browser Clipboard API requires HTTPS. On HTTP (LAN/Tailscale), Skales falls back to a textarea-based copy that works on most mobile browsers.</li>
+                <li><strong>crypto.randomUUID():</strong> Requires a secure context (HTTPS or localhost). On HTTP, Skales uses a Math.random-based fallback with equivalent entropy.</li>
+            </ul>
         </div>
     </section>
 
@@ -1303,7 +1785,7 @@
         <div class="container">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🦎</div>
             <p>
-                <strong>Skales v3.5.0</strong><br>
+                <strong>Skales v6.0.0</strong><br>
                 A powerful AI companion for everyday humans.
             </p>
             <p style="margin-top: 1rem;">
@@ -1315,86 +1797,6 @@
             </p>
         </div>
     </footer>
-
-
-  <!-- ══════════════════════════════════════════════════════ -->
-  <!-- SAFETY MODE -->
-  <!-- ══════════════════════════════════════════════════════ -->
-  <section id="safety-mode">
-    <h2>🛡️ Safety Mode</h2>
-    <p>Safety Mode controls how Skales handles potentially dangerous shell commands (mass deletion, system shutdown, disk formatting, fork bombs, etc.). Configure it in <strong>Settings → Safety Mode</strong>.</p>
-
-    <h3>Three Levels</h3>
-    <table>
-      <thead><tr><th>Mode</th><th>Behaviour</th><th>Use Case</th></tr></thead>
-      <tbody>
-        <tr><td>🟢 <strong>Safe</strong> (default)</td><td>Dangerous commands are blocked outright. Skales explains why and suggests safe alternatives.</td><td>Daily use — recommended for most users</td></tr>
-        <tr><td>🟡 <strong>Advanced</strong></td><td>Dangerous commands are paused and shown to you. You approve or reject before execution.</td><td>Power users who want control without auto-blocking</td></tr>
-        <tr><td>🔴 <strong>Unrestricted</strong></td><td>No blocking. Skales runs any command without asking. Full responsibility on the user.</td><td>Trusted automation pipelines, advanced scripting</td></tr>
-      </tbody>
-    </table>
-
-    <h3>What Gets Blocked</h3>
-    <p>Patterns flagged as dangerous include: <code>rm -rf</code>, <code>del /f /s</code>, <code>format C:</code>, <code>mkfs.</code>, <code>dd if=... of=...</code>, <code>shutdown</code>, <code>reboot</code>, <code>curl | bash</code>, fork bombs (<code>:(){ :|:& };</code>), and more.</p>
-    <p><em>Note: Safety Mode only applies to the <code>execute_command</code> tool. File read/write operations use the separate Workspace Security toggle in Settings.</em></p>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════ -->
-  <!-- X / TWITTER INTEGRATION -->
-  <!-- ══════════════════════════════════════════════════════ -->
-  <section id="twitter">
-    <h2>🐦 X / Twitter Integration</h2>
-    <p>Connect your Twitter/X account so Skales can post tweets, read your timeline, fetch @mentions, and reply — from the chat interface or via Telegram.</p>
-
-    <h3>Getting API Keys</h3>
-    <ol>
-      <li>Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a> and create a new Project + App.</li>
-      <li>Under <strong>User authentication settings</strong>, enable OAuth 1.0a with <em>Read and Write</em> permissions.</li>
-      <li>Copy your <strong>API Key</strong> and <strong>API Secret</strong> (Consumer Keys section).</li>
-      <li>Generate an <strong>Access Token</strong> and <strong>Access Token Secret</strong> (with Read &amp; Write permissions).</li>
-      <li>Paste all four values into <strong>Settings → X / Twitter</strong> and click <em>Test Connection</em>.</li>
-    </ol>
-
-    <h3>Permission Modes</h3>
-    <table>
-      <thead><tr><th>Mode</th><th>What Skales Can Do</th></tr></thead>
-      <tbody>
-        <tr><td>📤 <strong>Send Only</strong></td><td>Post new tweets, reply to tweets</td></tr>
-        <tr><td>📖 <strong>Read &amp; Write</strong></td><td>All of the above + read timeline &amp; @mentions</td></tr>
-        <tr><td>🤖 <strong>Full Autonomous</strong></td><td>All of the above + proactive posting when relevant</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Available Commands</h3>
-    <ul>
-      <li><em>"Post a tweet: [text]"</em> — publishes a tweet (max 280 chars)</li>
-      <li><em>"Show my Twitter mentions"</em> — fetches recent @mentions</li>
-      <li><em>"What's on my Twitter timeline?"</em> — summarises latest tweets from accounts you follow</li>
-      <li><em>"Reply to tweet [ID] with [text]"</em> — posts a reply</li>
-    </ul>
-    <p><strong>Security:</strong> API credentials are stored locally in <code>.skales-data/integrations/twitter.json</code> and never sent to any third party.</p>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════════ -->
-  <!-- MOBILE USAGE TIPS -->
-  <!-- ══════════════════════════════════════════════════════ -->
-  <section id="mobile">
-    <h2>📱 Mobile Usage &amp; Tailscale</h2>
-    <p>Skales runs as a local web app and is fully accessible from any device on your network, including via <strong>Tailscale</strong> for remote access.</p>
-
-    <h3>Accessing on Mobile</h3>
-    <ul>
-      <li>On the same Wi-Fi network: open <code>http://&lt;your-pc-ip&gt;:3000</code> in any mobile browser.</li>
-      <li>Over Tailscale: open <code>http://&lt;tailscale-ip&gt;:3000</code> from any device in your Tailnet.</li>
-      <li>The UI is fully responsive — swipe-friendly sidebar, mobile input bar, and touch-optimized controls.</li>
-    </ul>
-
-    <h3>Known Limitations on HTTP</h3>
-    <ul>
-      <li><strong>Clipboard copy</strong>: The browser Clipboard API requires HTTPS. On HTTP connections (LAN/Tailscale), Skales falls back to a textarea-based copy that works on most mobile browsers.</li>
-      <li><strong>crypto.randomUUID()</strong>: Requires a secure context (HTTPS or localhost). On HTTP, Skales uses a Math.random-based fallback with equivalent entropy.</li>
-    </ul>
-  </section>
 
 </body>
 </html>

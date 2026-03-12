@@ -13,6 +13,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { getRecentMemoriesWithFilenames } from '@/actions/identity';
 import { silentCheckForUpdates, loadUpdateSettings } from '@/actions/updates';
+import { useTranslation } from '@/lib/i18n';
 
 const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
     const Component = I;
@@ -20,6 +21,7 @@ const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
 };
 
 export default function DashboardPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -38,9 +40,9 @@ export default function DashboardPage() {
                 }
 
                 const hour = new Date().getHours();
-                if (hour < 12) setGreeting('Good Morning');
-                else if (hour < 18) setGreeting('Good Afternoon');
-                else setGreeting('Good Evening');
+                if (hour < 12) setGreeting(t('onboarding.greeting.morning'));
+                else if (hour < 18) setGreeting(t('onboarding.greeting.afternoon'));
+                else setGreeting(t('onboarding.greeting.evening'));
 
                 getDashboardData()
                     .then(res => setData(res))
@@ -100,7 +102,7 @@ export default function DashboardPage() {
                 <span className="text-2xl">🦎</span>
             </div>
             <p className="text-sm font-medium animate-pulse" style={{ color: 'var(--text-muted)' }}>
-                Loading Skales...
+                {t('common.loading')}
             </p>
         </div>
     );
@@ -149,7 +151,7 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 text-sm">
                         <Icon icon={Download} size={15} className="text-lime-400 shrink-0" />
                         <span style={{ color: 'var(--text-secondary)' }}>
-                            <span className="font-semibold text-lime-400">Skales v{updateBanner.version}</span> is available —
+                            <span className="font-semibold text-lime-400">Skales v{updateBanner.version}</span> is available -
                         </span>
                         <Link href="/update"
                             className="font-semibold text-lime-400 hover:text-lime-300 underline underline-offset-2 transition-colors">
@@ -181,16 +183,16 @@ export default function DashboardPage() {
                             {greeting}! 👋
                         </h1>
                         <p className="text-sm max-w-md leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                            Your personal AI buddy is ready.
+                            {t('onboarding.heroDescription')}
                             {d.connected
-                                ? ` Connected via ${d.activeProvider} — let's get things done.`
-                                : ` Set up your AI connection in Settings to get started.`
+                                ? ` ${t('onboarding.connected', { provider: d.activeProvider })}`
+                                : ` ${t('onboarding.notConnected')}`
                             }
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                                 style={{ background: 'rgba(132, 204, 22, 0.15)', color: '#84cc16' }}>
-                                <Wrench size={10} /> Agent Mode Active
+                                <Wrench size={10} /> {t('onboarding.agentModeActive')}
                             </span>
                         </div>
                     </div>
@@ -199,7 +201,7 @@ export default function DashboardPage() {
                         className="px-6 py-3 bg-lime-500 hover:bg-lime-400 rounded-xl font-bold text-black transition-all shadow-lg shadow-lime-500/20 hover:scale-[1.03] active:scale-95 flex items-center gap-2 shrink-0 group"
                     >
                         <MessageCircle size={20} className="group-hover:-translate-y-0.5 transition-transform" />
-                        New Chat
+                        {t('onboarding.newChat')}
                     </Link>
                 </div>
             </div>
@@ -208,30 +210,30 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
                 <StatCard
                     icon={<Activity size={18} className="text-lime-500" />}
-                    label="Status"
-                    value={d.connected ? 'Online' : 'Offline'}
-                    detail={d.connected ? d.activeProvider : 'No API key set'}
+                    label={t('onboarding.status.online')}
+                    value={d.connected ? t('onboarding.status.online') : t('onboarding.status.offline')}
+                    detail={d.connected ? d.activeProvider : t('onboarding.status.noApiKey')}
                     color={d.connected ? 'lime' : 'red'}
                 />
                 <StatCard
                     icon={<MessageCircle size={18} className="text-blue-500" />}
-                    label="Messages"
+                    label={t('onboarding.stats.sessionsLabel')}
                     value={d.stats.totalMessages.toString()}
-                    detail={`${d.stats.totalSessions} session(s)`}
+                    detail={t('onboarding.stats.sessions', { count: d.stats.totalSessions })}
                     color="blue"
                 />
                 <StatCard
                     icon={<Server size={18} className="text-purple-500" />}
-                    label="Providers"
+                    label={t('onboarding.connections.title')}
                     value={d.stats.enabledProviderCount.toString()}
-                    detail={d.enabledProviders.join(', ') || 'None configured'}
+                    detail={d.enabledProviders.join(', ') || t('onboarding.connections.notConfigured')}
                     color="purple"
                 />
                 <StatCard
                     icon={<Bot size={18} className="text-amber-500" />}
-                    label="Persona"
+                    label={t('onboarding.stats.activePersonality')}
                     value={d.persona.charAt(0).toUpperCase() + d.persona.slice(1)}
-                    detail="Active personality"
+                    detail={t('onboarding.stats.activePersonality')}
                     color="amber"
                 />
             </div>
@@ -243,30 +245,30 @@ export default function DashboardPage() {
                     <h2 className="text-sm font-bold mb-4 flex items-center gap-2 uppercase tracking-wider"
                         style={{ color: 'var(--text-muted)' }}>
                         <Wifi size={16} className="text-lime-500" />
-                        Connections
+                        {t('onboarding.connections.title')}
                     </h2>
                     <div className="space-y-3">
                         {/* LLM Connection */}
                         <ConnectionItem
                             label="AI Brain"
-                            detail={d.connected ? `${d.activeProvider} · ${d.model}` : 'Not configured'}
+                            detail={d.connected ? `${d.activeProvider} · ${d.model}` : t('onboarding.connections.notConfigured')}
                             connected={d.connected}
                         />
                         {/* Ollama */}
                         <ConnectionItem
                             label="Local AI (Ollama)"
-                            detail={d.ollamaRunning ? 'Running locally' : 'Not running'}
+                            detail={d.ollamaRunning ? t('onboarding.connections.runningLocally') : t('onboarding.connections.notRunning')}
                             connected={d.ollamaRunning}
                         />
                         {/* Messenger integrations */}
                         <ConnectionItem
                             label="Telegram"
-                            detail={d.telegramConnected ? 'Active' : 'Not configured'}
+                            detail={d.telegramConnected ? t('onboarding.connections.active') : t('onboarding.connections.notConfigured')}
                             connected={d.telegramConnected}
                         />
                         <ConnectionItem
                             label="WhatsApp"
-                            detail={d.whatsappConnected ? (d.whatsappPhone ? `+${d.whatsappPhone}` : 'Active') : 'Not configured'}
+                            detail={d.whatsappConnected ? (d.whatsappPhone ? `+${d.whatsappPhone}` : t('onboarding.connections.active')) : t('onboarding.connections.notConfigured')}
                             connected={d.whatsappConnected}
                         />
 
@@ -274,7 +276,7 @@ export default function DashboardPage() {
                             className="flex items-center justify-center gap-2 mt-4 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all hover:border-lime-500/50 hover:bg-lime-500/5"
                             style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                             <Plus size={14} />
-                            Manage Connections
+                            {t('onboarding.connections.manageConnections')}
                         </Link>
                     </div>
                 </div>
@@ -285,17 +287,17 @@ export default function DashboardPage() {
                     <h2 className="text-sm font-bold mb-1 flex items-center gap-2 uppercase tracking-wider"
                         style={{ color: 'var(--text-muted)' }}>
                         <Brain size={16} className="text-purple-500" />
-                        Memory Topics
+                        {t('onboarding.memoryTopics.title')}
                     </h2>
                     <p className="text-[10px] mb-4" style={{ color: 'var(--text-muted)' }}>
-                        What's on Skales' mind
+                        {t('onboarding.memoryTopics.subtitle')}
                     </p>
                     {memoryWords.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
                             <Brain size={28} className="mb-2 opacity-20" style={{ color: 'var(--text-muted)' }} />
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No memories yet</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('onboarding.memoryTopics.noMemories')}</p>
                             <Link href="/memory" className="text-[10px] mt-2 text-lime-500 hover:text-lime-400">
-                                Go to Memory →
+                                {t('onboarding.memoryTopics.goToMemory')}
                             </Link>
                         </div>
                     ) : (
@@ -328,7 +330,7 @@ export default function DashboardPage() {
                             <Link href="/memory"
                                 className="mt-4 text-[10px] text-center font-medium hover:text-lime-500 transition-colors"
                                 style={{ color: 'var(--text-muted)' }}>
-                                View all memories →
+                                {t('onboarding.memoryTopics.viewAll')}
                             </Link>
                         </>
                     )}
@@ -341,10 +343,10 @@ export default function DashboardPage() {
                         <h2 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider"
                             style={{ color: 'var(--text-muted)' }}>
                             <MessageCircle size={16} className="text-blue-500" />
-                            Recent Sessions
+                            {t('onboarding.recentSessions.title')}
                         </h2>
                         <Link href="/chat" className="text-xs font-medium text-lime-500 hover:text-lime-400 flex items-center gap-1">
-                            View All <ChevronRight size={12} />
+                            {t('onboarding.recentSessions.viewAll')} <ChevronRight size={12} />
                         </Link>
                     </div>
                     <div className="space-y-2">
@@ -353,14 +355,14 @@ export default function DashboardPage() {
                                 style={{ borderColor: 'var(--border)', background: 'var(--background)' }}>
                                 <MessageCircle size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
                                 <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                    No conversations yet
+                                    {t('onboarding.recentSessions.noConversations')}
                                 </p>
                                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                    Start a chat to see your history here
+                                    {t('onboarding.recentSessions.startChat')}
                                 </p>
                                 <Link href="/chat"
                                     className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-lime-500 hover:bg-lime-400 text-black text-sm font-bold rounded-xl transition-all">
-                                    <Plus size={14} /> Start Chat
+                                    <Plus size={14} /> {t('onboarding.recentSessions.startChatButton')}
                                 </Link>
                             </div>
                         ) : d.sessions.map((s: any) => (
@@ -376,7 +378,7 @@ export default function DashboardPage() {
                                         {s.title}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        {s.messageCount} messages · {new Date(s.updatedAt).toLocaleDateString('en-US')}
+                                        {t('onboarding.recentSessions.messageCount', { count: s.messageCount, date: new Date(s.updatedAt).toLocaleDateString('en-US') })}
                                     </p>
                                 </div>
                                 <ArrowRight size={14} className="text-lime-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -390,24 +392,24 @@ export default function DashboardPage() {
             <div className="mt-8 rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <h2 className="text-sm font-bold mb-4 flex items-center gap-2 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                     <Wrench size={16} className="text-lime-500" />
-                    Agent Capabilities
+                    {t('onboarding.capabilities.title')}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    <CapabilityItem icon={<FolderPlus size={16} />} label="File System" desc="Create, read, write, delete" />
-                    <CapabilityItem icon={<Terminal size={16} />} label="Commands" desc="Execute shell commands" />
-                    <CapabilityItem icon={<Globe size={16} />} label="Web Access" desc="Fetch & extract content" />
-                    <CapabilityItem icon={<ListTodo size={16} />} label="Tasks" desc="Create & manage to-dos" />
-                    <CapabilityItem icon={<Brain size={16} />} label="Memory" desc="Learns your preferences" />
-                    <CapabilityItem icon={<Bot size={16} />} label="Multi-Agent" desc="Specialized assistants" />
+                    <CapabilityItem icon={<FolderPlus size={16} />} label={t('onboarding.capabilities.fileSystem')} desc={t('onboarding.capabilities.fileSystemDesc')} />
+                    <CapabilityItem icon={<Terminal size={16} />} label={t('onboarding.capabilities.commands')} desc={t('onboarding.capabilities.commandsDesc')} />
+                    <CapabilityItem icon={<Globe size={16} />} label={t('onboarding.capabilities.webAccess')} desc={t('onboarding.capabilities.webAccessDesc')} />
+                    <CapabilityItem icon={<ListTodo size={16} />} label={t('onboarding.capabilities.tasks')} desc={t('onboarding.capabilities.tasksDesc')} />
+                    <CapabilityItem icon={<Brain size={16} />} label={t('onboarding.capabilities.memory')} desc={t('onboarding.capabilities.memoryDesc')} />
+                    <CapabilityItem icon={<Bot size={16} />} label={t('onboarding.capabilities.multiAgent')} desc={t('onboarding.capabilities.multiAgentDesc')} />
                 </div>
             </div>
 
             {/* Quick Actions */}
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-children">
-                <QuickAction href="/tasks" icon={<Zap size={20} />} label="Create Task" color="amber" />
-                <QuickAction href="/chat" icon={<MessageCircle size={20} />} label="Chat" color="lime" />
-                <QuickAction href="/agents" icon={<Bot size={20} />} label="Agents" color="purple" />
-                <QuickAction href="/settings" icon={<SettingsIcon size={20} />} label="Settings" color="gray" />
+                <QuickAction href="/tasks" icon={<Zap size={20} />} label={t('onboarding.quickActions.createTask')} color="amber" />
+                <QuickAction href="/chat" icon={<MessageCircle size={20} />} label={t('onboarding.quickActions.chat')} color="lime" />
+                <QuickAction href="/agents" icon={<Bot size={20} />} label={t('onboarding.quickActions.agents')} color="purple" />
+                <QuickAction href="/settings" icon={<SettingsIcon size={20} />} label={t('onboarding.quickActions.settings')} color="gray" />
             </div>
         </div>
     );

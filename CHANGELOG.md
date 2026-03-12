@@ -6,13 +6,80 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.5.0 — March 2026
+## v6.0.0 - "The Living Agent" (March 2026)
+
+### Multilingual
+- Full UI translation: English, Deutsch, Espanol, Francais (849 translated keys)
+- Language picker as first onboarding screen
+- Language switcher in Settings (always accessible, no restart needed)
+- System messages, approval prompts, and error messages translated
+- Telegram bot responses in user's selected language
+- Desktop Buddy speech bubbles translated
+
+### New Providers
+- Replicate integration (BYOK) - access 50+ image and video AI models with one API key
+- Custom OpenAI-compatible endpoint - supports llama.cpp, LM Studio, vLLM, koboldcpp, text-generation-webui
+- Tool calling toggle for custom endpoints (on/off, for local models that don't support function calling)
+
+### Skales+
+- Tier comparison page (Free Forever / Personal / Business)
+- Email waitlist for upcoming premium features
+- All current features remain free and unlocked
+
+### Desktop Buddy
+- Flickering fix - smooth 150ms crossfade transitions between animations
+- Dynamic folder system - new animations load automatically without code changes
+- Full skin system - create a folder in public/mascot/, add .webm clips, select from Settings
+- Skin selector in Settings (Desktop App section) - shown when more than one skin is installed
+- Direct DOM opacity swap eliminates React state batching delay
+- Buddy can now execute tools: write files, send emails, browse the web, manage calendar, and more
+- Approve/Decline buttons appear inside the speech bubble when an action needs confirmation
+- No more "redirect to main chat" for tool execution - the buddy handles it directly
+- Auto-executed tools (safe actions) run immediately and show a result bubble
+- Tool result summaries shown inline; "Open Chat for details" link for long outputs
+
+### Privacy and Feedback
+- Anonymous telemetry opt-in - disabled by default, prompt during onboarding
+- Collected data: app version, OS platform, start and crash events only
+- No conversations, no API keys, no file paths, no personal data ever sent
+- Anonymous UUID generated once and reused - never regenerated
+- Report Bug button in the sidebar (bottom, above Stop Server)
+- Bug reports sent to developer via collect.php; local fallback to bugreports.jsonl if offline
+- System info (OS platform) included in reports - optional checkbox, on by default
+- Both telemetry and bug report endpoints: https://skales.app/api/collect.php
+
+### Approval System
+- TOOL_SAFETY default changed to 'confirm' - unknown tools require approval by default
+- create_document tool implemented (aliases to write_file with workspace path)
+- Telegram inline buttons now appear correctly (parse_mode fix)
+- Telegram bot works on any port (dynamic SKALES_PORT, no more hardcoded localhost:3000)
+
+### Build System
+- Automated mascot/static asset copy (scripts/post-nextjs-build.js)
+- Build scripts consolidated (build:web step in root package.json)
+- Version string centralized via APP_VERSION in meta.ts
 
 ### Security
-- Approval system enforcement — destructive actions (send email, delete file, calendar changes, tweets) now require explicit user confirmation
-- Browser blacklist now covers Playwright — blocked domains can no longer be bypassed
+- Default tool safety is now 'confirm' (was 'auto') - prevents hallucinated tool execution
+- Telegram port injection prevents silent callback failures
+- Chat bubble overflow protection (no more horizontal scrollbar on wide content)
+
+### Bug Fixes
+- Chat bubble horizontal overflow fixed (min-w-0 + overflow-x: auto)
+- Sub-component useTranslation() hooks added where missing
+- pdf-lib dependency corruption handled
+- Package-lock.json regenerated with correct version
+- Sidebar version now imports from meta.ts instead of hardcoded string
+
+---
+
+## v5.5.0 - March 2026
+
+### Security
+- Approval system enforcement - destructive actions (send email, delete file, calendar changes, tweets) now require explicit user confirmation
+- Browser blacklist now covers Playwright - blocked domains can no longer be bypassed
 - Unrestricted Mode properly bypasses approval gate when enabled
-- Screenshot auto-Telegram removed — only forwards when explicitly requested
+- Screenshot auto-Telegram removed - only forwards when explicitly requested
 
 ### Accessibility
 - ARIA labels on all interactive UI elements (buttons, inputs, navigation, toggles)
@@ -24,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Desktop Buddy
 - Friendly error messages ("Oops.. could you take a look?") instead of raw errors
 - Video transition flickering fixed (requestVideoFrameCallback)
-- Honest response when tools unavailable ("I can only do that in the main chat — Open Chat →")
+- Honest response when tools unavailable ("I can only do that in the main chat - Open Chat →")
 
 ### Bug Fixes
 - Input field lock after chat deletion resolved
@@ -42,16 +109,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## **5.0.0** — The Desktop Companion Update (2026-03-02)
+## **5.0.0** - The Desktop Companion Update (2026-03-02)
 
 Skales v5.0.0 is the largest single release in the project's history. It ships the full Autopilot meta-agent, Voice Chat, a Custom Skill Ecosystem, Document Generation, Google Places, a Network Scanner, DLNA Casting, a brand-new **Desktop Buddy**, and a comprehensive v5 stability pass covering background polling crashes, Windows notification identity, mic guard on HTTP, cron scheduling, fluid identity, and multi-agent protocol.
 
 ---
 
-### **🦎 Desktop Buddy — Floating Mascot & Spotlight Quick Action**
+### **🦎 Desktop Buddy - Floating Mascot & Spotlight Quick Action**
 
 - **Transparent Electron Window**: A frameless, always-on-top `BrowserWindow` (400×500 px) positioned at the bottom-right corner of the primary display. No taskbar entry. No shadow. Fully draggable.
-- **Finite State Machine (FSM)**: The mascot cycles through four states using `onEnded` video events: **Intro** (random welcome clip on launch) → **Idle** (looping base animation) → **Action** (random shuffle-bag clip every 45–90 s, never repeats until all played) → back to **Idle**. Clicking the mascot triggers **Query** state with the Attentive animation looping.
+- **Finite State Machine (FSM)**: The mascot cycles through four states using `onEnded` video events: **Intro** (random welcome clip on launch) → **Idle** (looping base animation) → **Action** (random shuffle-bag clip every 45-90 s, never repeats until all played) → back to **Idle**. Clicking the mascot triggers **Query** state with the Attentive animation looping.
 - **Spotlight Quick Input**: Glassmorphism input field with backdrop blur, lime-green glow border, and animated loading spinner. Random Skales-flavoured placeholders rotate on each open. Press Enter to submit, Escape to dismiss.
 - **AI Response Bubble**: The AI reply is shown as a glassmorphism speech bubble with a pointer tail, auto-dismissed after 10 seconds (click to dismiss early). Replies are trimmed to 120 characters for readability.
 - **Silent Session DB Sync**: Every question and answer is silently appended to `DATA_DIR/buddy/YYYY-MM-DD.json` via the new `/api/buddy-memory` route. No UI feedback, no interruption.
@@ -60,20 +127,20 @@ Skales v5.0.0 is the largest single release in the project's history. It ships t
 
 ---
 
-### **⭐ Autopilot — The Autonomous Chief of Staff**
+### **⭐ Autopilot - The Autonomous Chief of Staff**
 
 - **🤖 Autopilot Dashboard**: Brand-new dedicated page (`/autopilot`) with four sections: Control Room, Execution Board, Identity & Memory, and Live History. Accessible via the gold-highlighted sidebar item.
 - **🎤 Deep-Dive Interview**: Multi-turn LLM interview that learns your primary goal, niche, budget, and constraints. Saves profile to `user_profile.json`. Starts with a randomised epic call-to-action button.
 - **🗺️ Master Plan Generation**: LLM generates a structured roadmap + task list from your profile. Tasks are pushed directly onto the Execution Board.
 - **🔁 OODA Self-Correction Loop**: If a sub-task discovers new context (dead website, changed pricing, failed dependency), Autopilot autonomously rewrites, deletes, or reprioritises pending tasks and logs the reason with a full audit trail (`replanReason` / `replannedAt`).
 - **🛡️ Human-in-the-Loop Approval Gates**: Tasks involving mass communications, file deletion, or financial transactions are auto-flagged (`requires_approval`). The runner pauses them until the user clicks Approve or Reject on the Execution Board.
-- **💰 API Cost Control**: Configurable max LLM calls per hour (`maxCallsPerHour`) and "pause after N tasks" (`pauseAfterTasks`) session counter. If a limit is hit, Autopilot pauses and waits for user acknowledgment — no silent API overspend.
+- **💰 API Cost Control**: Configurable max LLM calls per hour (`maxCallsPerHour`) and "pause after N tasks" (`pauseAfterTasks`) session counter. If a limit is hit, Autopilot pauses and waits for user acknowledgment - no silent API overspend.
 - **🔄 Anti-Loop Protocol**: Automatic retry tracking (`retryCount` / `maxRetries` = 3). After 3 consecutive failures a task is permanently `blocked` with a `blockedReason`, never retried again.
 - **🗞️ Daily Stand-Up Report**: LLM generates a first-person morning briefing from completed, blocked, and in-progress tasks, plus recent log entries.
-- **📋 Execution Board (Kanban)**: Full CRUD for tasks — Add, Edit, Cancel, Delete. Filter by state. Shows provider/model, re-plan badge, priority selector, and per-task approve/reject UI.
+- **📋 Execution Board (Kanban)**: Full CRUD for tasks - Add, Edit, Cancel, Delete. Filter by state. Shows provider/model, re-plan badge, priority selector, and per-task approve/reject UI.
 - **📟 Live History Terminal**: Dark terminal-style log viewer (`autopilot_logs.json`). Colour-coded by level (info/success/warning/error). Auto-polls every 8 seconds. Rolling 500-entry cap.
 
-### **🧠 Meta-Agent — Universal Skill Dispatcher**
+### **🧠 Meta-Agent - Universal Skill Dispatcher**
 
 - **🔌 Headless Skill Execution**: Autopilot is a meta-agent with programmatic, isolated access to every active skill. All background executions never touch the foreground UI, chat history, or active sessions.
 - **🤝 Internal Group Chat**: Spawns parallel LLM calls with different personas to reach a consensus on complex decisions.
@@ -87,11 +154,11 @@ Skales v5.0.0 is the largest single release in the project's history. It ships t
 - **Whisper Transcription**: Routes to Groq Whisper first, falls back to OpenAI Whisper. Endpoint: `/api/voice/transcribe`.
 - **TTS Playback**: ElevenLabs TTS with browser SpeechSynthesis fallback.
 
-### **🧩 Skill AI — Custom Skill Ecosystem**
+### **🧩 Skill AI - Custom Skill Ecosystem**
 
 - **ZIP Upload**: Upload a `.skill.zip` to install a completely new capability. Skales extracts, validates, and hot-reloads without restart.
-- **AI Scaffolding**: Describe a skill in plain language — Skales generates the full skill definition, handler code, and metadata automatically.
-- **Skills Page**: Manage installed custom skills — enable/disable, view metadata, delete. Isolated sandboxed execution.
+- **AI Scaffolding**: Describe a skill in plain language - Skales generates the full skill definition, handler code, and metadata automatically.
+- **Skills Page**: Manage installed custom skills - enable/disable, view metadata, delete. Isolated sandboxed execution.
 - **Security Warning**: All uploaded skills display a security advisory banner before activation.
 
 ### **📄 Documents Generation**
@@ -108,11 +175,11 @@ Skales v5.0.0 is the largest single release in the project's history. It ships t
 - **Geocoding**: Convert addresses to coordinates and vice versa.
 - **Directions**: Get turn-by-turn navigation data between two points.
 - **Photo URLs**: Retrieve Google Places photo references.
-- **Implementation**: Pure REST API fetch — no Google SDK, no native binaries.
+- **Implementation**: Pure REST API fetch - no Google SDK, no native binaries.
 
 ### **🌐 Network Scanner**
 
-- **LAN Discovery**: Scans all 254 addresses in the local subnet using raw `net.connect()` (pure Node.js — no nmap, no shell).
+- **LAN Discovery**: Scans all 254 addresses in the local subnet using raw `net.connect()` (pure Node.js - no nmap, no shell).
 - **Port Detection**: Reports open ports per device. Specifically detects other Skales instances on port 3000.
 - **API Endpoint**: `POST /api/network-scan` with configurable subnet and port list.
 
@@ -120,16 +187,16 @@ Skales v5.0.0 is the largest single release in the project's history. It ships t
 
 - **SSDP Discovery**: Finds DLNA/UPnP media renderers on the LAN using `node-ssdp`.
 - **AVTransport Control**: Play, Pause, Stop, Seek, and Set Volume on discovered devices via raw UPnP SOAP over HTTP.
-- **Zero native binaries**: Pure Node.js — no `castv2-client`, no `mdns`, no Chromecast SDK.
+- **Zero native binaries**: Pure Node.js - no `castv2-client`, no `mdns`, no Chromecast SDK.
 
-### **🔧 v5 Polish — Stability, Identity & Infrastructure**
+### **🔧 v5 Polish - Stability, Identity & Infrastructure**
 
 - **Proactive Check-In Cron Loop**: Added `tickCronJobs()` to the autonomous runner heartbeat. Cron jobs in `CRON_DIR` now automatically fire on their schedule without requiring a separate cron runner process. In-memory dedup (`cronLastRanAt` Map) prevents double-fires within 55 minutes.
 - **Voice Chat Mic Crash (HTTP Guard)**: Added `if (!navigator.mediaDevices?.getUserMedia)` guard in `startRecording()`. Users on plain HTTP now receive a clear error message instead of a silent crash: *"Microphone access requires a secure connection (HTTPS or localhost)."*
 - **Windows App User Model ID**: Added `app.setAppUserModelId('Skales')` for Windows before the single-instance lock. Toast notifications and taskbar entries now display "Skales" instead of the Electron app ID.
 - **Capabilities Registry v5.0.0**: Bumped version to `5.0.0`, corrected `twitter` and `safety_mode` `SkillDef` shapes, added 7 new v5 skills: `autopilot`, `custom_skills`, `places`, `documents`, `voice_chat`, `network_scanner`, `casting`.
 - **Mobile UI Polish**: Removed `"Talking to: "` prefix from the agent selector. Added `hidden md:inline` to New Session / Voice / History header button text so icons-only appear on mobile.
-- **Network & Devices Page** (`/network`): New full `'use client'` page with two tabs — **Network Scanner** (mode selector: info/skales/full, live device list with Skales-flag badge) and **DLNA Casting** (discover renderers, device picker, cast/pause/stop controls). Added `Network` icon and sidebar entry.
+- **Network & Devices Page** (`/network`): New full `'use client'` page with two tabs - **Network Scanner** (mode selector: info/skales/full, live device list with Skales-flag badge) and **DLNA Casting** (discover renderers, device picker, cast/pause/stop controls). Added `Network` icon and sidebar entry.
 - **Skill AI Enhancements**: Added `requiresApiKeys` toggle in the Custom Skills generation UI. Enabled `requiredSecrets` array in the generated skill manifest. Added a conditional UI Playbook block (CSS variables, Tailwind guidance, lucide-react tips) injected into the system prompt when `hasUI: true`.
 - **Fluid Identity System Prompt**: Rewrote `buildContext()` in `identity.ts` from markdown bullets to a flowing narrative wrapped in an HTML comment. Includes current time, who Skales is, who the user is, key learnings, and recent memory highlights.
 - **Agent-to-Agent Protocol** (`/api/agent-sync`): New route supporting `ping`, `handshake`, `delegate`, and `status` operations. Optional `SKALES_AGENT_SECRET` environment variable for bearer authentication. Task delegation via `createTask()`, status queries via `getTask()`.
@@ -137,27 +204,27 @@ Skales v5.0.0 is the largest single release in the project's history. It ships t
 ### **🛡️ Wake-Up Crash Fix (ErrorBoundary + Polling Guards)**
 
 - **Global ErrorBoundary** (`src/components/error-boundary.tsx`): React class component wrapping `<AppShell>`. Catches render errors via `getDerivedStateFromError`, async errors via `window.unhandledrejection` (ignores `AbortError`). Renders a Skales-themed fallback with 🦎 icon and "↺ Reload Skales" button.
-- **Polling Guards** — `document.hidden` check + `visibilitychange` listener added to:
+- **Polling Guards** - `document.hidden` check + `visibilitychange` listener added to:
   - `chat/page.tsx`: voice `setInterval`, video poll `setTimeout` chain (with `try/catch` retry), Telegram poll effect.
   - `notification-manager.tsx`: `checkInbox`, `checkCalendarReminders`, `runMemoryScan`.
   - `app-shell.tsx`: `checkEmail`.
 
 ### **📦 New Dependencies**
 
-- `xlsx` ^0.18.5 — Excel generation
-- `docx` ^8.5.0 — Word document generation
-- `pdf-lib` ^1.17.1 — PDF generation
-- `node-ssdp` ^4.0.1 — SSDP device discovery
+- `xlsx` ^0.18.5 - Excel generation
+- `docx` ^8.5.0 - Word document generation
+- `pdf-lib` ^1.17.1 - PDF generation
+- `node-ssdp` ^4.0.1 - SSDP device discovery
 
 ---
 
-## **4.0.0** — The Desktop Edition (February 2026)
+## **4.0.0** - The Desktop Edition (February 2026)
 
 ### **New Features**
 
-- **🖥️ Native Desktop App**: Skales is now a proper desktop application for Windows and macOS, built with Electron. Install it once — no terminal, no manual server starts, no browser required. Launch it like any other app.
+- **🖥️ Native Desktop App**: Skales is now a proper desktop application for Windows and macOS, built with Electron. Install it once - no terminal, no manual server starts, no browser required. Launch it like any other app.
 - **🔒 Single-Instance Lock**: Opening Skales a second time now focuses the existing window instead of spawning a duplicate process.
-- **⚡ Smart Port Detection**: If port 3000 is occupied, Skales automatically tries 3001 and 3002 before failing gracefully — no more manual port conflicts.
+- **⚡ Smart Port Detection**: If port 3000 is occupied, Skales automatically tries 3001 and 3002 before failing gracefully - no more manual port conflicts.
 - **🌅 Launch at Login**: New toggle in Settings → Desktop App to start Skales automatically when you log in. Works on both Windows (registry) and macOS (Login Items) via Electron's native API.
 - **🛑 Graceful Shutdown**: Skales now sends SIGTERM to the internal Next.js server on quit and waits up to 5 seconds for in-flight tasks to finish before force-killing. No more torn bot sessions or half-written data on exit.
 - **🪟 Hidden CMD Window (Windows)**: The internal Next.js server process no longer flashes a console window on Windows startup.
@@ -178,27 +245,27 @@ All new features implemented using Electron's built-in APIs (`app.requestSingleI
 
 ---
 
-## **3.5.0** — The Connections Update (February 2026)
+## **3.5.0** - The Connections Update (February 2026)
 
 ### **New Features**
 
-- **🐦 X / Twitter Integration**: Connect your Twitter/X account via OAuth 1.0a. Skales can post tweets, read your timeline, fetch @mentions, and reply to tweets — from the chat interface or via Telegram. Full CRUD with three permission modes: Send Only, Read & Write, Full Autonomous. API keys stored securely in `.skales-data/integrations/`.
+- **🐦 X / Twitter Integration**: Connect your Twitter/X account via OAuth 1.0a. Skales can post tweets, read your timeline, fetch @mentions, and reply to tweets - from the chat interface or via Telegram. Full CRUD with three permission modes: Send Only, Read & Write, Full Autonomous. API keys stored securely in `.skales-data/integrations/`.
 - **🛡️ Safety Mode**: Three-level command safety system (Safe / Advanced / Unrestricted). Safe mode blocks destructive shell commands (rm -rf, format, dd, fork bombs, etc.) outright. Advanced mode pauses dangerous commands and asks for Approve/Reject. Unrestricted mode disables all blocking for power users.
 - **📱 OpenRouter Telegram Vision Fix**: Image uploads via Telegram now work correctly when OpenRouter is the active provider. Skales auto-detects non-vision-capable models and falls back to `openai/gpt-4o-mini` for vision tasks.
 - **🔗 Secure Clipboard Fallback**: Clipboard copy now works on HTTP/Tailscale connections (not just HTTPS) by falling back to a textarea-based execCommand copy when the Clipboard API is unavailable.
 
 ### **Bug Fixes & Improvements**
 
-- Fixed `crypto.randomUUID()` breaking on HTTP connections (Tailscale/LAN IPs) — replaced with a secure Math.random fallback across all platforms.
+- Fixed `crypto.randomUUID()` breaking on HTTP connections (Tailscale/LAN IPs) - replaced with a secure Math.random fallback across all platforms.
 - Fixed mobile input bar disappearing behind the keyboard on iOS/Android.
 - Fixed chat scroll-jump when new messages arrive while scrolled up.
 - Fixed hydration mismatch on mobile chat page caused by SSR/client render differences.
 - Fixed Telegram memory wordcloud rendering edge case.
 - Fixed Playwright cookie banner auto-dismiss not triggering on some pages.
-- Improved proactive AI personality — Skales now occasionally initiates conversation based on context.
+- Improved proactive AI personality - Skales now occasionally initiates conversation based on context.
 - Lio AI workspace fixes: invisible projects now visible, chat history preserved across sessions, failed build status resolved.
 - Email: Trusted Address Book feature, HTML email rendering, IMAP namespace fix, timezone normalization for event timestamps.
-- ElevenLabs TTS fallback chain improved — now gracefully falls back to Google TTS on API errors.
+- ElevenLabs TTS fallback chain improved - now gracefully falls back to Google TTS on API errors.
 - macOS: `uninstall.sh` renamed to `uninstall.command` for consistency with all other launcher scripts.
 - Setup scripts: improved admin rights handling, clearer UX messages, better error reporting.
 
@@ -208,11 +275,11 @@ All new features implemented without adding external packages.
 
 ---
 
-## **3.0.0** — The Power Update (February 2026)
+## **3.0.0** - The Power Update (February 2026)
 
 ### **New Features**
 
-- **🦁 Lio AI — Code Builder**: Multi-AI code builder using Architect + Reviewer + Builder model pipeline. Build entire apps, websites, and scripts from plain-language descriptions. Navigate to the Code tab to use it.
+- **🦁 Lio AI - Code Builder**: Multi-AI code builder using Architect + Reviewer + Builder model pipeline. Build entire apps, websites, and scripts from plain-language descriptions. Navigate to the Code tab to use it.
 - **🌐 Browser Control**: Headless Chromium automation via Playwright. Navigate, click, type, scrape, and screenshot any website. Requires Vision Provider.
 - **👁️ Vision Provider**: Configurable vision model for image analysis, desktop screenshots, and Browser Control. Supports Google, OpenAI, Anthropic, OpenRouter, Groq.
 - **🔄 Auto-Update System**: One-click update download and installation with progress tracking, automatic backup, and rollback on failure.
@@ -223,12 +290,12 @@ All new features implemented without adding external packages.
 
 - Fixed Telegram image analysis routing (no longer triggers duplicate reasoning loops)
 - Browser Control now correctly detects Playwright installation status via filesystem check
-- Lio AI time estimates now show realistic values (2–7 min) instead of utopian numbers
+- Lio AI time estimates now show realistic values (2-7 min) instead of utopian numbers
 - Vision provider label in chat correctly shows active provider name
 
 ---
 
-## **2.0.0** — 2026-02-23
+## **2.0.0** - 2026-02-23
 
 ### **✨ Added**
 
@@ -236,9 +303,9 @@ All new features implemented without adding external packages.
 
 * **Google Calendar Skill:** Read, create, edit, and delete Google Calendar events via OAuth. Skales can check your schedule, add events with reminders, and surface upcoming events as context in every conversation. Configurable in Settings → Skills → Google Calendar.
 
-* **Gmail / Email Skill:** Full IMAP/SMTP email management — fetch inbox, read threads, compose, reply, search, move, and delete emails. HTML-to-text conversion for clean LLM display. Approve/reject safety gates for send and delete operations. New email notifications appear as a banner on the dashboard. Configurable in Settings → Skills → Email.
+* **Gmail / Email Skill:** Full IMAP/SMTP email management - fetch inbox, read threads, compose, reply, search, move, and delete emails. HTML-to-text conversion for clean LLM display. Approve/reject safety gates for send and delete operations. New email notifications appear as a banner on the dashboard. Configurable in Settings → Skills → Email.
 
-* **Bi-Temporal Memory System:** Automatic 90-minute memory scan extracts user preferences, facts, and action items from recent conversations. Memories carry both a valid-time (when the fact is true) and a transaction-time (when it was recorded). Relevant memories are injected as context before every AI response using local keyword extraction — no external embedding API required.
+* **Bi-Temporal Memory System:** Automatic 90-minute memory scan extracts user preferences, facts, and action items from recent conversations. Memories carry both a valid-time (when the fact is true) and a transaction-time (when it was recorded). Relevant memories are injected as context before every AI response using local keyword extraction - no external embedding API required.
 
 * **Telegram Admin Interface:** Remote-control Skales from Telegram using inline keyboard menus. Switch providers, models, and personas; toggle skills on/off; view real-time status; export conversation data. Admin-only access with PIN protection.
 
@@ -248,7 +315,7 @@ All new features implemented without adding external packages.
 
 * **Autonomous Execute Mode:** An opt-in mode where Skales autonomously handles complex multi-step tasks. Presents a plan for approval, then executes step-by-step with progress updates and approve/reject checkpoints for critical actions (file writes, email sends, deletions). Available via chat and Telegram.
 
-* **Website & Search Security Blacklists:** Domain blocklist prevents Skales from fetching dangerous or inappropriate websites. Buzzword filter blocks harmful search queries before they reach the search API. Both are toggle-controlled in Settings → Security with curated default lists included. Fully customizable — add or remove entries from the UI.
+* **Website & Search Security Blacklists:** Domain blocklist prevents Skales from fetching dangerous or inappropriate websites. Buzzword filter blocks harmful search queries before they reach the search API. Both are toggle-controlled in Settings → Security with curated default lists included. Fully customizable - add or remove entries from the UI.
 
 * **Responsive UI:** Full mobile and tablet support across the entire dashboard. Collapsible sidebar with overlay, mobile header, touch-optimized controls, and proper viewport handling.
 
@@ -265,16 +332,16 @@ All new features implemented without adding external packages.
 
 * Fixed message loss when sending messages while Skales was already processing a response (all messages are now safely queued).
 * Fixed security blacklist toggle switches not animating (invalid Tailwind class `translate-x-4.5` replaced with `translate-x-[18px]`).
-* Fixed IMAP MOVE operation fallback — now correctly uses COPY + addFlags(\\Deleted) + expunge on servers that don't support the MOVE extension.
+* Fixed IMAP MOVE operation fallback - now correctly uses COPY + addFlags(\\Deleted) + expunge on servers that don't support the MOVE extension.
 
 ### **📦 New Dependencies**
 
-* `nodemailer` ^6.9.14 — SMTP email sending (compose, reply, forward)
-* `imap-simple` ^5.1.0 — IMAP email fetching, search, flag management, folder operations
+* `nodemailer` ^6.9.14 - SMTP email sending (compose, reply, forward)
+* `imap-simple` ^5.1.0 - IMAP email fetching, search, flag management, folder operations
 
 ---
 
-## **0.9.0** — 2026-02-19**
+## **0.9.0** - 2026-02-19**
 
 ### **✨ Added**
 

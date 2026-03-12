@@ -2,7 +2,7 @@
 
 **Local AI that runs on your machine. No Docker. No YAML. No cloud.**
 
-Skales is a self-hosted AI assistant with a full web dashboard. It runs as a Node.js server on your computer and connects to your choice of AI provider — OpenRouter, Ollama, or any OpenAI-compatible API.
+Skales is a self-hosted AI assistant with a full web dashboard. It runs as a Node.js server on your computer and connects to your choice of AI provider - OpenRouter, Ollama, or any OpenAI-compatible API.
 
 ---
 
@@ -10,7 +10,7 @@ Skales is a self-hosted AI assistant with a full web dashboard. It runs as a Nod
 
 | Feature | Description |
 |---|---|
-| 🦁 Lio AI | Autonomous code-generation agent — scaffolds, writes files, runs commands |
+| 🦁 Lio AI | Autonomous code-generation agent - scaffolds, writes files, runs commands |
 | 🌐 Browser Control | Playwright-powered web browsing, scraping, and form filling |
 | 👁️ Vision Provider | Screenshot tool + vision model analysis, Telegram forwarding |
 | 🔄 Auto-Update | Dashboard banner + `/update` page with live download progress |
@@ -66,11 +66,11 @@ All configuration is done through the dashboard UI at `/settings`. No `.env` fil
 
 Key settings:
 
-- **AI Provider** — OpenRouter API key, Ollama URL, or custom OpenAI-compatible endpoint
-- **Vision Provider** — Separate provider for vision/screenshot analysis
-- **Telegram** — Bot token + paired chat ID for notifications and forwarding
-- **Email** — SMTP/IMAP credentials for email send/receive
-- **Skills** — Enable/disable individual capabilities (Browser Control, Lio AI, Group Chat, etc.)
+- **AI Provider** - OpenRouter API key, Ollama URL, or custom OpenAI-compatible endpoint
+- **Vision Provider** - Separate provider for vision/screenshot analysis
+- **Telegram** - Bot token + paired chat ID for notifications and forwarding
+- **Email** - SMTP/IMAP credentials for email send/receive
+- **Skills** - Enable/disable individual capabilities (Browser Control, Lio AI, Group Chat, etc.)
 
 ---
 
@@ -92,6 +92,6 @@ Skills are optional capability modules that can be toggled on/off from the `/ski
 
 ## License
 
-Business Source License 1.1 (BSL 1.1) — © Mario Simic
+Business Source License 1.1 (BSL 1.1) - © Mario Simic
 
 See `LICENSE` for full terms.

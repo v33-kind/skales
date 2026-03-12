@@ -49,7 +49,7 @@ export interface WhatsAppContact {
 // ─── Status / Connection ──────────────────────────────────────
 
 export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {
-    noStore(); // Never cache — real-time bot status must always be fresh
+    noStore(); // Never cache - real-time bot status must always be fresh
     ensureDirs();
     // First try the live bot
     try {
@@ -77,7 +77,7 @@ export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {
 }
 
 export async function isBotRunning(): Promise<boolean> {
-    noStore(); // Never cache — real-time check
+    noStore(); // Never cache - real-time check
     try {
         const res = await fetch(`${BOT_URL}/status`, { cache: 'no-store', signal: AbortSignal.timeout(1500) });
         return res.ok;
@@ -235,7 +235,7 @@ export async function saveWhatsAppContact(
         const phone = contact.phone.replace(/[^0-9]/g, '');
 
         if (!phone || phone.length < 7) {
-            return { success: false, error: 'Invalid phone number — use international format (e.g. 4917612345678)' };
+            return { success: false, error: 'Invalid phone number - use international format (e.g. 4917612345678)' };
         }
 
         const existing = contacts.find(c => c.phone === phone);
@@ -292,7 +292,7 @@ export interface WhatsAppSignatureConfig {
 }
 
 const SIGNATURE_MAX_LENGTH = 50;
-const DEFAULT_SIGNATURE = '✨ Skales — your assistant';
+const DEFAULT_SIGNATURE = '✨ Skales - your assistant';
 
 /** Strip anything that could be HTML/code/injection */
 function sanitizeSignature(raw: string): string {
@@ -440,7 +440,7 @@ export async function setWhatsAppMode(mode: WhatsAppMode): Promise<{ success: bo
         // Notify bot to reload mode if it's running
         try {
             await fetch(`${BOT_URL}/reload-mode`, { method: 'POST', signal: AbortSignal.timeout(1500) });
-        } catch { /* bot not running — mode will be picked up on next start */ }
+        } catch { /* bot not running - mode will be picked up on next start */ }
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };

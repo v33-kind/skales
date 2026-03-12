@@ -7,6 +7,7 @@ import {
 } from '@/actions/identity';
 import { createCronJob, deleteCronJob, listCronJobs, toggleCronJob } from '@/actions/tasks';
 import { getExtractedMemories, removeExtractedMemory, triggerMemoryScan, type ExtractedMemory } from '@/actions/memories';
+import { useTranslation } from '@/lib/i18n';
 
 import {
     Brain, Sparkles, User, Trash2, RefreshCw, Save, AlertTriangle,
@@ -22,6 +23,7 @@ const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
 const AVATAR_EMOJIS = ['👤', '👨', '👩', '🧑', '👨‍💻', '👩‍💻', '👨‍🎨', '👩‍🎨', '🚀', '🦸', '🧙', '🤖', '🎭', '🐉', '🦊', '🐺', '🦁', '🐸', '🌟', '🔥', '💎', '⚡'];
 
 export default function MemoryPage() {
+    const { t } = useTranslation();
     const [shortTermMemories, setShortTermMemories] = useState<Array<{ filename: string; data: any }>>([]);
     const [longTermMemories, setLongTermMemories] = useState<Array<{ filename: string; data: any }>>([]);
     const [episodicMemories, setEpisodicMemories] = useState<Array<{ filename: string; data: any }>>([]);
@@ -261,7 +263,7 @@ export default function MemoryPage() {
     const handleDisableIdentityCron = async () => {
         if (!identityCronId) return;
         const willEnable = !identityCronEnabled;
-        if (!willEnable && !confirm('Disable Identity Maintenance? Your profile will no longer be updated automatically.')) return;
+        if (!willEnable && !confirm(t('memory.identity.disableConfirm'))) return;
         try {
             await toggleCronJob(identityCronId, willEnable);
             setIdentityCronEnabled(willEnable);
@@ -286,10 +288,10 @@ export default function MemoryPage() {
             <div className="mb-8 animate-fadeIn">
                 <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
                     <Icon icon={Brain} size={24} className="text-purple-500" />
-                    Memory & Identity
+                    {t('memory.title')}
                 </h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                    Manage what Skales knows about you and your context
+                    {t('memory.subtitle')}
                 </p>
             </div>
 
@@ -298,9 +300,9 @@ export default function MemoryPage() {
                 {/* Stats Bar */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
-                        { label: 'Short-Term', value: stats.shortTerm, icon: Clock, color: 'text-blue-500' },
-                        { label: 'Long-Term', value: stats.longTerm, icon: Database, color: 'text-purple-500' },
-                        { label: 'Episodic', value: stats.episodic, icon: Zap, color: 'text-amber-500' },
+                        { label: t('memory.stats.shortTerm'), value: stats.shortTerm, icon: Clock, color: 'text-blue-500' },
+                        { label: t('memory.stats.longTerm'), value: stats.longTerm, icon: Database, color: 'text-purple-500' },
+                        { label: t('memory.stats.episodic'), value: stats.episodic, icon: Zap, color: 'text-amber-500' },
                     ].map(stat => (
                         <div key={stat.label} className="rounded-2xl border p-4 text-center"
                             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -316,10 +318,10 @@ export default function MemoryPage() {
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Icon icon={Sparkles} size={20} className="text-lime-400" />
-                            Memory Topics
+                            {t('memory.topics.title')}
                         </h2>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-                            Most frequent topics across all stored memories
+                            {t('memory.topics.subtitle')}
                         </p>
                         <div className="flex flex-wrap gap-2 items-center justify-center min-h-[80px]">
                             {(() => {
@@ -357,21 +359,21 @@ export default function MemoryPage() {
                 <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={User} size={20} className="text-lime-500" />
-                        Your Profile
+                        {t('memory.profile.title')}
                     </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         {/* Avatar Emoji Picker */}
                         <div>
                             <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-muted)' }}>
-                                Avatar
+                                {t('memory.profile.avatar')}
                             </label>
                             <div className="relative inline-block">
                                 <button
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                     className="w-14 h-14 rounded-2xl text-3xl border-2 flex items-center justify-center transition-all hover:border-lime-500"
                                     style={{ borderColor: showEmojiPicker ? '#84cc16' : 'var(--border)', background: 'var(--background)' }}
-                                    title="Click to change avatar"
+                                    title={t('memory.profile.avatarTooltip')}
                                 >
                                     {emoji}
                                 </button>
@@ -392,7 +394,7 @@ export default function MemoryPage() {
                                         </div>
                                         <div className="border-t pt-2" style={{ borderColor: 'var(--border)' }}>
                                             <input
-                                                placeholder="Or type a custom emoji..."
+                                                placeholder={t('memory.profile.customEmoji')}
                                                 className="w-full px-2 py-1.5 rounded-lg border text-sm"
                                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                                 onChange={e => { if (e.target.value) setEmoji(e.target.value); }}
@@ -401,15 +403,15 @@ export default function MemoryPage() {
                                     </div>
                                 )}
                             </div>
-                            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Click to change avatar</p>
+                            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{t('memory.profile.avatarTooltip')}</p>
                         </div>
 
                         <div>
-                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Your Name</label>
+                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('memory.profile.name')}</label>
                             <input
                                 value={name}
                                 onChange={e => setName(e.target.value)}
-                                placeholder="How should Skales call you?"
+                                placeholder={t('memory.profile.nameLabel')}
                                 className="w-full px-3 py-2 rounded-lg border text-sm"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
@@ -419,52 +421,52 @@ export default function MemoryPage() {
                     <div className="space-y-3 mb-4">
                         <div>
                             <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>
-                                AI Summary of You
+                                {t('memory.profile.aiSummaryLabel')}
                                 <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase" style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa' }}>
-                                    Auto-updated by Identity CronJob
+                                    {t('memory.profile.aiSummaryBadge')}
                                 </span>
                             </label>
                             <textarea
                                 value={content}
                                 onChange={e => setContent(e.target.value)}
-                                placeholder="Skales will auto-fill this with a summary of who you are based on your conversations..."
+                                placeholder={t('memory.profile.aiSummaryPlaceholder')}
                                 rows={3}
                                 className="w-full px-3 py-2 rounded-lg border text-sm resize-none"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
                             <p className="text-[10px] mt-1 flex items-center gap-1" style={{ color: identityCronExists ? '#a78bfa' : 'var(--text-muted)' }}>
                                 {identityCronExists
-                                    ? <><Icon icon={Sparkles} size={10} /> Auto-updates nightly via Identity Maintenance</>
-                                    : '⚠️ Enable Identity Maintenance below for automatic nightly updates'
+                                    ? <><Icon icon={Sparkles} size={10} /> {t('memory.profile.aiSummaryAutoUpdate')}</>
+                                    : t('memory.profile.aiSummaryWarning')
                                 }
                             </p>
                         </div>
                         <div>
-                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Occupation</label>
+                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('memory.profile.occupation')}</label>
                             <input
                                 value={occupation}
                                 onChange={e => setOccupation(e.target.value)}
-                                placeholder="e.g. Software Engineer, Entrepreneur..."
+                                placeholder={t('memory.profile.occupationPlaceholder')}
                                 className="w-full px-3 py-2 rounded-lg border text-sm"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Interests (comma-separated)</label>
+                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('memory.profile.interests')}</label>
                             <input
                                 value={interests}
                                 onChange={e => setInterests(e.target.value)}
-                                placeholder="tech, music, entrepreneurship..."
+                                placeholder={t('memory.profile.interestsPlaceholder')}
                                 className="w-full px-3 py-2 rounded-lg border text-sm"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Goals (comma-separated)</label>
+                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('memory.profile.goals')}</label>
                             <input
                                 value={goals}
                                 onChange={e => setGoals(e.target.value)}
-                                placeholder="build a startup, learn Spanish..."
+                                placeholder={t('memory.profile.goalsPlaceholder')}
                                 className="w-full px-3 py-2 rounded-lg border text-sm"
                                 style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                             />
@@ -477,10 +479,10 @@ export default function MemoryPage() {
                         className="px-5 py-2.5 bg-lime-500 hover:bg-lime-400 text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-lime-500/20 disabled:opacity-50"
                     >
                         {profileSaved
-                            ? <><Icon icon={Check} size={16} /> Saved!</>
+                            ? <><Icon icon={Check} size={16} /> {t('memory.profile.saved')}</>
                             : saving
-                                ? <><Icon icon={RefreshCw} size={16} className="animate-spin" /> Saving...</>
-                                : <><Icon icon={Save} size={16} /> Save Profile</>
+                                ? <><Icon icon={RefreshCw} size={16} className="animate-spin" /> {t('memory.profile.saving')}</>
+                                : <><Icon icon={Save} size={16} /> {t('memory.profile.saveButton')}</>
                         }
                     </button>
                 </section>
@@ -489,10 +491,10 @@ export default function MemoryPage() {
                 <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <h2 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={Sparkles} size={20} className="text-purple-500" />
-                        Identity Maintenance
+                        {t('memory.identity.title')}
                     </h2>
                     <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                        Automatically analyze your conversations nightly and update your profile summary.
+                        {t('memory.identity.description')}
                     </p>
                     {identityCronExists ? (
                         <div className="flex items-center justify-between gap-3 p-3 rounded-xl"
@@ -508,12 +510,12 @@ export default function MemoryPage() {
                                 />
                                 <div>
                                     <p className={`text-sm font-medium ${identityCronEnabled ? 'text-green-500' : 'text-red-400'}`}>
-                                        {identityCronEnabled ? 'Identity CronJob is active' : 'Identity CronJob is disabled'}
+                                        {identityCronEnabled ? t('memory.identity.cronActive') : t('memory.identity.cronDisabled')}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                         {identityCronEnabled
-                                            ? 'Runs nightly at 3 AM — updates your AI Summary automatically'
-                                            : 'Re-enable to resume automatic nightly profile updates'}
+                                            ? t('memory.identity.cronActiveDesc')
+                                            : t('memory.identity.cronDisabledDesc')}
                                     </p>
                                 </div>
                             </div>
@@ -526,8 +528,8 @@ export default function MemoryPage() {
                                 }
                             >
                                 {identityCronEnabled
-                                    ? <><Icon icon={X} size={12} className="inline mr-1" />Disable</>
-                                    : <><Icon icon={Check} size={12} className="inline mr-1" />Enable</>
+                                    ? <><Icon icon={X} size={12} className="inline mr-1" />{t('memory.identity.disable')}</>
+                                    : <><Icon icon={Check} size={12} className="inline mr-1" />{t('memory.identity.enable')}</>
                                 }
                             </button>
                         </div>
@@ -538,7 +540,7 @@ export default function MemoryPage() {
                             style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)', background: 'var(--background)' }}
                         >
                             <Icon icon={Plus} size={16} />
-                            Enable Identity Maintenance (runs nightly at 3 AM)
+                            {t('memory.identity.enableButton')}
                         </button>
                     )}
                 </section>
@@ -548,19 +550,19 @@ export default function MemoryPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Icon icon={Clock} size={20} className="text-blue-500" />
-                            Short-Term Memory ({stats.shortTerm})
+                            {t('memory.shortTerm.sectionTitle', { count: stats.shortTerm })}
                         </h2>
                         {stats.shortTerm > 0 && (
                             <button
                                 onClick={() => handleClearMemories('short-term')}
                                 className="text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors border border-red-500/20"
                             >
-                                Clear All
+                                {t('memory.memory.clearAll')}
                             </button>
                         )}
                     </div>
                     {shortTermMemories.length === 0 ? (
-                        <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No short-term memories yet</p>
+                        <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>{t('memory.shortTerm.empty')}</p>
                     ) : (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {shortTermMemories.map(({ filename, data }) => (
@@ -577,7 +579,7 @@ export default function MemoryPage() {
                                     <button
                                         onClick={() => handleDeleteMemory('short-term', filename)}
                                         className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-red-500 transition-all flex-shrink-0"
-                                        title="Delete this memory"
+                                        title={t('memory.memory.deleteTooltip')}
                                     >
                                         <Icon icon={Trash2} size={14} />
                                     </button>
@@ -591,10 +593,10 @@ export default function MemoryPage() {
                 <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <h2 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={Edit3} size={20} className="text-pink-500" />
-                        Knowledge & Facts
+                        {t('memory.facts.title')}
                     </h2>
                     <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                        Specific facts Skales knows about you (e.g. "WiFi Password", "Door Code"). You can edit these manually.
+                        {t('memory.facts.description')}
                     </p>
 
                     <div className="space-y-3">
@@ -617,11 +619,11 @@ export default function MemoryPage() {
                                                 // No, let's just use the server action directly if we could, but we can't from client easily without exposing it.
                                                 // Workaround: We'll implement a 'deleteFact' action next time. 
                                                 // For now, let's just show them. Editing comes later.
-                                                alert("Deletion not yet supported in UI. Ask Skales to 'forget the fact " + key + "' in chat.");
+                                                alert(t('memory.facts.deleteNotSupported', { key }));
                                             }
                                         }}
                                         className="opacity-0 group-hover:opacity-50 hover:opacity-100 p-2 text-red-500"
-                                        title="Delete (Ask Skales in chat for now)"
+                                        title={t('memory.facts.deleteTooltip')}
                                     >
                                         <Icon icon={Trash2} size={16} />
                                     </button>
@@ -629,7 +631,7 @@ export default function MemoryPage() {
                             ))
                         ) : (
                             <p className="text-sm text-center py-4 italic" style={{ color: 'var(--text-muted)' }}>
-                                No specific facts stored yet. Tell Skales: "Remember that my door code is 1234".
+                                {t('memory.facts.empty')}
                             </p>
                         )}
                     </div>
@@ -638,11 +640,11 @@ export default function MemoryPage() {
                     <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                         <details className="group">
                             <summary className="flex items-center gap-2 text-xs font-medium cursor-pointer transition-colors hover:text-lime-500" style={{ color: 'var(--text-muted)' }}>
-                                <Icon icon={Plus} size={14} /> Add New Fact
+                                <Icon icon={Plus} size={14} /> {t('memory.facts.addNew')}
                             </summary>
                             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <input id="newFactKey" placeholder="Key (e.g. WiFi)" className="px-3 py-2 rounded-lg border text-sm" style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
-                                <input id="newFactValue" placeholder="Value (e.g. abcd-1234)" className="px-3 py-2 rounded-lg border text-sm" style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                                <input id="newFactKey" placeholder={t('memory.facts.keyPlaceholder')} className="px-3 py-2 rounded-lg border text-sm" style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                                <input id="newFactValue" placeholder={t('memory.facts.valuePlaceholder')} className="px-3 py-2 rounded-lg border text-sm" style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                                 <button
                                     onClick={() => {
                                         const k = (document.getElementById('newFactKey') as HTMLInputElement).value;
@@ -660,7 +662,7 @@ export default function MemoryPage() {
                                     }}
                                     className="px-4 py-2 bg-lime-500/10 text-lime-500 hover:bg-lime-500 hover:text-black font-medium rounded-lg text-xs transition-colors"
                                 >
-                                    Save Fact
+                                    {t('memory.facts.save')}
                                 </button>
                             </div>
                         </details>
@@ -672,19 +674,19 @@ export default function MemoryPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Icon icon={Database} size={20} className="text-purple-500" />
-                            Long-Term Memory ({stats.longTerm})
+                            {t('memory.longTerm.sectionTitle', { count: stats.longTerm })}
                         </h2>
                         {stats.longTerm > 0 && (
                             <button
                                 onClick={() => handleClearMemories('long-term')}
                                 className="text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors border border-red-500/20"
                             >
-                                Clear All
+                                {t('memory.memory.clearAll')}
                             </button>
                         )}
                     </div>
                     {longTermMemories.length === 0 ? (
-                        <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No long-term memories yet</p>
+                        <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>{t('memory.longTerm.empty')}</p>
                     ) : (
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {longTermMemories.map(({ filename, data }) => (
@@ -701,7 +703,7 @@ export default function MemoryPage() {
                                     <button
                                         onClick={() => handleDeleteMemory('long-term', filename)}
                                         className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-red-500 transition-all flex-shrink-0"
-                                        title="Delete this memory"
+                                        title={t('memory.memory.deleteTooltip')}
                                     >
                                         <Icon icon={Trash2} size={14} />
                                     </button>
@@ -717,14 +719,14 @@ export default function MemoryPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Icon icon={Zap} size={20} className="text-amber-500" />
-                            Episodic Memory ({stats.episodic})
+                            {t('memory.episodic.sectionTitle', { count: stats.episodic })}
                         </h2>
                         {stats.episodic > 0 && (
                             <button
                                 onClick={() => handleClearMemories('episodic')}
                                 className="text-xs px-3 py-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors border border-red-500/20"
                             >
-                                Clear All
+                                {t('memory.memory.clearAll')}
                             </button>
                         )}
                     </div>
@@ -743,7 +745,7 @@ export default function MemoryPage() {
                                 <button
                                     onClick={() => handleDeleteMemory('episodic' as any, filename)}
                                     className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-red-500 transition-all flex-shrink-0"
-                                    title="Delete this memory"
+                                    title={t('memory.memory.deleteTooltip')}
                                 >
                                     <Icon icon={Trash2} size={14} />
                                 </button>
@@ -759,14 +761,14 @@ export default function MemoryPage() {
                         <div>
                             <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                 <Icon icon={ScanSearch} size={20} className="text-lime-400" />
-                                Auto-Extracted Memories
+                                {t('memory.extracted.autoTitle')}
                                 <span className="text-xs font-normal px-2 py-0.5 rounded-full ml-1"
                                     style={{ background: 'rgba(132,204,22,0.1)', color: 'var(--text-muted)' }}>
                                     {extractedMemories.length}
                                 </span>
                             </h2>
                             <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                Automatically learned from your conversations. Used to enrich Skales responses.
+                                {t('memory.extracted.autoDesc')}
                             </p>
                         </div>
                         <button
@@ -774,10 +776,10 @@ export default function MemoryPage() {
                             disabled={scanRunning}
                             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all disabled:opacity-50"
                             style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                            title="Scan conversations now"
+                            title={t('memory.scanning.title')}
                         >
                             <Icon icon={scanRunning ? RefreshCw : ScanSearch} size={13} className={scanRunning ? 'animate-spin' : ''} />
-                            Scan Now
+                            {t('memory.extracted.scanNow')}
                         </button>
                     </div>
                     {scanResult && (
@@ -788,10 +790,10 @@ export default function MemoryPage() {
                     )}
                     {extractedMemories.length === 0 ? (
                         <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>
-                            No auto-extracted memories yet. Memories are extracted every 90 min from your conversations.
+                            {t('memory.extracted.autoEmpty')}
                             <br />
                             <button onClick={handleRunScan} disabled={scanRunning} className="underline mt-1 hover:opacity-70 transition-opacity">
-                                Run a scan now
+                                {t('memory.extracted.runScan')}
                             </button>
                         </p>
                     ) : (
@@ -825,7 +827,7 @@ export default function MemoryPage() {
                                     <button
                                         onClick={() => handleDeleteExtractedMemory(mem.id)}
                                         className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-500/10 text-red-500 transition-all flex-shrink-0"
-                                        title="Delete this memory"
+                                        title={t('memory.memory.deleteTooltip')}
                                     >
                                         <Icon icon={Trash2} size={14} />
                                     </button>
@@ -839,14 +841,14 @@ export default function MemoryPage() {
                 <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'rgba(239,68,68,0.2)' }}>
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-500">
                         <Icon icon={AlertTriangle} size={20} />
-                        Danger Zone
+                        {t('memory.dangerZone.title')}
                     </h2>
                     <button
                         onClick={() => handleClearMemories('all')}
                         className="px-4 py-2 rounded-xl text-sm font-bold border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all"
                     >
                         <Icon icon={Trash2} size={14} className="inline mr-1" />
-                        Delete All Memories
+                        {t('memory.dangerZone.deleteAll')}
                     </button>
                 </section>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { toggleSkill, loadSkills } from '@/actions/skills';
 import { Puzzle, Zap, Lock, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -26,13 +27,13 @@ const SKILL_DEFS: SkillDef[] = [
     // ── Communication ──────────────────────────────────────────
     {
         id: 'group_chat', name: 'Group Chat (Multi-AI)', emoji: '👥', category: 'Communication',
-        description: 'Start a multi-model discussion — up to 4 AI agents with unique personas debate any topic.',
+        description: 'Start a multi-model discussion - up to 4 AI agents with unique personas debate any topic.',
         detail: 'Configure participants from any provider (OpenAI, Anthropic, Google, OpenRouter, Groq, and more), each with their own name and persona (e.g. "The Skeptic", "The Visionary"). Models take turns in structured rounds. Perfect for getting diverse AI perspectives, devil\'s-advocate feedback, or creative brainstorming. Configure participants in Settings → Group Chat.',
         requiresKey: 'Any LLM provider API key', keyLabel: 'Settings → AI Providers',
     },
     {
         id: 'voice_chat', name: 'Voice Chat Mode', emoji: '🎙️', category: 'Communication',
-        description: 'Speak to Skales and hear responses aloud — hands-free conversation in the browser.',
+        description: 'Speak to Skales and hear responses aloud - hands-free conversation in the browser.',
         detail: 'Adds a Voice Chat toggle to the chat header. Press the mic button to start recording. Your voice is transcribed via Groq Whisper (or OpenAI Whisper if Groq is unavailable). Responses are spoken back using ElevenLabs or the built-in TTS engine. Both turns are saved to chat history.',
         requiresKey: 'Groq or OpenAI API key (for Whisper)', keyLabel: 'Settings → AI Providers',
     },
@@ -44,14 +45,14 @@ const SKILL_DEFS: SkillDef[] = [
     },
     {
         id: 'telegram', name: 'Telegram Bot', emoji: '✈️', category: 'Communication',
-        description: 'Full two-way chat via Telegram — text, voice, images, and file attachments.',
+        description: 'Full two-way chat via Telegram - text, voice, images, and file attachments.',
         detail: 'Create a bot via @BotFather, paste your token in Settings, and Skales appears in Telegram. Supports text, voice transcription, images, GIFs, and file uploads. Always-on background listener.',
         requiresKey: 'Telegram Bot Token', keyLabel: 'Settings → Telegram',
     },
     {
         id: 'whatsapp', name: 'WhatsApp', emoji: '📱', category: 'Communication',
         description: 'Receive and reply to WhatsApp messages via approved contacts.',
-        detail: 'Powered by whatsapp-web.js — no official API required. Scan a QR code to link your WhatsApp account. Responds only to approved contacts for privacy.',
+        detail: 'Powered by whatsapp-web.js - no official API required. Scan a QR code to link your WhatsApp account. Responds only to approved contacts for privacy.',
         requiresKey: 'WhatsApp QR scan', keyLabel: 'Settings → WhatsApp',
     },
     {
@@ -62,7 +63,7 @@ const SKILL_DEFS: SkillDef[] = [
     },
     {
         id: 'twitter', name: 'X / Twitter', emoji: '𝕏', category: 'Communication',
-        description: 'Post tweets, read your timeline, fetch mentions, and reply — from chat or Telegram.',
+        description: 'Post tweets, read your timeline, fetch mentions, and reply - from chat or Telegram.',
         detail: 'Connect via OAuth 1.0a (API Key + Access Token). Three modes: Send Only (post & reply), Read & Write (also reads timeline & mentions), Full Autonomous (Skales posts proactively). API credentials stored securely in .skales-data/integrations/.',
         requiresKey: 'Twitter API Key + Access Token', keyLabel: 'Settings → X / Twitter',
     },
@@ -76,7 +77,7 @@ const SKILL_DEFS: SkillDef[] = [
     },
     {
         id: 'documents', name: 'Documents (Excel · Word · PDF)', emoji: '📄', category: 'Productivity',
-        description: 'Create, edit, and read Excel spreadsheets, Word documents, and PDFs — all from chat.',
+        description: 'Create, edit, and read Excel spreadsheets, Word documents, and PDFs - all from chat.',
         detail: 'Generate multi-sheet Excel workbooks with formulas, create styled Word documents (.docx) with tables and headings, and produce PDFs. For document creation requests (e.g. "Write me a resume"), Skales automatically generates both a .docx AND a .pdf simultaneously.',
     },
     {
@@ -87,7 +88,7 @@ const SKILL_DEFS: SkillDef[] = [
     },
     {
         id: 'weather', name: 'Weather', emoji: '🌤️', category: 'Productivity',
-        description: 'Real-time weather and 7-day forecast for any city — free, no API key needed.',
+        description: 'Real-time weather and 7-day forecast for any city - free, no API key needed.',
         detail: 'Powered by Open-Meteo, a completely free and open weather API. Ask Skales for current conditions or the weekly forecast in any city. No configuration required.',
         alwaysOn: true,
     },
@@ -98,7 +99,7 @@ const SKILL_DEFS: SkillDef[] = [
     },
     {
         id: 'web_search', name: 'Web Search (Tavily)', emoji: '🔍', category: 'Productivity',
-        description: 'Real-time internet search — find current news and information in chat.',
+        description: 'Real-time internet search - find current news and information in chat.',
         detail: 'Powered by Tavily AI Search. Ask Skales to look something up and it searches the web and summarizes results. Requires a free Tavily API key (generous free tier).',
         requiresKey: 'Tavily API key', keyLabel: 'Settings → Skills → Web Search',
     },
@@ -145,17 +146,17 @@ const SKILL_DEFS: SkillDef[] = [
     {
         id: 'network_scanner', name: 'Network Scanner', emoji: '📡', category: 'Automation',
         description: 'Scan your local network for live hosts, open ports, and other Skales instances.',
-        detail: 'Pure Node.js TCP port scanner — no nmap or shell commands required. Detects live IPs on your /24 subnet, identifies open ports with service names (SSH, HTTP, MQTT, etc.), and specifically highlights other Skales instances running on port 3000 for instant local linking.',
+        detail: 'Pure Node.js TCP port scanner - no nmap or shell commands required. Detects live IPs on your /24 subnet, identifies open ports with service names (SSH, HTTP, MQTT, etc.), and specifically highlights other Skales instances running on port 3000 for instant local linking.',
     },
     {
         id: 'casting', name: 'Media Casting (DLNA/UPnP)', emoji: '📺', category: 'Automation',
         description: 'Discover DLNA smart TVs and speakers on your LAN and cast any media URL to them.',
-        detail: 'Uses SSDP M-SEARCH (node-ssdp) to discover UPnP/DLNA media renderers (smart TVs, DLNA speakers, etc.) on your local network. Send, pause, stop, seek, and control volume via standard UPnP AVTransport SOAP commands — no Chromecast SDK or native binaries needed.',
+        detail: 'Uses SSDP M-SEARCH (node-ssdp) to discover UPnP/DLNA media renderers (smart TVs, DLNA speakers, etc.) on your local network. Send, pause, stop, seek, and control volume via standard UPnP AVTransport SOAP commands - no Chromecast SDK or native binaries needed.',
     },
     {
         id: 'vision_screenshots', name: 'Vision & Screenshots', emoji: '👁️', category: 'Automation',
         description: 'Analyze images, take desktop screenshots, and use vision-capable models when your main model lacks vision.',
-        detail: 'Captures desktop screenshots as a native tool — never routed through shell commands. Screenshots appear inline in chat and are forwarded to Telegram if configured. Configure your vision model in Settings → Vision Provider. Required prerequisite for Browser Control.',
+        detail: 'Captures desktop screenshots as a native tool - never routed through shell commands. Screenshots appear inline in chat and are forwarded to Telegram if configured. Configure your vision model in Settings → Vision Provider. Required prerequisite for Browser Control.',
         requiresKey: 'Vision Provider API key', keyLabel: 'Settings → Vision Provider',
     },
     {
@@ -167,7 +168,7 @@ const SKILL_DEFS: SkillDef[] = [
     {
         id: 'webhooks', name: 'Webhooks', emoji: '🔗', category: 'Automation',
         description: 'Receive HTTP triggers from Zapier, n8n, IFTTT, and any service.',
-        detail: 'Exposes a local webhook endpoint that external services can POST to. Triggers any Skales skill — run scripts, send messages, create tasks, or chain automations. Configure endpoint URL in Settings → Webhooks.',
+        detail: 'Exposes a local webhook endpoint that external services can POST to. Triggers any Skales skill - run scripts, send messages, create tasks, or chain automations. Configure endpoint URL in Settings → Webhooks.',
         requiresKey: 'Webhook endpoint setup', keyLabel: 'Settings → Webhooks',
     },
 ];
@@ -204,6 +205,7 @@ const BUILTIN_SKILLS = [
 
 // ─── Component ────────────────────────────────────────────────
 export default function SkillsPage() {
+    const { t } = useTranslation();
     const [enabledSkills, setEnabledSkills] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [toggling, setToggling] = useState<string | null>(null);
@@ -247,10 +249,10 @@ export default function SkillsPage() {
             <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                     <Icon icon={Puzzle} size={26} />
-                    Skills
+                    {t('skills.page.title')}
                 </h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                    Optional capabilities that extend what Skales can do. Off by default — activate anytime.
+                    {t('skills.page.subtitle')}
                 </p>
             </div>
 
@@ -260,9 +262,7 @@ export default function SkillsPage() {
                     style={{ background: 'rgba(132,204,22,0.08)', border: '1px solid rgba(132,204,22,0.2)', color: '#84cc16' }}>
                     <Icon icon={Zap} size={15} />
                     <span className="font-medium">
-                        {activeCount} skill{activeCount > 1 ? 's' : ''} active
-                        {(enabledSkills.image_generation || enabledSkills.video_generation)
-                            ? ' — generation toolbar visible in chat' : ''}
+                        {t('skills.page.activeCount', { count: activeCount })}
                     </span>
                 </div>
             )}
@@ -281,7 +281,7 @@ export default function SkillsPage() {
                                 border: `1px solid ${isActive ? color : 'var(--border)'}`,
                                 boxShadow: isActive ? `0 0 12px ${color}40` : 'none',
                             }}>
-                            {tab === 'all' ? 'All' : `${CATEGORY_EMOJI[tab]} ${tab}`}
+                            {tab === 'all' ? t('skills.filter.all') : `${CATEGORY_EMOJI[tab]} ${tab}`}
                         </button>
                     );
                 })}
@@ -318,7 +318,7 @@ export default function SkillsPage() {
                 // Flat filtered list
                 <div className="space-y-2.5">
                     {skillsForCategory(filter as Category).length === 0 ? (
-                        <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>No skills in this category yet.</p>
+                        <p className="text-sm py-4 text-center" style={{ color: 'var(--text-muted)' }}>{t('skills.noSkillsInCategory')}</p>
                     ) : skillsForCategory(filter as Category).map(skill => (
                         <SkillCard key={skill.id} skill={skill}
                             isEnabled={enabledSkills[skill.id] ?? false}
@@ -333,7 +333,7 @@ export default function SkillsPage() {
             {filter === 'all' && (
                 <>
                     <div className="flex items-center gap-3">
-                        <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Premium</h2>
+                        <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{t('skills.sections.premium')}</h2>
                         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                     </div>
                     <LioAiCard
@@ -349,7 +349,7 @@ export default function SkillsPage() {
                 <div>
                     <div className="flex items-center gap-3 mb-3">
                         <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                            Built-in (always active)
+                            {t('skills.sections.builtIn')}
                         </h2>
                         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                     </div>
@@ -379,15 +379,15 @@ export default function SkillsPage() {
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
                         style={{ background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>🤖</div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Custom Skills &amp; Skill AI</p>
+                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t('skills.customSection.title')}</p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                            Generate skills with AI or upload your own .js modules. Manage and activate them from the dedicated page.
+                            {t('skills.customSection.desc')}
                         </p>
                     </div>
                     <a href="/custom-skills"
                         className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
                         style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.8), rgba(99,102,241,0.8))', color: 'white' }}>
-                        Open →
+                        {t('skills.customSection.link')}
                     </a>
                 </div>
             )}
@@ -402,6 +402,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
     isToggling: boolean;
     onToggle: (v: boolean) => void;
 }) {
+    const { t } = useTranslation();
     return (
         <div className="rounded-2xl border overflow-hidden transition-all"
             style={{
@@ -423,14 +424,14 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
                         <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{skill.name}</h3>
                         {skill.alwaysOn && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                                style={{ background: 'rgba(132,204,22,0.12)', color: '#84cc16' }}>Always On</span>
+                                style={{ background: 'rgba(132,204,22,0.12)', color: '#84cc16' }}>{t('skills.badges.alwaysOn')}</span>
                         )}
                     </div>
                     <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{skill.description}</p>
                     {skill.requiresKey && !skill.alwaysOn && (
                         <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
                             <Icon icon={AlertCircle} size={10} />
-                            Requires: {skill.requiresKey} — <span className="underline">{skill.keyLabel}</span>
+                            Requires: {skill.requiresKey} - <span className="underline">{skill.keyLabel}</span>
                         </p>
                     )}
                 </div>
@@ -439,7 +440,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
                 <div className="flex-shrink-0">
                     {skill.alwaysOn ? (
                         <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: '#84cc16' }}>
-                            <Icon icon={CheckCircle2} size={15} /> Active
+                            <Icon icon={CheckCircle2} size={15} /> {t('skills.badges.active')}
                         </div>
                     ) : (
                         <button
@@ -447,7 +448,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
                             disabled={isToggling}
                             className="relative flex items-center flex-shrink-0"
                             style={{ width: 44, height: 24 }}
-                            title={isEnabled ? 'Disable' : 'Enable'}>
+                            title={isEnabled ? t('skills.toggles.disable') : t('skills.toggles.enable')}>
                             {isToggling ? (
                                 <Icon icon={Loader2} size={16} className="animate-spin mx-auto" style={{ color: 'var(--text-muted)' }} />
                             ) : (
@@ -467,7 +468,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
                 <p className="text-xs mt-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{skill.detail}</p>
                 {skill.providers && (
                     <div className="mt-3">
-                        <p className="text-[10px] font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>AI Provider</p>
+                        <p className="text-[10px] font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>{t('skills.aiProvider')}</p>
                         <div className="flex flex-wrap gap-2">
                             {skill.providers.map(prov => (
                                 <div key={prov.id}
@@ -494,6 +495,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
 function LioAiCard({ isEnabled, isToggling, onToggle }: {
     isEnabled: boolean; isToggling: boolean; onToggle: (v: boolean) => void;
 }) {
+    const { t } = useTranslation();
     const CAPABILITIES = [
         { icon: '🌐', label: 'Websites & Landing Pages' },
         { icon: '⚛️', label: 'React / Next.js Apps' },
@@ -539,17 +541,17 @@ function LioAiCard({ isEnabled, isToggling, onToggle }: {
                             <h3 className="text-lg font-black" style={{
                                 background: 'linear-gradient(135deg, #c4b5fd, #818cf8)',
                                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                            }}>Lio AI</h3>
+                            }}>{t('skills.lioAI.title')}</h3>
                             <span className="text-[9px] px-2 py-0.5 rounded-full font-bold"
                                 style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.25)' }}>
-                                Code Builder
+                                {t('skills.badges.codeBuilder')}
                             </span>
                         </div>
                         <p className="text-xs leading-relaxed" style={{ color: 'rgba(196,181,253,0.7)' }}>
                             Your personal code agent, powered by Skales.
                         </p>
                         <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgba(148,163,184,0.6)' }}>
-                            Lio plans, builds, and ships — while you watch. Two AIs collaborate on architecture, then a dedicated builder creates your project step by step.
+                            Lio plans, builds, and ships - while you watch. Two AIs collaborate on architecture, then a dedicated builder creates your project step by step.
                         </p>
                     </div>
                     {/* Toggle button */}
@@ -562,7 +564,7 @@ function LioAiCard({ isEnabled, isToggling, onToggle }: {
                             boxShadow: isEnabled ? 'none' : '0 0 15px rgba(139,92,246,0.2)',
                         }}>
                         {isToggling ? <span className="animate-spin">⟳</span>
-                            : isEnabled ? '● Enabled' : 'Enable Lio AI'}
+                            : isEnabled ? t('skills.lioAI.enabled') : t('skills.lioAI.enable')}
                     </button>
                 </div>
 
@@ -583,14 +585,14 @@ function LioAiCard({ isEnabled, isToggling, onToggle }: {
 
                 <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'rgba(139,92,246,0.12)' }}>
                     <div className="flex items-center gap-4 text-[11px]" style={{ color: 'rgba(148,163,184,0.5)' }}>
-                        <span>⚡ Requires: Any configured LLM provider</span>
-                        <span>💰 Uses your existing API credits</span>
+                        <span>{t('skills.lioAI.requires')}</span>
+                        <span>{t('skills.lioAI.credits')}</span>
                     </div>
                     {isEnabled && (
                         <Link href="/code"
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold hover:scale-105 transition-transform"
                             style={{ background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white' }}>
-                            🦁 Open Lio AI
+                            {t('skills.lioAI.open')}
                         </Link>
                     )}
                 </div>

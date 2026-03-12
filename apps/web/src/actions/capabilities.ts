@@ -322,7 +322,7 @@ export async function rebuildCapabilities(): Promise<void> {
 
         const caps = {
             generated_at: new Date().toISOString(),
-            version_info: { skales: '5.5.0', capabilities: '5.5' },
+            version_info: { skales: '6.0.0', capabilities: '6.0' },
             llm_providers: {
                 configured: configuredProviders,
                 missing_note: 'Add API keys in Settings → LLM Providers',

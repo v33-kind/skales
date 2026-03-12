@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { listProjects, getRandomSurprises, type LioProject, type LioPlan, type BuildStep } from '@/actions/code-builder';
 import { Loader2, Square, Send, FolderOpen, Download } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const Icon = ({ icon: I, ...p }: { icon: any; [k: string]: any }) => <I {...p} />;
 
@@ -59,6 +60,7 @@ const LIO_KEYFRAMES = `
 // ─── Main Component ─────────────────────────────────────────
 export default function CodePage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [appState, setAppState] = useState<AppState>('welcome');
     const [leavingWelcome, setLeavingWelcome] = useState(false);
     const [prompt, setPrompt] = useState('');
@@ -351,7 +353,7 @@ export default function CodePage() {
 
     const handleBuildEvent = (ev: any) => {
         switch (ev.type) {
-            case 'build_start': addLog(`🚀 Build started — ${ev.totalSteps} steps`); break;
+            case 'build_start': addLog(`🚀 Build started - ${ev.totalSteps} steps`); break;
             case 'step_start':
                 setCurrentStepIndex(ev.stepIndex);
                 setBuildProgress(ev.progress);
@@ -369,7 +371,7 @@ export default function CodePage() {
             case 'step_done':
                 setBuildProgress(ev.progress);
                 setSteps(prev => prev.map(s => s.index === ev.stepIndex ? { ...s, status: 'done' } : s));
-                addLog(`✅ Done — Step ${ev.stepIndex + 1}`);
+                addLog(`✅ Done - Step ${ev.stepIndex + 1}`);
                 break;
             case 'step_failed':
                 setSteps(prev => prev.map(s => s.index === ev.stepIndex ? { ...s, status: 'failed', error: ev.error } : s));
@@ -605,7 +607,7 @@ export default function CodePage() {
                 {appState === 'error' && (
                     <div className="flex-1 flex flex-col items-center justify-center px-4">
                         <div className="text-5xl mb-4">😞</div>
-                        <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
+                        <h2 className="text-lg font-bold mb-2">{t('code.error')}</h2>
                         <p className="text-sm mb-6 text-center max-w-md" style={{ color: 'var(--text-secondary)' }}>{errorMessage}</p>
                         <button onClick={resetToWelcome}
                             className="px-6 py-3 rounded-xl font-bold text-sm"
@@ -632,6 +634,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
     recentProjects: LioProject[];
     promptRef: React.RefObject<HTMLTextAreaElement>;
 }) {
+    const { t } = useTranslation();
     return (
         <div className="w-full max-w-2xl space-y-8">
 
@@ -651,11 +654,11 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                     What do you want to build?
                 </h1>
                 <p className="text-sm" style={{ color: 'rgba(148,163,184,0.75)' }}>
-                    Describe your idea — Lio plans, builds, and ships it.
+                    Describe your idea - Lio plans, builds, and ships it.
                 </p>
             </div>
 
-            {/* ── Input — Glass morphism ── */}
+            {/* ── Input - Glass morphism ── */}
             <div className="relative">
                 <textarea
                     ref={promptRef}
@@ -767,7 +770,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                         }}
                     >
                         <span>🎲</span>
-                        <span>Random Surprise</span>
+                        <span>{t('code.random')}</span>
                     </button>
                 </div>
             </div>
@@ -854,7 +857,7 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
                 </div>
                 <div>
                     <h2 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-                        Lio AI — Planning: &ldquo;{projectName}&rdquo;
+                        Lio AI - Planning: &ldquo;{projectName}&rdquo;
                     </h2>
                     <p className="text-xs truncate max-w-md" style={{ color: 'var(--text-muted)' }}>{prompt}</p>
                 </div>
@@ -951,6 +954,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
     chatInput: string; setChatInput: (v: string) => void; onSendChat: () => void; onStop: () => void;
     buildLogRef: React.RefObject<HTMLDivElement>;
 }) {
+    const { t } = useTranslation();
     const htmlFiles = builtFiles.filter(f => f.name.endsWith('.html'));
     const [selectedPreview, setSelectedPreview] = useState<string>('index.html');
 
@@ -988,7 +992,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                     </div>
                     <div className="px-3 py-2 flex-shrink-0 border-b" style={{ borderColor: 'var(--border)' }}>
                         <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                            {progress}% — Step {Math.min(currentStepIndex + 1, steps.length)}/{steps.length}
+                            {progress}% - Step {Math.min(currentStepIndex + 1, steps.length)}/{steps.length}
                         </span>
                         <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ background: 'var(--surface-light)' }}>
                             <div className="h-full rounded-full transition-all duration-500"
@@ -1018,7 +1022,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                 <div className="flex flex-col w-1/2 overflow-hidden">
                     <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 border-b" style={{ borderColor: 'var(--border)' }}>
                         <div className="flex items-center gap-1 overflow-x-auto flex-1 mr-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 mr-1" style={{ color: 'var(--text-muted)' }}>Preview</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 mr-1" style={{ color: 'var(--text-muted)' }}>{t('code.preview')}</span>
                             {htmlFiles.map(f => (
                                 <button key={f.name} onClick={() => setSelectedPreview(f.name)}
                                     className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded font-medium transition-all"
@@ -1042,7 +1046,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center p-6" style={{ background: 'var(--surface)' }}>
                             <Icon icon={Loader2} size={24} className="animate-spin mb-3" style={{ color: '#8b5cf6' }} />
-                            <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>Preview appears once index.html is built</p>
+                            <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{t('code.previewEmpty')}</p>
                         </div>
                     )}
                 </div>
@@ -1071,6 +1075,7 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
     builtFiles: { name: string; size: number }[]; iteratePrompt: string; setIteratePrompt: (v: string) => void;
     onOpenFolder: () => void; onDownload: () => void; onIterate: (p: string) => void; onNew: () => void;
 }) {
+    const { t } = useTranslation();
     const doneCount = steps.filter(s => s.status === 'done').length;
     const htmlFiles = builtFiles.filter(f => f.name.endsWith('.html'));
     const [selectedPreview, setSelectedPreview] = useState<string>('index.html');
@@ -1083,8 +1088,8 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
             <div className="flex flex-col items-center justify-center px-6 py-8 text-center w-1/2 border-r overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
                 <div className="text-6xl mb-2 animate-bounce-slow">🦁</div>
                 <div className="text-4xl mb-4">✅</div>
-                <h2 className="text-2xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>Project Complete!</h2>
-                <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>&ldquo;{projectName}&rdquo; — {doneCount}/{steps.length} steps</p>
+                <h2 className="text-2xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{t('code.projectComplete')}</h2>
+                <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>&ldquo;{projectName}&rdquo; - {doneCount}/{steps.length} steps</p>
                 <p className="text-xs mb-8" style={{ color: 'var(--text-muted)' }}>
                     {elapsedMs > 0 ? `Built in ${formatMs(elapsedMs)}` : 'Build complete'}
                     {builtFiles.length > 0 && ` · ${builtFiles.length} file${builtFiles.length > 1 ? 's' : ''}`}
@@ -1101,7 +1106,7 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
                 </div>
                 <div className="w-full max-w-sm mb-4">
                     <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>✏️ Request changes</p>
-                    <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Describe what to fix or add — Lio will update the existing project files.</p>
+                    <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Describe what to fix or add - Lio will update the existing project files.</p>
                     <div className="flex gap-2">
                         <input type="text" value={iteratePrompt} onChange={e => setIteratePrompt(e.target.value)}
                             placeholder="Add dark mode… Fix the login form… Add a search bar…"
@@ -1121,7 +1126,7 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
             {/* Right: preview */}
             <div className="flex flex-col w-1/2 overflow-hidden">
                 <div className="flex items-center gap-1 px-3 py-2 flex-shrink-0 border-b overflow-x-auto" style={{ borderColor: 'var(--border)' }}>
-                    <span className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 mr-1" style={{ color: 'var(--text-muted)' }}>Preview</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider flex-shrink-0 mr-1" style={{ color: 'var(--text-muted)' }}>{t('code.preview')}</span>
                     {htmlFiles.map(f => (
                         <button key={f.name} onClick={() => setSelectedPreview(f.name)}
                             className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded font-medium transition-all"
@@ -1139,7 +1144,7 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
                         className="flex-1 w-full border-0" sandbox="allow-scripts allow-same-origin" title="Project Preview" />
                 ) : (
                     <div className="flex-1 flex items-center justify-center p-6" style={{ background: 'var(--surface)' }}>
-                        <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>No HTML preview available</p>
+                        <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{t('code.noHtmlPreview')}</p>
                     </div>
                 )}
             </div>

@@ -120,7 +120,7 @@ export async function POST(req: NextRequest): Promise<Response> {
                 // Delete the corrupt file
                 try { fs.unlinkSync(destPath); } catch { /* ignore */ }
                 await send('error', {
-                    message: `Checksum mismatch — the download may be corrupted. Please try again or download manually from skales.app`,
+                    message: `Checksum mismatch - the download may be corrupted. Please try again or download manually from skales.app`,
                     expected: checksumExpected,
                     actual: actualChecksum,
                 });

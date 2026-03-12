@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import {
     Loader2, Trash2, ToggleLeft, ToggleRight, Upload, Sparkles,
     AlertTriangle, Copy, CheckCheck, ChevronDown, Puzzle, Zap, Code2,
@@ -146,6 +147,7 @@ interface OverlayProps {
 }
 
 function GeneratingOverlay({ title, msgIdx, messages, result }: OverlayProps) {
+    const { t } = useTranslation();
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center"
@@ -186,7 +188,7 @@ function GeneratingOverlay({ title, msgIdx, messages, result }: OverlayProps) {
                         {/* Warning */}
                         <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                             <AlertTriangle size={12} className="text-yellow-500 flex-shrink-0" />
-                            Please don't navigate away — Skill AI is working
+                            {t('skills.skillAI.navWarning')}
                         </p>
                     </>
                 ) : (
@@ -211,6 +213,7 @@ function GeneratingOverlay({ title, msgIdx, messages, result }: OverlayProps) {
 // ─── Main Page ──────────────────────────────────────────────────────
 
 export default function CustomSkillsPage() {
+    const { t } = useTranslation();
     // ── Skill list state ──────────────────────────────────────────
     const [skills,      setSkills]      = useState<CustomSkillMeta[]>([]);
     const [loadingList, setLoadingList] = useState(true);
@@ -665,7 +668,7 @@ export default function CustomSkillsPage() {
             {/* ── Generating overlay ──────────────────────────── */}
             {generating && (
                 <GeneratingOverlay
-                    title="Skill AI is working…"
+                    title={t('skills.status.working')}
                     msgIdx={genMsgIdx}
                     messages={GEN_MESSAGES}
                     result={overlayResult}
@@ -675,7 +678,7 @@ export default function CustomSkillsPage() {
             {/* ── Fix overlay ─────────────────────────────────── */}
             {fixingId && (
                 <GeneratingOverlay
-                    title="Skill AI is repairing…"
+                    title={t('skills.status.repairing')}
                     msgIdx={fixMsgIdx}
                     messages={[
                         '🔬  Analyzing the broken code...',
@@ -696,10 +699,10 @@ export default function CustomSkillsPage() {
                     <div className="animate-fadeIn">
                         <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
                             <Puzzle className="text-lime-500" size={24} />
-                            Custom Skills
+                            {t('skills.title')}
                         </h1>
                         <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                            Extend Skales with AI-generated or hand-crafted JavaScript skill modules.
+                            {t('skills.subtitle')}
                         </p>
                     </div>
 
@@ -710,17 +713,17 @@ export default function CustomSkillsPage() {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                 <span className="text-lg">📦</span>
-                                Installed Skills
+                                {t('skills.installed.title')}
                                 {skills.length > 0 && (
                                     <span className="text-xs px-2 py-0.5 rounded-full font-bold"
                                         style={{ background: 'rgba(132,204,22,0.12)', color: '#84cc16' }}>
-                                        {skills.filter(s => s.enabled && s.status !== 'error').length}/{skills.length} active
+                                        {t('skills.installed.activeBadge', { active: skills.filter(s => s.enabled && s.status !== 'error').length, total: skills.length })}
                                     </span>
                                 )}
                                 {skills.some(s => s.status === 'error') && (
                                     <span className="text-xs px-2 py-0.5 rounded-full font-bold"
                                         style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>
-                                        {skills.filter(s => s.status === 'error').length} broken
+                                        {t('skills.installed.brokenBadge', { count: skills.filter(s => s.status === 'error').length })}
                                     </span>
                                 )}
                             </h2>
@@ -729,13 +732,13 @@ export default function CustomSkillsPage() {
                         {loadingList ? (
                             <div className="flex items-center gap-2 py-8 justify-center">
                                 <Loader2 size={18} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
-                                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading…</span>
+                                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('common.loading')}</span>
                             </div>
                         ) : skills.length === 0 ? (
                             <div className="py-10 text-center rounded-xl" style={{ background: 'var(--surface-light)', border: '1px dashed var(--border)' }}>
                                 <p className="text-3xl mb-2">🧩</p>
-                                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>No custom skills installed yet.</p>
-                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Generate one with Skill AI below, or upload a .js file.</p>
+                                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{t('skills.empty')}</p>
+                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('skills.installed.emptyHint')}</p>
                                 <button
                                     onClick={handleInstallSamples}
                                     disabled={installingSamples}
@@ -743,7 +746,7 @@ export default function CustomSkillsPage() {
                                     style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
                                 >
                                     {installingSamples ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
-                                    Install Sample Skills (Gallery + Quoty)
+                                    {t('skills.installed.installSamples')}
                                 </button>
                             </div>
                         ) : (
@@ -795,7 +798,7 @@ export default function CustomSkillsPage() {
                                                         {skill.hasUI && (
                                                             <span className="text-[10px] px-1.5 py-0.5 rounded font-bold"
                                                                 style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
-                                                                🖥 Has UI
+                                                                {t('skills.installed.hasUI')}
                                                             </span>
                                                         )}
                                                     </div>
@@ -826,7 +829,7 @@ export default function CustomSkillsPage() {
                                                             ? <Loader2 size={13} className="animate-spin" />
                                                             : <Wrench size={13} />
                                                         }
-                                                        Fix
+                                                        {t('skills.installed.fix')}
                                                     </button>
                                                 )}
 
@@ -834,7 +837,7 @@ export default function CustomSkillsPage() {
                                                 <button
                                                     onClick={() => handleExport(skill.id, skill.name)}
                                                     disabled={exportingId === skill.id}
-                                                    title="Export as ZIP"
+                                                    title={t('skills.installed.exportZipTitle')}
                                                     className="flex-shrink-0 p-1.5 rounded-lg transition-colors disabled:opacity-50 hover:bg-lime-500/10"
                                                     style={{ color: 'var(--text-muted)' }}
                                                 >
@@ -847,7 +850,7 @@ export default function CustomSkillsPage() {
                                                 {/* Edit */}
                                                 <button
                                                     onClick={() => openEdit(skill)}
-                                                    title="Edit skill metadata"
+                                                    title={t('skills.installed.editTitle')}
                                                     className="flex-shrink-0 p-1.5 rounded-lg transition-colors hover:bg-indigo-500/10"
                                                     style={{ color: 'var(--text-muted)' }}
                                                 >
@@ -858,7 +861,7 @@ export default function CustomSkillsPage() {
                                                 <button
                                                     onClick={() => handleToggle(skill.id, skill.enabled)}
                                                     disabled={togglingId === skill.id}
-                                                    title={skill.enabled ? 'Deactivate' : 'Activate'}
+                                                    title={skill.enabled ? t('skills.installed.deactivate') : t('skills.installed.activate')}
                                                     className="flex-shrink-0 disabled:opacity-50"
                                                 >
                                                     {togglingId === skill.id
@@ -873,7 +876,7 @@ export default function CustomSkillsPage() {
                                                 <button
                                                     onClick={() => handleDelete(skill.id, skill.name)}
                                                     disabled={deletingId === skill.id}
-                                                    title="Delete skill"
+                                                    title={t('skills.deletion.deleteSkill')}
                                                     className="flex-shrink-0 p-1.5 rounded-lg transition-colors disabled:opacity-50 hover:bg-red-500/10"
                                                     style={{ color: 'var(--text-muted)' }}
                                                 >
@@ -911,11 +914,10 @@ export default function CustomSkillsPage() {
                         <div className="p-6 border-b" style={{ borderColor: 'var(--border)' }}>
                             <h2 className="text-base font-bold flex items-center gap-2 mb-1" style={{ color: 'var(--text-primary)' }}>
                                 <Sparkles size={18} className="text-purple-400" />
-                                Skill AI — Self-Programming
+                                {t('skills.skillAI.title')}
                             </h2>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                Describe what you want and Skill AI will autonomously write, validate, and activate the code.
-                                Up to 3 self-correction attempts are made before saving.
+                                {t('skills.skillAI.description')}
                             </p>
                         </div>
 
@@ -925,8 +927,8 @@ export default function CustomSkillsPage() {
                                 style={{ background: 'rgba(239,68,68,0.07)', borderColor: 'rgba(239,68,68,0.35)' }}>
                                 <AlertTriangle size={18} className="flex-shrink-0 mt-0.5 text-red-500" />
                                 <p className="text-sm leading-relaxed" style={{ color: '#f87171' }}>
-                                    <strong>Recommendation: Use Premium or Coding models for Skill AI.</strong>
-                                    {' '}Warning: Alpha/Beta Phase! Test at your own risk. Failed skills can corrupt your Skales setup. Please create a backup first!
+                                    <strong>{t('skills.skillAI.warningTitle')}</strong>
+                                    {' '}{t('skills.skillAI.warningBody')}
                                 </p>
                             </div>
 
@@ -935,13 +937,13 @@ export default function CustomSkillsPage() {
                                 {/* Skill Name */}
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Skill Name <span className="text-red-400">*</span>
+                                        {t('skills.form.skillNameRequired')} <span className="text-red-400">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={aiName}
                                         onChange={e => setAiName(e.target.value)}
-                                        placeholder="e.g. Bitcoin Price Tracker"
+                                        placeholder={t('skills.form.namePlaceholder')}
                                         className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-lime-500/50"
                                         style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     />
@@ -950,7 +952,7 @@ export default function CustomSkillsPage() {
                                 {/* Icon Picker */}
                                 <div className="relative">
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Icon
+                                        {t('skills.form.iconLabel')}
                                     </label>
                                     <button
                                         type="button"
@@ -989,7 +991,7 @@ export default function CustomSkillsPage() {
                                 {/* Category */}
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Category
+                                        {t('skills.form.categoryLabel')}
                                     </label>
                                     <div className="relative">
                                         <select
@@ -1009,7 +1011,7 @@ export default function CustomSkillsPage() {
                                 {/* Needs Sidebar Menu toggle */}
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Needs Sidebar Menu
+                                        {t('skills.form.needsSidebar')}
                                     </label>
                                     <div className="flex items-center gap-3 px-3 py-2 rounded-xl border"
                                         style={{ background: 'var(--surface-light)', borderColor: 'var(--border)' }}>
@@ -1023,7 +1025,7 @@ export default function CustomSkillsPage() {
                                                 style={{ transform: aiHasUI ? 'translateX(16px)' : 'translateX(0)' }} />
                                         </button>
                                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                            {aiHasUI ? 'Yes — adds a sidebar entry' : 'No sidebar entry'}
+                                            {aiHasUI ? t('skills.form.sidebarYes') : t('skills.form.sidebarNo')}
                                         </span>
                                     </div>
                                 </div>
@@ -1033,7 +1035,7 @@ export default function CustomSkillsPage() {
                             {aiHasUI && (
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Sidebar Menu Name
+                                        {t('skills.form.sidebarMenuName')}
                                     </label>
                                     <input
                                         type="text"
@@ -1049,7 +1051,7 @@ export default function CustomSkillsPage() {
                             {/* Requires API Keys checkbox */}
                             <div>
                                 <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                    Requires External API Keys?
+                                    {t('skills.form.requiresApiKeys')}
                                 </label>
                                 <div className="flex items-center gap-3 px-3 py-2 rounded-xl border"
                                     style={{ background: 'var(--surface-light)', borderColor: 'var(--border)' }}>
@@ -1064,8 +1066,8 @@ export default function CustomSkillsPage() {
                                     </button>
                                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                         {aiRequiresApiKeys
-                                            ? 'Yes — Skill AI will generate a requiredSecrets manifest entry'
-                                            : 'No external API keys needed'}
+                                            ? t('skills.form.requiresApiKeysYes')
+                                            : t('skills.form.requiresApiKeysNo')}
                                     </span>
                                 </div>
                             </div>
@@ -1074,8 +1076,8 @@ export default function CustomSkillsPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        LLM Provider
-                                        <span className="ml-1 font-normal" style={{ color: 'var(--text-muted)' }}>(also used for Fix)</span>
+                                        {t('skills.form.llmProvider')}
+                                        <span className="ml-1 font-normal" style={{ color: 'var(--text-muted)' }}>{t('skills.form.llmProviderNote')}</span>
                                     </label>
                                     <div className="relative">
                                         <select
@@ -1091,7 +1093,7 @@ export default function CustomSkillsPage() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Model ID
+                                        {t('skills.form.modelId')}
                                     </label>
                                     <div className="flex gap-2">
                                         <input
@@ -1118,10 +1120,10 @@ export default function CustomSkillsPage() {
                                                 color: modelSaved ? '#84cc16' : 'var(--text-muted)',
                                                 border: `1px solid ${modelSaved ? 'rgba(132,204,22,0.4)' : 'var(--border)'}`,
                                             }}
-                                            title="Save provider & model as default"
+                                            title={t('skills.form.saveDefault')}
                                         >
                                             {modelSaved ? <CheckCheck size={13} /> : <CheckCheck size={13} style={{ opacity: 0.5 }} />}
-                                            {modelSaved ? 'Saved!' : 'Save'}
+                                            {modelSaved ? t('skills.form.modelSaved') : t('skills.form.modelSave')}
                                         </button>
                                     </div>
                                 </div>
@@ -1130,13 +1132,13 @@ export default function CustomSkillsPage() {
                             {/* Prompt */}
                             <div>
                                 <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                    What should this skill do? <span className="text-red-400">*</span>
+                                    {t('skills.form.promptLabel')} <span className="text-red-400">*</span>
                                 </label>
                                 <textarea
                                     rows={5}
                                     value={aiPrompt}
                                     onChange={e => setAiPrompt(e.target.value)}
-                                    placeholder="e.g. Fetch the current Bitcoin price from CoinGecko and return it formatted as USD. Use Node.js https module — no external packages."
+                                    placeholder={t('skills.form.promptPlaceholder')}
                                     className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-lime-500/50 resize-y"
                                     style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)', minHeight: 100 }}
                                 />
@@ -1165,8 +1167,8 @@ export default function CustomSkillsPage() {
                                 }}
                             >
                                 {generating
-                                    ? <><Loader2 size={16} className="animate-spin" /> Generating…</>
-                                    : <><Zap size={16} /> Generate Skill</>
+                                    ? <><Loader2 size={16} className="animate-spin" /> {t('skills.form.generating')}</>
+                                    : <><Zap size={16} /> {t('skills.form.generateButton')}</>
                                 }
                             </button>
                         </div>
@@ -1179,10 +1181,10 @@ export default function CustomSkillsPage() {
                         <div>
                             <h2 className="text-base font-bold flex items-center gap-2 mb-1" style={{ color: 'var(--text-primary)' }}>
                                 <Upload size={18} className="text-lime-500" />
-                                Upload Custom Skill
+                                {t('skills.upload.title')}
                             </h2>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                Upload a hand-crafted <code className="text-lime-400">.js</code>, <code className="text-lime-400">.ts</code>, or <code className="text-lime-400">.zip</code> skill file. ZIP archives can contain multiple skills.
+                                {t('skills.upload.description')}
                             </p>
                         </div>
 
@@ -1190,7 +1192,7 @@ export default function CustomSkillsPage() {
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <p className="text-xs font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                                    <Code2 size={13} /> Skill Boilerplate Template
+                                    <Code2 size={13} /> {t('skills.form.boilerplateTemplate')}
                                 </p>
                                 <button
                                     onClick={handleCopyBoilerplate}
@@ -1226,7 +1228,7 @@ export default function CustomSkillsPage() {
                             )}
                             <div className="text-center">
                                 <p className="text-sm font-medium" style={{ color: uploading ? '#84cc16' : 'var(--text-secondary)' }}>
-                                    {uploading ? 'Installing…' : dragging ? 'Drop to install' : 'Drag & drop or click to upload'}
+                                    {uploading ? t('skills.upload.installing') : dragging ? t('skills.upload.dropToInstall') : t('skills.upload.clickToUpload')}
                                 </p>
                                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                     .js · .ts · .zip (max 10 MB)
@@ -1260,7 +1262,7 @@ export default function CustomSkillsPage() {
                                 Skill SDK
                             </span>
                             <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                                CommonJS format · Node.js built-ins available · No sandboxing — review code before installing
+                                {t('skills.sdk.info')}
                             </p>
                         </div>
                     </section>
@@ -1282,17 +1284,17 @@ export default function CustomSkillsPage() {
                     >
                         <h3 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Pencil size={16} className="text-indigo-400" />
-                            Edit Skill
+                            {t('skills.edit.title')}
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Name</label>
+                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{t('skills.edit.nameLabel')}</label>
                             <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
                                 className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-indigo-500/50"
                                 style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                         </div>
                         <div className="relative">
-                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Icon</label>
+                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{t('skills.edit.iconLabel')}</label>
                             <button type="button" onClick={() => setShowEditIconPicker(v => !v)}
                                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-indigo-500/50"
                                 style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
@@ -1326,14 +1328,14 @@ export default function CustomSkillsPage() {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Description</label>
+                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{t('skills.edit.descriptionLabel')}</label>
                             <input type="text" value={editDescription} onChange={e => setEditDescription(e.target.value)}
                                 className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-indigo-500/50"
                                 style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Category</label>
+                            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{t('skills.edit.categoryLabel')}</label>
                             <select value={editCategory} onChange={e => setEditCategory(e.target.value as SkillCategory)}
                                 className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-indigo-500/50 appearance-none"
                                 style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
@@ -1349,13 +1351,13 @@ export default function CustomSkillsPage() {
                                     style={{ transform: editHasUI ? 'translateX(16px)' : 'translateX(0)' }} />
                             </button>
                             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                {editHasUI ? 'Has sidebar menu entry' : 'No sidebar entry'}
+                                {editHasUI ? t('skills.edit.hasSidebarYes') : t('skills.edit.hasSidebarNo')}
                             </span>
                         </div>
 
                         {editHasUI && (
                             <div>
-                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Menu Name</label>
+                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{t('skills.edit.menuNameLabel')}</label>
                                 <input type="text" value={editMenuName} onChange={e => setEditMenuName(e.target.value)}
                                     placeholder={editName}
                                     className="w-full px-3 py-2 rounded-xl text-sm border focus:outline-none focus:border-indigo-500/50"
@@ -1366,12 +1368,12 @@ export default function CustomSkillsPage() {
                         {/* Re-generate section */}
                         <div className="border-t pt-3 mt-1" style={{ borderColor: 'var(--border)' }}>
                             <label className="block text-xs font-semibold mb-1 flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                                <RefreshCw size={11} className="text-purple-400" /> Re-generate Skill Code
+                                <RefreshCw size={11} className="text-purple-400" /> {t('skills.form.regenLabel')}
                             </label>
                             <textarea
                                 value={regenPrompt}
                                 onChange={e => setRegenPrompt(e.target.value)}
-                                placeholder="Describe what changes you want (e.g. 'Add a chart section', 'Use dark mode colors', 'Fix the button layout')..."
+                                placeholder={t('skills.form.regenPlaceholder')}
                                 rows={2}
                                 className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none focus:border-purple-500/50 resize-none"
                                 style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
@@ -1381,7 +1383,7 @@ export default function CustomSkillsPage() {
                                 disabled={regenerating || !regenPrompt.trim()}
                                 className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40"
                                 style={{ background: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
-                                {regenerating ? <><Loader2 size={12} className="animate-spin" /> Re-generating...</> : <><Sparkles size={12} /> Re-generate</>}
+                                {regenerating ? <><Loader2 size={12} className="animate-spin" /> {t('skills.form.regenerating')}</> : <><Sparkles size={12} /> {t('skills.form.regenButton')}</>}
                             </button>
                             {regenError && (
                                 <p className="text-[10px] mt-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
@@ -1394,13 +1396,13 @@ export default function CustomSkillsPage() {
                             <button onClick={() => { setEditingSkill(null); setRegenPrompt(''); }}
                                 className="flex-1 px-4 py-2 rounded-xl text-sm font-bold transition-all"
                                 style={{ background: 'var(--surface-light)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                                Cancel
+                                {t('skills.edit.cancelButton')}
                             </button>
                             <button onClick={handleSaveEdit} disabled={savingEdit || !editName.trim()}
                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
                                 style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}>
                                 {savingEdit ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />}
-                                Save
+                                {t('skills.edit.saveButton')}
                             </button>
                         </div>
                     </div>

@@ -152,7 +152,7 @@ const Markdown: React.FC<MarkdownProps> = ({ content, className = '' }) => {
                                         {match ? match[1] : 'text'}
                                     </span>
                                 </div>
-                                <div className="w-full max-w-full">
+                                <div className="w-full max-w-full overflow-x-auto">
                                     <code className={`block p-3 text-sm font-mono text-gray-200 leading-relaxed whitespace-pre-wrap break-words ${className || ''}`} {...props}>
                                         {children}
                                     </code>

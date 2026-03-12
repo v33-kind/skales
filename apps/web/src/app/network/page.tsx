@@ -8,6 +8,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import {
     Network, Tv2, RefreshCw, Play, Pause, Square,
     Wifi, WifiOff, Loader2, ChevronRight, Volume2,
@@ -66,6 +67,7 @@ function TabBtn({ active, onClick, icon, label }: {
 // ─── Network Scanner Tab ─────────────────────────────────────────────
 
 function ScannerTab() {
+    const { t } = useTranslation();
     const [mode, setMode]           = useState<'skales' | 'full' | 'info'>('info');
     const [scanning, setScanning]   = useState(false);
     const [devices, setDevices]     = useState<NetworkDevice[]>([]);
@@ -151,14 +153,14 @@ function ScannerTab() {
             <div className="rounded-2xl border p-4 space-y-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                     <Icon icon={Search} size={15} className="text-lime-500" />
-                    Scan Options
+                    {t('network.scanOptions')}
                 </h3>
 
                 <div className="flex flex-wrap gap-2">
                     {([
-                        { v: 'info',   label: 'Network Info',   icon: Info   },
-                        { v: 'skales', label: 'Skales Devices', icon: Wifi   },
-                        { v: 'full',   label: 'Full /24 Scan',  icon: Network },
+                        { v: 'info',   label: t('network.modes.networkInfo'),   icon: Info   },
+                        { v: 'skales', label: t('network.modes.skalesDevices'), icon: Wifi   },
+                        { v: 'full',   label: t('network.modes.fullScan'),  icon: Network },
                     ] as const).map(m => (
                         <button
                             key={m.v}
@@ -185,13 +187,13 @@ function ScannerTab() {
                         {scanning
                             ? <Icon icon={Loader2} size={14} className="animate-spin" />
                             : <Icon icon={RefreshCw} size={14} />}
-                        {scanning ? 'Scanning…' : 'Run Scan'}
+                        {scanning ? t('network.scanning') : t('network.runScan')}
                     </button>
                 </div>
 
                 {/* Single-host quick scan */}
                 <div className="flex gap-2 items-center pt-1 border-t" style={{ borderColor: 'var(--border)' }}>
-                    <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Single host:</span>
+                    <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{t('network.singleHost')}</span>
                     <input
                         value={singleIp}
                         onChange={e => setSingleIp(e.target.value)}
@@ -205,7 +207,7 @@ function ScannerTab() {
                         disabled={scanning || !singleIp.trim()}
                         className="px-3 py-1.5 rounded-lg text-xs font-bold bg-lime-500 text-black disabled:opacity-50 hover:bg-lime-400 transition-all"
                     >
-                        Probe
+                        {t('network.probe')}
                     </button>
                 </div>
             </div>
@@ -222,7 +224,7 @@ function ScannerTab() {
             {/* Network Info */}
             {netInfo && (
                 <div className="rounded-2xl border p-4 space-y-3" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                    <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Local Network Info</h3>
+                    <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t('network.localNetInfo')}</h3>
                     <div className="grid grid-cols-2 gap-3">
                         {netInfo.localIp && <InfoRow label="Local IP" value={netInfo.localIp} />}
                         {netInfo.subnet  && <InfoRow label="Subnet"   value={netInfo.subnet}  />}
@@ -230,7 +232,7 @@ function ScannerTab() {
                     </div>
                     {netInfo.ifaces && netInfo.ifaces.length > 0 && (
                         <div className="space-y-1 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                            <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Interfaces</p>
+                            <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{t('network.interfaces')}</p>
                             {netInfo.ifaces.map((i, idx) => (
                                 <div key={idx} className="flex justify-between text-xs">
                                     <span style={{ color: 'var(--text-muted)' }}>{i.name} ({i.family})</span>
@@ -248,7 +250,7 @@ function ScannerTab() {
                     <div className="px-4 py-3 border-b flex items-center justify-between"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                            {devices.length} device{devices.length !== 1 ? 's' : ''} found
+                            {t('network.devicesFound', { count: devices.length })}
                         </span>
                     </div>
                     <div className="divide-y divide-[var(--border)]">
@@ -303,6 +305,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 // ─── DLNA Casting Tab ────────────────────────────────────────────────
 
 function CastingTab() {
+    const { t } = useTranslation();
     const [discovering, setDiscovering]   = useState(false);
     const [discoverPhase, setDiscoverPhase] = useState<string>('');
     const [renderers, setRenderers]       = useState<DlnaDevice[]>([]);
@@ -336,7 +339,7 @@ function CastingTab() {
             const found: DlnaDevice[] = data.devices ?? [];
             setRenderers(found);
             if (data.debug) setDebugInfo(data.debug);
-            if (found.length === 0) setStatus('No DLNA/UPnP renderers found. If your TV is on a different Wi-Fi band (2.4 GHz vs 5 GHz), the unicast scan should still find it — check the debug info below.');
+            if (found.length === 0) setStatus('No DLNA/UPnP renderers found. If your TV is on a different Wi-Fi band (2.4 GHz vs 5 GHz), the unicast scan should still find it - check the debug info below.');
             else setStatus(null);
         } catch (e: any) {
             setError(e.message ?? 'Network error');
@@ -376,7 +379,7 @@ function CastingTab() {
             <div className="rounded-2xl border p-4 space-y-3" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                     <Icon icon={Cast} size={15} className="text-lime-500" />
-                    Discover Renderers
+                    {t('network.dlna.discoverHeading')}
                 </h3>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     Scans your local network for DLNA/UPnP media renderers (smart TVs, speakers, media players).
@@ -389,7 +392,7 @@ function CastingTab() {
                     {discovering
                         ? <Icon icon={Loader2} size={14} className="animate-spin" />
                         : <Icon icon={Search} size={14} />}
-                    {discovering ? 'Discovering…' : 'Discover Devices'}
+                    {discovering ? t('network.dlna.discovering') : t('network.dlna.discoverBtn')}
                 </button>
 
                 {/* Phase label shown while scanning */}
@@ -412,7 +415,7 @@ function CastingTab() {
                 <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
                     <div className="px-4 py-3 border-b" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                            {renderers.length} renderer{renderers.length !== 1 ? 's' : ''} found
+                            {t('network.dlna.renderersFound', { count: renderers.length })}
                         </span>
                     </div>
                     <div className="divide-y divide-[var(--border)]">
@@ -437,7 +440,7 @@ function CastingTab() {
                                     </p>
                                 </div>
                                 {selected?.usn === r.usn && (
-                                    <span className="text-xs font-bold text-lime-500">Selected</span>
+                                    <span className="text-xs font-bold text-lime-500">{t('network.dlna.selected')}</span>
                                 )}
                             </button>
                         ))}
@@ -456,7 +459,7 @@ function CastingTab() {
                     <div className="space-y-3">
                         <div>
                             <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
-                                Media URL
+                                {t('network.dlna.mediaUrl')}
                             </label>
                             <input
                                 value={mediaUrl}
@@ -469,7 +472,7 @@ function CastingTab() {
 
                         <div className="flex gap-3">
                             <div className="flex-1">
-                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>MIME Type</label>
+                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{t('network.dlna.mimeType')}</label>
                                 <select
                                     value={mimeType}
                                     onChange={e => setMimeType(e.target.value)}
@@ -486,7 +489,7 @@ function CastingTab() {
                                 </select>
                             </div>
                             <div className="flex-1">
-                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Title (optional)</label>
+                                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{t('network.dlna.titleOptional')}</label>
                                 <input
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
@@ -505,7 +508,7 @@ function CastingTab() {
                             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-lime-500 text-black hover:bg-lime-400 disabled:opacity-50 transition-all"
                         >
                             {busy ? <Icon icon={Loader2} size={14} className="animate-spin" /> : <Icon icon={Play} size={14} />}
-                            Cast
+                            {t('network.dlna.cast')}
                         </button>
                         <button
                             onClick={() => doAction('pause')}
@@ -514,7 +517,7 @@ function CastingTab() {
                             style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                         >
                             <Icon icon={Pause} size={14} />
-                            Pause
+                            {t('network.dlna.pause')}
                         </button>
                         <button
                             onClick={() => doAction('stop')}
@@ -523,7 +526,7 @@ function CastingTab() {
                             style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                         >
                             <Icon icon={Square} size={14} />
-                            Stop
+                            {t('network.dlna.stop')}
                         </button>
                     </div>
                 </div>
@@ -555,6 +558,7 @@ function CastingTab() {
 // ─── Page ────────────────────────────────────────────────────────────
 
 export default function NetworkPage() {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'scanner' | 'casting'>('scanner');
 
     return (
@@ -566,17 +570,17 @@ export default function NetworkPage() {
                         <div className="w-9 h-9 rounded-xl bg-lime-500/15 flex items-center justify-center">
                             <Icon icon={Network} size={20} className="text-lime-500" />
                         </div>
-                        Network &amp; Devices
+                        {t('network.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Scan your local network and cast media to DLNA/UPnP devices.
+                        {t('network.subtitle')}
                     </p>
                 </div>
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6 p-1 rounded-2xl border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                    <TabBtn active={activeTab === 'scanner'} onClick={() => setActiveTab('scanner')} icon={Network} label="Network Scanner" />
-                    <TabBtn active={activeTab === 'casting'} onClick={() => setActiveTab('casting')} icon={Tv2}     label="DLNA Casting"    />
+                    <TabBtn active={activeTab === 'scanner'} onClick={() => setActiveTab('scanner')} icon={Network} label={t('network.tabs.scanner')} />
+                    <TabBtn active={activeTab === 'casting'} onClick={() => setActiveTab('casting')} icon={Tv2}     label={t('network.tabs.dlna')} />
                 </div>
 
                 {/* Tab Content */}

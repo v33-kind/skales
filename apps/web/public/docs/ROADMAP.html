@@ -1,1277 +1,1296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skales — Product Roadmap</title>
-  <style>
-    :root {
-      --bg: #0d0d0d;
-      --surface: #141414;
-      --surface2: #1c1c1c;
-      --border: #2a2a2a;
-      --accent: #7c5cfc;
-      --accent-dim: rgba(124, 92, 252, 0.15);
-      --accent2: #00c9a7;
-      --accent2-dim: rgba(0, 201, 167, 0.12);
-      --warn: #f59e0b;
-      --warn-dim: rgba(245, 158, 11, 0.12);
-      --danger: #ef4444;
-      --danger-dim: rgba(239, 68, 68, 0.12);
-      --text: #e8e8e8;
-      --text-muted: #6b7280;
-      --text-subtle: #4b5563;
-      --radius: 12px;
-      --radius-sm: 8px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skales Roadmap - v6.0.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0d0f;
+    --surface: #131518;
+    --surface2: #1a1d22;
+    --border: #2a2d34;
+    --border-light: #1f2228;
+    --text: #e8eaed;
+    --text-muted: #7a7f8a;
+    --text-dim: #4a4f5a;
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --green-border: rgba(74,222,128,0.25);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.1);
+    --amber-border: rgba(251,191,36,0.25);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.1);
+    --red-border: rgba(248,113,113,0.25);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --blue-border: rgba(96,165,250,0.25);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.08);
+    --purple-border: rgba(167,139,250,0.2);
+    --accent: #4ade80;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+  html { scroll-behavior: smooth; }
 
-    /* ── HEADER ── */
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 48px 64px 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    header::before {
-      content: '';
-      position: absolute;
-      top: -80px; left: -80px;
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(124,92,252,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; right: 100px;
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(0,201,167,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .header-top {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .logo-mark {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-      font-weight: 800;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    .header-brand {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .header-version {
-      font-size: 12px;
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(124,92,252,0.3);
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      margin-left: 4px;
-    }
-    header h1 {
-      font-size: 38px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.5));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 10px;
-    }
-    header p {
-      color: var(--text-muted);
-      font-size: 16px;
-      max-width: 560px;
-    }
-    .header-meta {
-      display: flex;
-      gap: 24px;
-      margin-top: 28px;
-    }
-    .meta-item {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .meta-label {
-      font-size: 11px;
-      color: var(--text-subtle);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-    }
-    .meta-value {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
 
-    /* ── LAYOUT ── */
-    main {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 48px 64px 80px;
-    }
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(12,13,15,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0 32px;
+    display: flex; align-items: center; gap: 20px; height: 56px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 17px;
+    color: var(--text); text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    margin-right: auto;
+  }
+  .nav-logo span { font-size: 20px; }
+  .nav-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .nav-link {
+    font-size: 13px; color: var(--text-muted);
+    text-decoration: none; transition: color .15s;
+  }
+  .nav-link:hover { color: var(--text); }
 
-    /* ── PHASE SECTION ── */
-    .phase {
-      margin-bottom: 56px;
-    }
-    .phase-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .phase-badge {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-    .phase-badge.hotfix {
-      background: var(--danger-dim);
-      color: var(--danger);
-      border: 1px solid rgba(239,68,68,0.3);
-    }
-    .phase-badge.patch {
-      background: var(--warn-dim);
-      color: var(--warn);
-      border: 1px solid rgba(245,158,11,0.3);
-    }
-    .phase-badge.minor {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(124,92,252,0.3);
-    }
-    .phase-badge.major {
-      background: var(--accent2-dim);
-      color: var(--accent2);
-      border: 1px solid rgba(0,201,167,0.3);
-    }
-    .phase-badge.future {
-      background: rgba(255,255,255,0.04);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .phase-title {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-    .phase-timeline {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-left: auto;
-      font-weight: 500;
-    }
-    .phase-divider {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-      margin: 0 8px;
-    }
+  /* ─── HERO ─── */
+  .hero {
+    padding: 72px 32px 56px;
+    max-width: 900px; margin: 0 auto;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    letter-spacing: .12em; text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: block;
+    width: 20px; height: 1px; background: var(--accent);
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -.02em;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 16px; color: var(--text-muted);
+    max-width: 560px; font-weight: 300;
+    margin-bottom: 32px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 24px;
+  }
+  .hero-meta-item {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .hero-meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--text-dim);
+  }
+  .hero-meta-value {
+    font-size: 14px; font-weight: 500; color: var(--text);
+  }
 
-    /* ── CARD GRID ── */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 14px;
-    }
+  /* ─── LEGEND ─── */
+  .legend-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    padding: 14px 32px;
+    display: flex; flex-wrap: wrap; gap: 20px;
+    align-items: center;
+  }
+  .legend-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: .1em;
+    margin-right: 4px;
+  }
+  .legend-items { display: flex; flex-wrap: wrap; gap: 12px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); }
+  .dot-amber { background: var(--amber); }
+  .dot-red { background: var(--red); }
+  .dot-blue { background: var(--blue); }
+  .dot-purple { background: var(--purple); }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 22px;
-      position: relative;
-      transition: border-color 0.2s, transform 0.15s;
-    }
-    .card:hover {
-      border-color: #3a3a3a;
-      transform: translateY(-1px);
-    }
-    .card.featured {
-      border-color: rgba(124,92,252,0.35);
-      background: linear-gradient(135deg, rgba(124,92,252,0.06) 0%, var(--surface) 60%);
-    }
-    .card.featured-green {
-      border-color: rgba(0,201,167,0.35);
-      background: linear-gradient(135deg, rgba(0,201,167,0.06) 0%, var(--surface) 60%);
-    }
-    .card.bugfix {
-      border-color: rgba(239,68,68,0.25);
-      background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, var(--surface) 60%);
-    }
+  /* ─── LAYOUT ─── */
+  .content {
+    max-width: 900px; margin: 0 auto;
+    padding: 0 32px 80px;
+  }
 
-    .card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .card-icon {
-      width: 34px; height: 34px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .card-icon.purple { background: var(--accent-dim); }
-    .card-icon.green  { background: var(--accent2-dim); }
-    .card-icon.amber  { background: var(--warn-dim); }
-    .card-icon.red    { background: var(--danger-dim); }
-    .card-icon.gray   { background: rgba(255,255,255,0.04); }
+  /* ─── SECTION HEADER ─── */
+  .release-header {
+    display: flex; align-items: baseline;
+    gap: 14px; margin: 56px 0 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+  }
+  .release-header::before {
+    content: ''; position: absolute;
+    left: 0; bottom: -1px; width: 40px; height: 1px;
+    background: var(--accent);
+  }
+  .release-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 500;
+    color: var(--accent);
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .release-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--text);
+  }
+  .release-sub {
+    font-size: 13px; color: var(--text-muted);
+    font-weight: 300; margin-top: 4px;
+  }
+  .release-date {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-dim);
+  }
 
-    .card-header { flex: 1; }
-    .card-title {
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.3;
-      margin-bottom: 2px;
-    }
-    .card-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      letter-spacing: 0.04em;
-    }
+  /* ─── PHASE HEADER ─── */
+  .phase-header {
+    margin: 48px 0 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .phase-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted); padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+  }
+  .phase-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px; font-weight: 700;
+    color: var(--text);
+  }
 
-    .card-body {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 10px;
+    transition: border-color .15s, background .15s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0 16px;
+    align-items: start;
+  }
+  .card:hover {
+    border-color: var(--border);
+    background: var(--surface2);
+  }
 
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 14px;
-    }
-    .tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.05);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .tag.purple { background: var(--accent-dim); color: var(--accent); border-color: rgba(124,92,252,0.2); }
-    .tag.green  { background: var(--accent2-dim); color: var(--accent2); border-color: rgba(0,201,167,0.2); }
-    .tag.red    { background: var(--danger-dim); color: var(--danger); border-color: rgba(239,68,68,0.2); }
-    .tag.amber  { background: var(--warn-dim); color: var(--warn); border-color: rgba(245,158,11,0.2); }
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border-light);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
 
-    .card-status {
-      position: absolute;
-      top: 16px; right: 16px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 2px 7px;
-      border-radius: 4px;
-    }
-    .card-status.open    { background: var(--warn-dim); color: var(--warn); }
-    .card-status.bug     { background: var(--danger-dim); color: var(--danger); }
-    .card-status.planned { background: var(--accent-dim); color: var(--accent); }
-    .card-status.future  { background: rgba(255,255,255,0.04); color: var(--text-subtle); }
-    .card-status.shipped { background: rgba(0,201,167,0.15); color: var(--accent2); border: 1px solid rgba(0,201,167,0.3); }
+  .card-body { min-width: 0; }
 
-    .card.shipped-card {
-      border-color: rgba(0,201,167,0.2);
-      opacity: 0.85;
-    }
-    .phase-badge.shipped {
-      background: rgba(0,201,167,0.12);
-      color: var(--accent2);
-      border: 1px solid rgba(0,201,167,0.3);
-    }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .card-subtitle {
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .card-desc {
+    font-size: 13.5px; color: var(--text-muted);
+    line-height: 1.6; margin-top: 6px;
+    font-weight: 300;
+  }
+  .card-tags {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-top: 10px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border-light);
+    padding: 2px 7px; border-radius: 20px;
+  }
 
-    /* ── FULL-WIDTH CARD ── */
-    .card.wide {
-      grid-column: 1 / -1;
-    }
+  .card-status {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0;
+    align-self: start;
+  }
+  .status-shipped {
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+  }
+  .status-bug {
+    color: var(--red);
+    background: var(--red-dim);
+    border: 1px solid var(--red-border);
+  }
+  .status-open {
+    color: var(--blue);
+    background: var(--blue-dim);
+    border: 1px solid var(--blue-border);
+  }
+  .status-planned {
+    color: var(--amber);
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-border);
+  }
+  .status-vision {
+    color: var(--purple);
+    background: var(--purple-dim);
+    border: 1px solid var(--purple-border);
+  }
+  .status-backlog {
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+  }
 
-    /* ── LEGEND ── */
-    .legend {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      padding: 16px 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      margin-bottom: 48px;
-    }
-    .legend-title {
-      font-size: 11px;
-      color: var(--text-subtle);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-right: 4px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-    .legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
+  /* ─── STAR CARD ─── */
+  .card.featured {
+    border-color: rgba(74,222,128,0.2);
+    background: linear-gradient(135deg, rgba(74,222,128,0.04) 0%, var(--surface) 60%);
+  }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 28px 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--text-subtle);
-      font-size: 13px;
-    }
-    footer strong { color: var(--text-muted); }
+  /* ─── GRID (2-col for some sections) ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-grid .card { margin-bottom: 0; }
 
-    @media (max-width: 700px) {
-      header, main, footer { padding-left: 24px; padding-right: 24px; }
-      header h1 { font-size: 28px; }
-      .cards { grid-template-columns: 1fr; }
-    }
-  </style>
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border-light);
+    padding: 32px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  footer strong { color: var(--text-muted); }
+  footer .gecko { font-size: 22px; display: block; margin-bottom: 8px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    nav { padding: 0 16px; gap: 12px; }
+    .nav-link { display: none; }
+    .hero, .content { padding-left: 16px; padding-right: 16px; }
+    .legend-bar { padding: 12px 16px; }
+    .card { grid-template-columns: auto 1fr; }
+    .card-status { grid-column: 2; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════ -->
-<header>
-  <div class="header-top">
-    <div class="logo-mark">🦎</div>
-    <span class="header-brand">Skales</span>
-    <span class="header-version">v3.5.0 — BSL 1.1</span>
+<nav>
+  <a href="https://skales.app" class="nav-logo"><span>🦎</span> Skales</a>
+  <span class="nav-badge">v6.0.0 - BSL 1.1</span>
+  <a href="https://docs.skales.app" class="nav-link">Docs</a>
+  <a href="https://skales.app" class="nav-link">Download</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Product Roadmap</div>
+  <h1>Everything that's coming next.</h1>
+  <p>Bugs to fix, features in progress, and the bigger vision ahead.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Current Release</span>
+      <span class="hero-meta-value">v6.0.0</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Status</span>
+      <span class="hero-meta-value">Public Beta</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Last Updated</span>
+      <span class="hero-meta-value">March 2026</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Author</span>
+      <span class="hero-meta-value">Mario Simic</span>
+    </div>
   </div>
-  <h1>Product Roadmap</h1>
-  <p>Everything that's coming next — bugs to fix, features in progress, and the bigger vision ahead.</p>
-  <div class="header-meta">
-    <div class="meta-item">
-      <span class="meta-label">Current Release</span>
-      <span class="meta-value">v3.5.0</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Status</span>
-      <span class="meta-value">Public Beta</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Last Updated</span>
-      <span class="meta-value">February 2026</span>
-    </div>
-    <div class="meta-item">
-      <span class="meta-label">Author</span>
-      <span class="meta-value">Mario Simic</span>
-    </div>
+</div>
+
+<div class="legend-bar">
+  <span class="legend-label">Legend</span>
+  <div class="legend-items">
+    <div class="legend-item"><span class="dot dot-green"></span> Shipped</div>
+    <div class="legend-item"><span class="dot dot-red"></span> Bug / Hotfix</div>
+    <div class="legend-item"><span class="dot dot-blue"></span> Open / In Progress</div>
+    <div class="legend-item"><span class="dot dot-amber"></span> Planned</div>
+    <div class="legend-item"><span class="dot dot-purple"></span> Future Vision</div>
   </div>
-</header>
+</div>
 
-<!-- ═══════════════════════════════════════════
-     MAIN
-═══════════════════════════════════════════ -->
-<main>
+<div class="content">
 
-  <!-- LEGEND -->
-  <div class="legend">
-    <span class="legend-title">Legend</span>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--accent2)"></span> Shipped ✓</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span> Bug / Hotfix</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--warn)"></span> Open / In Progress</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Planned (next release)</div>
-    <div class="legend-item"><span class="legend-dot" style="background:var(--text-subtle)"></span> Future / Backlog</div>
+  <!-- ═══════════════════════════════════════════════
+       v6.1.0 + v6.2.0 – NEXT (PLANNED)
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag" style="color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border);">v6.1.0</span>
+    <div>
+      <div class="release-title">The Expansion Update</div>
+      <div class="release-sub">Russian · Linux · Security Dashboard · News Feed · Morning Briefing · HIBP</div>
+    </div>
+    <span class="release-date">Planned</span>
   </div>
 
-  <!-- ══ v2.0.0 SHIPPED ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge shipped">Shipped</span>
-      <h2 class="phase-title">v2.0.0 — What Shipped</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Released · February 2026</span>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🇷🇺</div>
+      <div class="card-body">
+        <div class="card-title">Russian Language Support</div>
+        <div class="card-desc">Add ru.json locale with full UI translation. Makes Skales accessible to Russian-speaking users without changing the interface language for others.</div>
+        <div class="card-tags"><span class="tag">i18n</span><span class="tag">Languages</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
     </div>
-    <div class="cards">
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">📬</div>
-          <div class="card-header">
-            <div class="card-title">Gmail / Email Integration</div>
-            <div class="card-label">IMAP · SMTP · Email Management</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Full IMAP/SMTP email access. Skales can read, compose, reply, move, delete, and search emails. HTML-to-text conversion, attachment VirusTotal scanning, and new-email notifications on the dashboard.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Email</span>
-          <span class="tag">IMAP</span>
-          <span class="tag">SMTP</span>
-        </div>
+    <div class="card">
+      <div class="card-icon">🐧</div>
+      <div class="card-body">
+        <div class="card-title">Linux AppImage Build</div>
+        <div class="card-desc">Package Skales as a portable AppImage for Ubuntu, Fedora, and Arch Linux. No root required, runs from any directory.</div>
+        <div class="card-tags"><span class="tag">Linux</span><span class="tag">AppImage</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">📅</div>
-          <div class="card-header">
-            <div class="card-title">Google Calendar Integration</div>
-            <div class="card-label">Calendar · OAuth · Events</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Read and create Google Calendar events via OAuth. Skales can check schedules, add reminders, and surface upcoming events as context during conversations.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Calendar</span>
-          <span class="tag">Google</span>
-          <span class="tag">OAuth</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <div class="card-body">
+        <div class="card-title">Have I Been Pwned Check</div>
+        <div class="card-desc">Skales checks your email address against the HIBP database on demand and alerts you to known data breaches. No data stored.</div>
+        <div class="card-tags"><span class="tag">Security</span><span class="tag">HIBP</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">📨</div>
-          <div class="card-header">
-            <div class="card-title">Message Queue</div>
-            <div class="card-label">Async · Background Processing</div>
-          </div>
-        </div>
-        <div class="card-body">
-          A persistent message queue that lets Skales process long-running tasks in the background without blocking the chat interface. Tasks survive dashboard restarts.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Queue</span>
-          <span class="tag">Async</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-body">
+        <div class="card-title">Security Dashboard</div>
+        <div class="card-desc">A dedicated /security page showing: HIBP breach status, tool safety level, blacklist status, API key health, and network exposure summary.</div>
+        <div class="card-tags"><span class="tag">Security</span><span class="tag">Dashboard</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🧠</div>
-          <div class="card-header">
-            <div class="card-title">Bi-Temporal Memory</div>
-            <div class="card-label">Memory · Auto-Scan · Context</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Memories now carry both a "valid time" (when the fact is true) and a "transaction time" (when it was recorded). Auto-scan every 90 minutes extracts new memories from recent conversations.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Memory</span>
-          <span class="tag">Bi-Temporal</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📰</div>
+      <div class="card-body">
+        <div class="card-title">News Feed Skill</div>
+        <div class="card-desc">Aggregates headlines from RSS/Atom feeds into a daily briefing. Configurable sources, keyword filters, and summary depth. Delivered via chat or Telegram.</div>
+        <div class="card-tags"><span class="tag">RSS</span><span class="tag">News</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">✈️</div>
-          <div class="card-header">
-            <div class="card-title">Telegram Admin Interface</div>
-            <div class="card-label">Telegram · Remote Control · Commands</div>
-          </div>
-        </div>
-        <div class="card-body">
-          A dedicated Telegram bot for admin use. Full slash-command interface: /status, /memory, /task, /kill, /persona, /model and more. Admin-only with PIN protection.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Telegram</span>
-          <span class="tag">Remote</span>
-          <span class="tag">Admin</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌅</div>
+      <div class="card-body">
+        <div class="card-title">Morning Briefing</div>
+        <div class="card-desc">A scheduled daily digest: weather, calendar events for the day, top news headlines, pending tasks, and memory highlights. Delivered at a configurable time via chat or Telegram.</div>
+        <div class="card-tags"><span class="tag">Automation</span><span class="tag">Scheduling</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon red">☠️</div>
-          <div class="card-header">
-            <div class="card-title">Killswitch</div>
-            <div class="card-label">Safety · Emergency Stop · Autonomous</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Immediate hard stop for all AI activity. Triggered manually via dashboard, Telegram /kill, or automatically on RAM overload, infinite loops, or unusual file access patterns.
-        </div>
-        <div class="card-tags">
-          <span class="tag red">Safety</span>
-          <span class="tag">Emergency</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">👥</div>
-          <div class="card-header">
-            <div class="card-title">Multi-Persona Group Chat</div>
-            <div class="card-label">Personas · WhatsApp · Telegram</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Multiple AI personas can participate in a single chat. Each persona has its own name, role, and system prompt. Configurable per-group and per-platform.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Group Chat</span>
-          <span class="tag">Personas</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">⚙️</div>
-          <div class="card-header">
-            <div class="card-title">Autonomous Execute Mode</div>
-            <div class="card-label">Agentic · Tools · No Approval</div>
-          </div>
-        </div>
-        <div class="card-body">
-          An opt-in mode where Skales executes tool calls (web search, file ops, email) without requiring confirmation for each step. Designed for background automation tasks.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Execute Mode</span>
-          <span class="tag">Agentic</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🛡️</div>
-          <div class="card-header">
-            <div class="card-title">Website & Search Blacklists</div>
-            <div class="card-label">Security · Domain Filter · Buzzwords</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Domain blocklist prevents Skales from visiting dangerous sites. Buzzword filter blocks harmful search queries. Both are configurable in Settings → Security with default lists included.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Security</span>
-          <span class="tag">Blacklist</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">📱</div>
-          <div class="card-header">
-            <div class="card-title">Responsive UI</div>
-            <div class="card-label">Mobile · Tablet · Layout</div>
-          </div>
-        </div>
-        <div class="card-body">
-          The dashboard is now fully responsive across desktop, tablet, and mobile. Collapsible sidebar, mobile header, and touch-friendly controls throughout.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">UI</span>
-          <span class="tag">Mobile</span>
-          <span class="tag">Responsive</span>
-        </div>
-      </div>
-
+      <div class="card-status status-planned">Planned</div>
     </div>
   </div>
 
-  
-  <!-- ══ v3.5.0 SHIPPED ══ -->
-  <section class="phase">
-    <div class="phase-header">
-      <div class="phase-meta">
-        <span class="phase-version">v3.5.0</span>
-        <span class="phase-date">February 2026</span>
-      </div>
-      <h2 class="phase-title">v3.5.0 — The Connections Update</h2>
-      <p class="phase-subtitle">X/Twitter integration, Safety Mode, and a wave of bug fixes</p>
+  <div class="release-header" style="margin-top: 3rem;">
+    <span class="release-tag" style="color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border);">v6.2.0</span>
+    <div>
+      <div class="release-title">The Accessibility Update</div>
+      <div class="release-sub">Browser Captcha Handoff · Body Double Timer · ADHD Tools</div>
     </div>
-    <div class="cards">
+    <span class="release-date">Planned</span>
+  </div>
 
-      <div class="card">
-        <div class="card-header">
-          <span class="card-emoji">🐦</span>
-          <div>
-            <div class="card-label">Communication · New Skill</div>
-            <h3 class="card-title">X / Twitter Integration</h3>
-          </div>
-          <span class="tag green">Shipped in v3.5.0</span>
-        </div>
-        <p class="card-desc">Full OAuth 1.0a integration. Post tweets, read your timeline and @mentions, reply to tweets — directly from chat or via Telegram. Three permission modes: Send Only, Read &amp; Write, Full Autonomous.</p>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-body">
+        <div class="card-title">Browser Captcha Handoff</div>
+        <div class="card-desc">When Browser Control encounters a CAPTCHA, it pauses automation, notifies the user via Desktop Buddy, and waits for manual solve before resuming. Eliminates silent failures on protected sites.</div>
+        <div class="card-tags"><span class="tag">Browser</span><span class="tag">Automation</span></div>
       </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-emoji">🛡️</span>
-          <div>
-            <div class="card-label">System · Safety</div>
-            <h3 class="card-title">Safety Mode (Handbrake)</h3>
-          </div>
-          <span class="tag green">Shipped in v3.5.0</span>
-        </div>
-        <p class="card-desc">Three-level shell command safety system. Safe (default) — blocks dangerous commands like rm -rf, format, fork bombs. Advanced — pauses and asks for Approve/Reject. Unrestricted — no blocking for power users.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-emoji">📱</span>
-          <div>
-            <div class="card-label">Mobile · Bug Fix</div>
-            <h3 class="card-title">Mobile UI Fixes</h3>
-          </div>
-          <span class="tag green">Shipped in v3.5.0</span>
-        </div>
-        <p class="card-desc">Fixed mobile input bar disappearing behind keyboard, chat scroll-jump on new messages, hydration mismatch on mobile, and clipboard copy fallback for HTTP/Tailscale connections.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-emoji">👁️</span>
-          <div>
-            <div class="card-label">Vision · Bug Fix</div>
-            <h3 class="card-title">OpenRouter Telegram Vision Fix</h3>
-          </div>
-          <span class="tag green">Shipped in v3.5.0</span>
-        </div>
-        <p class="card-desc">Telegram image uploads now work correctly when OpenRouter is the active provider. Skales auto-detects non-vision-capable models and falls back to GPT-4o Mini for image analysis.</p>
-      </div>
-
+      <div class="card-status status-planned">Planned</div>
     </div>
-  </section>
-
-  <!-- ══ v3.0.0 SHIPPED ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge shipped">Shipped</span>
-      <h2 class="phase-title">v3.0.0 — What Shipped</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Released · February 2026</span>
-    </div>
-    <div class="cards">
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🦁</div>
-          <div class="card-header">
-            <div class="card-title">Lio AI — Code Builder</div>
-            <div class="card-label">Code Generation · Agentic · Terminal</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Autonomous code-generation agent. Lio can scaffold entire projects, write and edit files, run terminal commands, iterate on errors, and deliver working code from a single plain-language prompt. Accessible from the sidebar when the <code>lio_ai</code> skill is enabled.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Code Gen</span>
-          <span class="tag">Agentic</span>
-          <span class="tag">Skills</span>
-        </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <div class="card-body">
+        <div class="card-title">Body Double Timer for ADHD</div>
+        <div class="card-desc">A focus timer mode where Skales acts as a virtual body double: announces task start, checks in at intervals, and celebrates completion. Helps users with ADHD stay on task.</div>
+        <div class="card-tags"><span class="tag">ADHD</span><span class="tag">Focus</span><span class="tag">Wellbeing</span></div>
       </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🌐</div>
-          <div class="card-header">
-            <div class="card-title">Browser Control & Web Scraping</div>
-            <div class="card-label">Playwright · Automation · Scraping</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Playwright-powered headless browser integration. Skales can navigate URLs, click elements, fill forms, extract text, take full-page screenshots, and return structured results. Requires the <code>browser_control</code> skill and Playwright installed.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Browser</span>
-          <span class="tag">Playwright</span>
-          <span class="tag">Scraping</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">👁️</div>
-          <div class="card-header">
-            <div class="card-title">Vision Provider — Screenshot & Analysis</div>
-            <div class="card-label">Vision · Screenshot · Multimodal</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Dedicated Vision Provider configuration separate from the main AI provider. Desktop screenshots are captured as a native tool (never via shell commands), saved to workspace, shown inline in chat, and optionally forwarded via Telegram. Supports any OpenAI-compatible vision model.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Vision</span>
-          <span class="tag">Screenshot</span>
-          <span class="tag">Multimodal</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🔄</div>
-          <div class="card-header">
-            <div class="card-title">Auto-Update System</div>
-            <div class="card-label">Updater · SSE Progress · Checksum</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Built-in update checker that fetches <code>skales.app/updates/latest.json</code> on startup. Dismissable dashboard banner, <code>/update</code> page with live SSE download progress bar, SHA-256 checksum verification, and platform-specific install instructions. Update server URL is hardcoded — cannot be redirected.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Updates</span>
-          <span class="tag">Security</span>
-          <span class="tag">SSE</span>
-        </div>
-      </div>
-
+      <div class="card-status status-planned">Planned</div>
     </div>
   </div>
 
-  <!-- ══ PHASE 0: HOTFIXES ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge hotfix">Hotfix</span>
-      <h2 class="phase-title">Phase 0 — Critical Bug Fixes</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Immediate · v1.0.1</span>
+  <!-- ═══════════════════════════════════════════════
+       v6.0.0 – THE LIVING AGENT
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag">v6.0.0</span>
+    <div>
+      <div class="release-title">The Living Agent</div>
+      <div class="release-sub">Multilingual UI · Replicate BYOK · Custom AI Endpoint · Buddy Tool Execution · Dynamic Skins · Telemetry · Bug Reporting · Skales+</div>
     </div>
-    <div class="cards">
+    <span class="release-date">March 2026</span>
+  </div>
 
-      <div class="card bugfix">
-        <span class="card-status bug">Bug</span>
-        <div class="card-top">
-          <div class="card-icon red">🐛</div>
-          <div class="card-header">
-            <div class="card-title">Fix VEO 3 Integration Bug</div>
-            <div class="card-label">Video Generation · API Connector</div>
-          </div>
-        </div>
-        <div class="card-body">
-          VEO 3 API calls fail silently or return malformed responses. Response parsing and error handling need to be hardened before the feature can be shipped publicly.
-        </div>
-        <div class="card-tags">
-          <span class="tag red">Critical</span>
-          <span class="tag">VEO 3</span>
-          <span class="tag">API</span>
-        </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🌍</div>
+      <div class="card-body">
+        <div class="card-title">Multilingual UI (EN / DE / ES / FR)</div>
+        <div class="card-subtitle">849 translated keys</div>
+        <div class="card-desc">Full UI in English, German, Spanish, and French. Language picker on first launch. Language switcher in Settings always accessible. System messages, approval dialogs, and Desktop Buddy all translated.</div>
+        <div class="card-tags"><span class="tag">i18n</span><span class="tag">Accessibility</span></div>
       </div>
-
-      <div class="card bugfix">
-        <span class="card-status bug">Bug</span>
-        <div class="card-top">
-          <div class="card-icon red">⚡</div>
-          <div class="card-header">
-            <div class="card-title">WhatsApp Session Reconnect</div>
-            <div class="card-label">Bot · Session Management</div>
-          </div>
-        </div>
-        <div class="card-body">
-          WhatsApp bot drops the session on long idle periods and does not attempt reconnect automatically. Add exponential backoff reconnect logic and session health check.
-        </div>
-        <div class="card-tags">
-          <span class="tag red">High Priority</span>
-          <span class="tag">WhatsApp</span>
-          <span class="tag">Bot</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎨</div>
+      <div class="card-body">
+        <div class="card-title">Replicate Integration (BYOK)</div>
+        <div class="card-subtitle">50+ image and video models</div>
+        <div class="card-desc">Connect your own Replicate API key to access SDXL, FLUX, Stable Video Diffusion, and 50+ other open-source AI models directly from the chat toolbar.</div>
+        <div class="card-tags"><span class="tag">Replicate</span><span class="tag">Image Gen</span><span class="tag">BYOK</span></div>
       </div>
-
-      <div class="card bugfix">
-        <span class="card-status bug">Bug</span>
-        <div class="card-top">
-          <div class="card-icon red">🔒</div>
-          <div class="card-header">
-            <div class="card-title">Port Collision on Restart</div>
-            <div class="card-label">Dashboard · Runtime</div>
-          </div>
-        </div>
-        <div class="card-body">
-          When the dashboard crashes and is restarted quickly, port 3000 is not always released cleanly. The kill-logic in the start scripts needs a grace period and fallback port.
-        </div>
-        <div class="card-tags">
-          <span class="tag red">Medium</span>
-          <span class="tag">macOS</span>
-          <span class="tag">Windows</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔌</div>
+      <div class="card-body">
+        <div class="card-title">Custom OpenAI-Compatible Endpoint</div>
+        <div class="card-subtitle">llama.cpp, LM Studio, vLLM, koboldcpp</div>
+        <div class="card-desc">Connect any local server that speaks the OpenAI chat completions API format. URL normalization, optional API key, Fetch Models button, and a tool-calling toggle for models that don't support function calling.</div>
+        <div class="card-tags"><span class="tag">Local AI</span><span class="tag">BYOK</span><span class="tag">vLLM</span></div>
       </div>
-
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🦎</div>
+      <div class="card-body">
+        <div class="card-title">Desktop Buddy Flicker Fix</div>
+        <div class="card-subtitle">requestVideoFrameCallback + 150ms crossfade</div>
+        <div class="card-desc">Eliminated the 300-500ms blank flash between animations by switching from React state to direct DOM opacity writes synchronized with rVFC. 150ms crossfade masks any remaining decode jitter.</div>
+        <div class="card-tags"><span class="tag">Desktop Buddy</span><span class="tag">Performance</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🖼️</div>
+      <div class="card-body">
+        <div class="card-title">Dynamic Buddy Skin Architecture</div>
+        <div class="card-subtitle">mascot/&lt;skin&gt;/&lt;category&gt;/ folder structure</div>
+        <div class="card-desc">Replaced hardcoded animation filenames with a dynamic folder system. New .webm files dropped into a skin folder are picked up automatically. Skin selector appears in Settings when multiple skins are installed.</div>
+        <div class="card-tags"><span class="tag">Desktop Buddy</span><span class="tag">Skins</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👑</div>
+      <div class="card-body">
+        <div class="card-title">Skales+ Tier UI</div>
+        <div class="card-subtitle">Teaser only - all features remain free</div>
+        <div class="card-desc">Three-column tier comparison page (Free Forever / Personal / Business) with email waitlist. All current features remain unlocked during beta. No payment integration yet.</div>
+        <div class="card-tags"><span class="tag">Skales+</span><span class="tag">Waitlist</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <div class="card-body">
+        <div class="card-title">Approval System Improvements</div>
+        <div class="card-subtitle">TOOL_SAFETY default changed to confirm</div>
+        <div class="card-desc">Unknown tools now require approval by default. create_document tool added. Telegram inline buttons fixed (parse_mode). Telegram bot works on any port (dynamic SKALES_PORT).</div>
+        <div class="card-tags"><span class="tag">Security</span><span class="tag">Telegram</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔧</div>
+      <div class="card-body">
+        <div class="card-title">Build Automation</div>
+        <div class="card-subtitle">post-nextjs-build.js</div>
+        <div class="card-desc">Automated mascot and static asset copy into the standalone output. Build scripts consolidated. Version string centralized via APP_VERSION in meta.ts. Mascot folder structure verification in CI.</div>
+        <div class="card-tags"><span class="tag">Build</span><span class="tag">CI</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
     </div>
   </div>
 
-  <!-- ══ PHASE 1: v1.0.x PATCH ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge patch">Patch</span>
-      <h2 class="phase-title">Phase 1 — Core Feature Completions</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Short-term · v1.0.x</span>
+    <div class="card">
+      <div class="card-icon">🦎</div>
+      <div class="card-body">
+        <div class="card-title">Desktop Buddy Tool Execution</div>
+        <div class="card-subtitle">agentDecide + agentExecute + Approve/Decline bubbles</div>
+        <div class="card-desc">The buddy now uses the full tool pipeline - web search, file writes, email, calendar, and more. Auto-executes safe read-only tools instantly. Side-effect actions pause and show Approve / Decline buttons directly inside the speech bubble. Every buddy action is appended to the active chat session.</div>
+        <div class="card-tags"><span class="tag">Desktop Buddy</span><span class="tag">Tools</span><span class="tag">Autonomy</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
     </div>
-    <div class="cards">
-
-      <div class="card featured wide">
-        <span class="card-status open">Open</span>
-        <div class="card-top">
-          <div class="card-icon purple">📦</div>
-          <div class="card-header">
-            <div class="card-title">Export / Import — Full Data Portability</div>
-            <div class="card-label">Settings · Memory · Chat History</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Users can currently not transfer their Skales setup between machines or back up their configuration. This feature adds a one-click Export that bundles all user data into a portable <code>.skales-backup.zip</code> — including memories, settings, persona config, skill definitions, and scheduled tasks. The matching Import wizard detects the file, validates it, and restores everything in the correct order, respecting foreign key constraints in the SQLite database.
-          <br/><br/>
-          <strong style="color:var(--text)">Scope:</strong> Export/Import for Settings · Memories · Chat History · Persona · Skills · Cron Jobs
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">High Priority</span>
-          <span class="tag">Data Portability</span>
-          <span class="tag">SQLite</span>
-          <span class="tag">Settings</span>
-          <span class="tag">Memories</span>
-        </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <div class="card-body">
+        <div class="card-title">Anonymous Telemetry (Opt-In)</div>
+        <div class="card-subtitle">Off by default - onboarding prompt + Settings toggle</div>
+        <div class="card-desc">Opt-in telemetry collects only: app version, OS type, start/crash timestamps. No conversations, no API keys, no personal data. Prompted during onboarding wizard, toggleable any time in Settings → Privacy.</div>
+        <div class="card-tags"><span class="tag">Privacy</span><span class="tag">Telemetry</span></div>
       </div>
-
-      <div class="card featured">
-        <span class="card-status open">Open</span>
-        <div class="card-top">
-          <div class="card-icon purple">📤</div>
-          <div class="card-header">
-            <div class="card-title">Upload Custom Skill</div>
-            <div class="card-label">Skills · Developer Experience</div>
-          </div>
-        </div>
-        <div class="card-body">
-          The Skills page has a "Upload Custom Skill" button that is currently non-functional. Users should be able to drop a <code>.skill.zip</code> or <code>.js</code> file containing a skill manifest and handler. Skales validates, sandboxes, and registers it automatically.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Planned</span>
-          <span class="tag">Skills</span>
-          <span class="tag">Upload</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🐛</div>
+      <div class="card-body">
+        <div class="card-title">In-App Bug Reporting</div>
+        <div class="card-subtitle">Sidebar button - text-only, no screenshots</div>
+        <div class="card-desc">Report Bug button in the sidebar opens a modal with a description field (20-2000 chars) and optional OS info checkbox. Reports POST to a Skales-controlled endpoint. Falls back to local bugreports.jsonl via IPC if offline.</div>
+        <div class="card-tags"><span class="tag">DX</span><span class="tag">Feedback</span></div>
       </div>
-
-      <div class="card">
-        <span class="card-status open">Open</span>
-        <div class="card-top">
-          <div class="card-icon amber">🔔</div>
-          <div class="card-header">
-            <div class="card-title">Notification System</div>
-            <div class="card-label">Dashboard · Alerts</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Skales completes background tasks but has no way to surface results proactively. Add an in-dashboard notification bell plus optional OS-level desktop notifications when tasks complete or scheduled jobs fire.
-        </div>
-        <div class="card-tags">
-          <span class="tag amber">Planned</span>
-          <span class="tag">UX</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <span class="card-status open">Open</span>
-        <div class="card-top">
-          <div class="card-icon amber">📋</div>
-          <div class="card-header">
-            <div class="card-title">Task History & Audit Log</div>
-            <div class="card-label">Tasks · Transparency</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Every action Skales takes (file edits, web searches, API calls) should be logged in a browsable audit trail in the Logs view. Currently the log view shows raw stdout, not structured records.
-        </div>
-        <div class="card-tags">
-          <span class="tag amber">Planned</span>
-          <span class="tag">Logs</span>
-          <span class="tag">Tasks</span>
-        </div>
-      </div>
-
-      <div class="card shipped-card">
-        <span class="card-status shipped">✓ Shipped</span>
-        <div class="card-top">
-          <div class="card-icon green">🔄</div>
-          <div class="card-header">
-            <div class="card-title">Auto-Update Mechanism</div>
-            <div class="card-label">Installer · Update · v3.0.0</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Shipped in v3.0.0. Fetches <code>skales.app/updates/latest.json</code>, shows a dashboard banner when a new version is available, and provides a <code>/update</code> page with live SSE download progress and SHA-256 checksum verification.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Shipped in v3.0.0</span>
-          <span class="tag">Updater</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <span class="card-status open">Open</span>
-        <div class="card-top">
-          <div class="card-icon amber">💾</div>
-          <div class="card-header">
-            <div class="card-title">Memory Search & Management UI</div>
-            <div class="card-label">Memory · Dashboard</div>
-          </div>
-        </div>
-        <div class="card-body">
-          The Memory page lists stored memories but has no search, filter, or bulk-delete functionality. Add full-text + semantic search, tag filtering, and individual/bulk memory deletion with confirmation.
-        </div>
-        <div class="card-tags">
-          <span class="tag amber">Planned</span>
-          <span class="tag">Memory</span>
-          <span class="tag">Search</span>
-        </div>
-      </div>
-
+      <div class="card-status status-shipped">✓ Shipped</div>
     </div>
   </div>
 
-  <!-- ══ PHASE 2: v1.0 ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge minor">v1.0</span>
-      <h2 class="phase-title">Phase 2 — AI-Native Features</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Mid-term · v1.0</span>
+  <!-- ═══════════════════════════════════════════════
+       v5.0.0 – THE AUTOPILOT UPDATE
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag">v5.0.0</span>
+    <div>
+      <div class="release-title">The Autopilot Update</div>
+      <div class="release-sub">Autonomous Chief of Staff · Voice Chat · Custom Skill Ecosystem · Documents · Google Places · Network Scanner · Media Casting</div>
     </div>
-    <div class="cards">
+    <span class="release-date">March 2026</span>
+  </div>
 
-      <div class="card featured wide">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🤖</div>
-          <div class="card-header">
-            <div class="card-title">Skill AI — AI-Generated Custom Skills</div>
-            <div class="card-label">Skills · Code Generation · No-Code</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Let Skales write, debug, and optimize your custom skills. Describe what your skill should do — Skales generates the code, tests it, and installs it automatically. No dev setup required.
-          <br/><br/>
-          The user opens a chat-like interface and describes their skill in plain language: <em>"When I say 'send morning briefing', compile a summary of my calendar + open tasks and send it via Telegram."</em> Skales generates the handler, writes a manifest, runs a sandbox test, and adds the skill to the library — all without the user touching a file.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Next Up</span>
-          <span class="tag">Code Gen</span>
-          <span class="tag">Skills</span>
-          <span class="tag">No-Code</span>
-          <span class="tag">Automation</span>
-        </div>
+  <div class="card featured">
+    <div class="card-icon">⭐</div>
+    <div class="card-body">
+      <div class="card-title">Autopilot - Autonomous Chief of Staff <span style="font-size:11px;color:var(--text-dim);font-weight:400;font-family:'DM Mono',monospace;">Autonomy · New Feature</span></div>
+      <div class="card-desc">Full autonomous background agent with a 4-section dashboard. Conducts a Deep-Dive Interview to learn your goals, generates a Master Plan with task breakdown, executes tasks with OODA self-correction loop, cost controls, human-in-the-loop approval gates, anti-loop protocol (max 3 retries), and daily stand-up reports.</div>
+      <div class="card-tags"><span class="tag">Autonomy</span><span class="tag">OODA</span><span class="tag">Planning</span></div>
+    </div>
+    <div class="card-status status-shipped">✓ Shipped</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <div class="card-body">
+        <div class="card-title">Meta-Agent</div>
+        <div class="card-subtitle">Universal Skill Dispatcher</div>
+        <div class="card-desc">Autopilot as meta-agent with headless, isolated access to every active skill. Dispatches to web_search, documents, network_scanner, email, Twitter, Calendar, OODA replan, and internal group chat - silently in the background.</div>
+        <div class="card-tags"><span class="tag">Meta-Agent</span><span class="tag">Autonomy</span></div>
       </div>
-
-      <div class="card featured wide">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🎨</div>
-          <div class="card-header">
-            <div class="card-title">Theme Creator</div>
-            <div class="card-label">UI · Personalization · Themes</div>
-          </div>
-        </div>
-        <div class="card-body">
-          A visual theme editor that lets users customize every color, font, and spacing token in the Skales dashboard. Themes can be exported as JSON and shared with others. Includes a library of pre-built themes (dark, light, AMOLED, cyberpunk, and more) to choose from.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Next Up</span>
-          <span class="tag">Themes</span>
-          <span class="tag">Customization</span>
-          <span class="tag">UI</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎙️</div>
+      <div class="card-body">
+        <div class="card-title">Voice Chat Interface</div>
+        <div class="card-subtitle">Interface · New Feature</div>
+        <div class="card-desc">Full duplex voice interface. Whisper transcription (Groq primary, OpenAI fallback). ElevenLabs TTS with browser SpeechSynthesis fallback. Dedicated voice mode UI with animated recording indicator.</div>
+        <div class="card-tags"><span class="tag">Whisper</span><span class="tag">ElevenLabs</span><span class="tag">TTS</span></div>
       </div>
-
-      <div class="card featured">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🌐</div>
-          <div class="card-header">
-            <div class="card-title">AI-Generated Landing Page</div>
-            <div class="card-label">Marketing · Web · AI Generation</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Skales generates a personalized public landing page for your AI agent — describing its capabilities, contact methods, and links. Hosted locally, shareable over LAN or via proxy.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Planned</span>
-          <span class="tag">Landing Page</span>
-          <span class="tag">Public</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧩</div>
+      <div class="card-body">
+        <div class="card-title">Skill AI - Custom Ecosystem</div>
+        <div class="card-subtitle">Platform · New Feature</div>
+        <div class="card-desc">Upload a .skill.zip to install new capabilities. AI scaffolding generates skill definitions from plain-language descriptions. Skills hot-reload without restart. Isolated sandboxed execution.</div>
+        <div class="card-tags"><span class="tag">Skills</span><span class="tag">No-Code</span><span class="tag">AI Gen</span></div>
       </div>
-
-      <div class="card featured">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🔗</div>
-          <div class="card-header">
-            <div class="card-title">Proxy & Self-Hosted Remote Access</div>
-            <div class="card-label">Networking · Remote · Tailscale · Cloudflare</div>
-          </div>
-        </div>
-        <div class="card-body">
-          First-class support for exposing Skales remotely without port-forwarding. Built-in integration guides for Tailscale, Cloudflare Tunnel, and ngrok. Lets users access their Skales instance securely from anywhere in the world.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Planned</span>
-          <span class="tag">Tailscale</span>
-          <span class="tag">Cloudflare</span>
-          <span class="tag">Remote</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <div class="card-body">
+        <div class="card-title">Documents Generation</div>
+        <div class="card-subtitle">Productivity · New Skill</div>
+        <div class="card-desc">Generate .docx Word documents, .pdf files (simultaneously via pdf-lib), and .xlsx Excel spreadsheets from natural language. Zero native binaries - pure Node.js libraries.</div>
+        <div class="card-tags"><span class="tag">Word</span><span class="tag">PDF</span><span class="tag">Excel</span></div>
       </div>
-
-      <div class="card featured">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🎙️</div>
-          <div class="card-header">
-            <div class="card-title">Voice Input / Voice Mode</div>
-            <div class="card-label">Input · Accessibility</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Push-to-talk and always-on wake-word detection for the dashboard and Telegram interface. Transcription via Whisper (local, offline). Response playback via TTS.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Planned</span>
-          <span class="tag">Whisper</span>
-          <span class="tag">Voice</span>
-          <span class="tag">TTS</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🗺️</div>
+      <div class="card-body">
+        <div class="card-title">Google Places Integration</div>
+        <div class="card-subtitle">Location · New Skill</div>
+        <div class="card-desc">Search nearby places, get details (hours, reviews, photos), geocode addresses, and fetch directions via Google Places REST API. Pure fetch() - no SDK.</div>
+        <div class="card-tags"><span class="tag">Google</span><span class="tag">Maps</span><span class="tag">Location</span></div>
       </div>
-
-      <div class="card featured">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon purple">🧠</div>
-          <div class="card-header">
-            <div class="card-title">Long-Term Memory 2.0</div>
-            <div class="card-label">Memory · RAG · Embeddings</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Replace the current flat-memory model with a hierarchical memory system: episodic (events), semantic (facts), and procedural (how-to) memories with dynamic relevance scoring and automatic forgetting of stale data.
-        </div>
-        <div class="card-tags">
-          <span class="tag purple">Planned</span>
-          <span class="tag">RAG</span>
-          <span class="tag">Embeddings</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-body">
+        <div class="card-title">Network Scanner</div>
+        <div class="card-subtitle">Network · New Skill</div>
+        <div class="card-desc">Scan your LAN for all active devices using raw net.connect() - no nmap. Detects open ports and specifically identifies other Skales instances on port 3000.</div>
+        <div class="card-tags"><span class="tag">LAN</span><span class="tag">Network</span><span class="tag">JSON</span></div>
       </div>
-
-      <div class="card">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon green">🌐</div>
-          <div class="card-header">
-            <div class="card-title">Multi-Model Support</div>
-            <div class="card-label">LLM · Provider Switching</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Allow users to configure different models for different tasks (e.g., fast model for quick replies, powerful model for deep research). Route automatically based on task complexity.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Planned</span>
-          <span class="tag">OpenRouter</span>
-          <span class="tag">LLM</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📺</div>
+      <div class="card-body">
+        <div class="card-title">Media Casting (DLNA/UPnP)</div>
+        <div class="card-subtitle">Media · New Skill</div>
+        <div class="card-desc">Discover DLNA/UPnP renderers via SSDP. Cast any HTTP-accessible media to smart TVs, speakers, or Chromecast-compatible devices. Full AVTransport control: Play, Pause, Stop, Seek, Volume.</div>
+        <div class="card-tags"><span class="tag">DLNA</span><span class="tag">UPnP</span><span class="tag">SSDP</span></div>
       </div>
-
-      <div class="card">
-        <span class="card-status planned">Planned</span>
-        <div class="card-top">
-          <div class="card-icon green">📁</div>
-          <div class="card-header">
-            <div class="card-title">File Workspace — Persistent Watch Mode</div>
-            <div class="card-label">Files · Automation</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Let Skales "watch" a folder and automatically trigger workflows on file changes. Example: drop a PDF into the watched folder → Skales extracts, summarizes, and files it.
-        </div>
-        <div class="card-tags">
-          <span class="tag green">Planned</span>
-          <span class="tag">Files</span>
-          <span class="tag">Automation</span>
-        </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🦎</div>
+      <div class="card-body">
+        <div class="card-title">Desktop Buddy - Floating Mascot</div>
+        <div class="card-subtitle">Desktop · New Feature</div>
+        <div class="card-desc">Transparent frameless Electron window (400×500) with animated mascot running a 4-state FSM. Glassmorphism Spotlight quick-input. AI responses as auto-dismissing speech bubbles. Enable in Settings → Desktop App.</div>
+        <div class="card-tags"><span class="tag">Electron</span><span class="tag">FSM</span><span class="tag">Spotlight</span></div>
       </div>
-
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤝</div>
+      <div class="card-body">
+        <div class="card-title">Agent-to-Agent Protocol</div>
+        <div class="card-subtitle">Multi-Agent · Protocol</div>
+        <div class="card-desc">New REST endpoint: ping, handshake, delegate, status. Skales instances on the same LAN can discover each other, exchange capability cards, and delegate tasks. Optional bearer auth.</div>
+        <div class="card-tags"><span class="tag">/api/agent-sync</span><span class="tag">REST</span><span class="tag">LAN</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-body">
+        <div class="card-title">Wake-Up Crash Fix</div>
+        <div class="card-subtitle">Stability · Bug Fix</div>
+        <div class="card-desc">Global React ErrorBoundary catches render and unhandledrejection errors. All background polling intervals guarded with document.hidden checks. Eliminates crashes on OS suspend-wake cycles.</div>
+        <div class="card-tags"><span class="tag">ErrorBoundary</span><span class="tag">Stability</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
     </div>
   </div>
 
-  <!-- ══ PHASE 3: FUTURE ══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <span class="phase-badge major">v1.x+</span>
-      <h2 class="phase-title">Phase 3 — Platform Vision</h2>
-      <span class="phase-divider"></span>
-      <span class="phase-timeline">Long-term · Backlog</span>
+  <!-- ═══════════════════════════════════════════════
+       v4.1.0 – POLISH UPDATE (PLANNED)
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag" style="color:var(--amber);background:var(--amber-dim);border-color:var(--amber-border);">v4.1.0</span>
+    <div>
+      <div class="release-title">The Polish Update</div>
+      <div class="release-sub">Auto-Update · Code Signing · Badges · Marketplace · Plugin API · Themes</div>
     </div>
-    <div class="cards">
+    <span class="release-date">Planned</span>
+  </div>
 
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">🔌</div>
-          <div class="card-header">
-            <div class="card-title">Skill Marketplace</div>
-            <div class="card-label">Community · Distribution</div>
-          </div>
-        </div>
-        <div class="card-body">
-          A GitHub-backed registry where users can publish, discover, and install community skills with a single command. Signed manifests, ratings, and install counts.
-        </div>
-        <div class="card-tags">
-          <span class="tag">Community</span>
-          <span class="tag">GitHub</span>
-          <span class="tag">Registry</span>
-        </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <div class="card-body">
+        <div class="card-title">Auto-Update via electron-updater</div>
+        <div class="card-desc">One-click in-app updates without reinstalling.</div>
       </div>
-
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">🐧</div>
-          <div class="card-header">
-            <div class="card-title">Linux Support</div>
-            <div class="card-label">Platform · DevOps</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Extend the release pipeline to include a <code>linux/</code> folder with <code>.sh</code> scripts and a headless server mode for VPS / Raspberry Pi deployments.
-        </div>
-        <div class="card-tags">
-          <span class="tag">Linux</span>
-          <span class="tag">Headless</span>
-          <span class="tag">VPS</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔏</div>
+      <div class="card-body">
+        <div class="card-title">Code Signing</div>
+        <div class="card-desc">Windows EV cert and macOS Apple notarization to eliminate Gatekeeper / SmartScreen warnings.</div>
       </div>
-
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">🤝</div>
-          <div class="card-header">
-            <div class="card-title">Agent-to-Agent Collaboration</div>
-            <div class="card-label">Multi-Agent · Architecture</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Multiple Skales instances can delegate sub-tasks to each other over a local network. One instance acts as orchestrator, others as specialized workers (research, coding, comms).
-        </div>
-        <div class="card-tags">
-          <span class="tag">Multi-Agent</span>
-          <span class="tag">Networking</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔔</div>
+      <div class="card-body">
+        <div class="card-title">Notification Badges</div>
+        <div class="card-desc">Taskbar / dock badge showing unread messages from integrations.</div>
       </div>
-
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">📊</div>
-          <div class="card-header">
-            <div class="card-title">Analytics & Insights Dashboard</div>
-            <div class="card-label">Reporting · Self-Reflection</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Weekly AI-generated reports on how Skales was used: tasks completed, time saved, most-used skills, memory growth. Helps users understand their own productivity patterns.
-        </div>
-        <div class="card-tags">
-          <span class="tag">Analytics</span>
-          <span class="tag">Reports</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-body">
+        <div class="card-title">Electron Production Optimizations</div>
+        <div class="card-desc">Faster cold-start, reduced memory footprint, improved ASAR packaging.</div>
       </div>
-
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">☁️</div>
-          <div class="card-header">
-            <div class="card-title">Optional Cloud Sync (E2E Encrypted)</div>
-            <div class="card-label">Sync · Privacy</div>
-          </div>
-        </div>
-        <div class="card-body">
-          Opt-in encrypted backup and sync of memories and settings to a user-provided cloud bucket (S3, Backblaze, Cloudflare R2). Zero-knowledge — Skales never sees the keys.
-        </div>
-        <div class="card-tags">
-          <span class="tag">E2E</span>
-          <span class="tag">Sync</span>
-          <span class="tag">Privacy</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🪟</div>
+      <div class="card-body">
+        <div class="card-title">Native Window Controls</div>
+        <div class="card-desc">Custom titlebar with traffic-light buttons on macOS.</div>
       </div>
-
-      <div class="card">
-        <span class="card-status future">Backlog</span>
-        <div class="card-top">
-          <div class="card-icon gray">📱</div>
-          <div class="card-header">
-            <div class="card-title">Mobile Companion App</div>
-            <div class="card-label">iOS · Android</div>
-          </div>
-        </div>
-        <div class="card-body">
-          A lightweight mobile app that connects to the local Skales instance over LAN or via the cloud sync layer. Allows chat, task creation, and memory review from the phone.
-        </div>
-        <div class="card-tags">
-          <span class="tag">Mobile</span>
-          <span class="tag">iOS</span>
-          <span class="tag">Android</span>
-        </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛒</div>
+      <div class="card-body">
+        <div class="card-title">Skill Marketplace (ZIP Upload)</div>
+        <div class="card-desc">Install community skills by uploading a .skill.zip. Skales validates, sandboxes, and registers automatically.</div>
       </div>
-
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔌</div>
+      <div class="card-body">
+        <div class="card-title">Plugin API</div>
+        <div class="card-desc">Public plugin interface for third-party extensions to hook into Skales' skill and event system.</div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎨</div>
+      <div class="card-body">
+        <div class="card-title">UI Customization / Themes</div>
+        <div class="card-desc">Visual theme editor with color, font, and spacing controls. Export as JSON and share with others.</div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
     </div>
   </div>
 
-</main>
+  <!-- ═══════════════════════════════════════════════
+       v4.0.0 – THE DESKTOP EDITION
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag">v4.0.0</span>
+    <div>
+      <div class="release-title">The Desktop Edition</div>
+      <div class="release-sub">Native Electron app - Windows EXE + macOS DMG · System Tray · Auto-Start · Twitter/X Integration</div>
+    </div>
+    <span class="release-date">February 2026</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🖥️</div>
+      <div class="card-body">
+        <div class="card-title">Native Desktop App (Electron)</div>
+        <div class="card-desc">Windows EXE and macOS DMG installers. No terminal, no Node.js, no browser required.</div>
+        <div class="card-tags"><span class="tag">Electron</span><span class="tag">Windows</span><span class="tag">macOS</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🦎</div>
+      <div class="card-body">
+        <div class="card-title">System Tray</div>
+        <div class="card-desc">🦎 icon lives in your system tray. Minimize to tray, restore with single click, context menu access.</div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-body">
+        <div class="card-title">Auto-Start (Launch at Login)</div>
+        <div class="card-desc">Toggle in Settings → Desktop App. Uses Windows registry and macOS Login Items via Electron's native API.</div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <div class="card-body">
+        <div class="card-title">Single Instance Lock</div>
+        <div class="card-desc">Launching Skales a second time focuses the existing window instead of spawning a duplicate process.</div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛑</div>
+      <div class="card-body">
+        <div class="card-title">Graceful Shutdown</div>
+        <div class="card-desc">On quit, sends SIGTERM to internal server and waits up to 5 seconds for in-flight tasks before force-kill.</div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🐦</div>
+      <div class="card-body">
+        <div class="card-title">X / Twitter Integration</div>
+        <div class="card-desc">Full OAuth 1.0a. Post tweets, read timeline and @mentions, reply. Three permission modes: Send Only, Read & Write, Full Autonomous.</div>
+        <div class="card-tags"><span class="tag">OAuth 1.0a</span><span class="tag">Twitter</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-body">
+        <div class="card-title">Safety Mode (Handbrake)</div>
+        <div class="card-desc">Three-level shell command safety. Safe (blocks dangerous cmds), Advanced (pause + approve), Unrestricted (power users).</div>
+        <div class="card-tags"><span class="tag">Safety</span><span class="tag">Shell</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📁</div>
+      <div class="card-body">
+        <div class="card-title">Home Directory Storage</div>
+        <div class="card-desc">All user data stored in ~/.skales-data. Persists across updates and full reinstalls.</div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       v3.0.0 – SHIPPED
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag">v3.0.0</span>
+    <div>
+      <div class="release-title">Lio AI · Browser Control · Vision · Auto-Update</div>
+    </div>
+    <span class="release-date">February 2026</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🦁</div>
+      <div class="card-body">
+        <div class="card-title">Lio AI - Code Builder</div>
+        <div class="card-desc">Autonomous code-generation agent. Scaffolds entire projects, writes and edits files, runs terminal commands, iterates on errors - from a single prompt.</div>
+        <div class="card-tags"><span class="tag">Code Gen</span><span class="tag">Agentic</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-body">
+        <div class="card-title">Browser Control & Web Scraping</div>
+        <div class="card-desc">Playwright-powered headless browser. Navigate, click, fill forms, extract text, take full-page screenshots, return structured results.</div>
+        <div class="card-tags"><span class="tag">Playwright</span><span class="tag">Scraping</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👁️</div>
+      <div class="card-body">
+        <div class="card-title">Vision Provider</div>
+        <div class="card-desc">Desktop screenshots captured as native tool (never via shell), saved to workspace, shown inline in chat. Supports any OpenAI-compatible vision model.</div>
+        <div class="card-tags"><span class="tag">Vision</span><span class="tag">Screenshot</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <div class="card-body">
+        <div class="card-title">Auto-Update System</div>
+        <div class="card-desc">Built-in update checker. Dismissable dashboard banner, /update page with live SSE download progress bar, SHA-256 checksum verification.</div>
+        <div class="card-tags"><span class="tag">SSE</span><span class="tag">SHA-256</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       v2.0.0 – SHIPPED
+  ════════════════════════════════════════════════ -->
+  <div class="release-header">
+    <span class="release-tag">v2.0.0</span>
+    <div>
+      <div class="release-title">Gmail · Google Calendar · Memory · Telegram Admin · Group Chat</div>
+    </div>
+    <span class="release-date">February 2026</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📬</div>
+      <div class="card-body">
+        <div class="card-title">Gmail / Email Integration</div>
+        <div class="card-desc">Full IMAP/SMTP. Read, compose, reply, move, delete, search. HTML-to-text conversion, VirusTotal attachment scanning, new-email dashboard notifications.</div>
+        <div class="card-tags"><span class="tag">IMAP</span><span class="tag">SMTP</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <div class="card-body">
+        <div class="card-title">Google Calendar</div>
+        <div class="card-desc">Read and create Google Calendar events via OAuth. Check schedules, add reminders, surface upcoming events as context during conversations.</div>
+        <div class="card-tags"><span class="tag">OAuth</span><span class="tag">Calendar</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <div class="card-body">
+        <div class="card-title">Bi-Temporal Memory</div>
+        <div class="card-desc">Memories carry "valid time" (when the fact is true) and "transaction time" (when it was recorded). Auto-scan every 90 minutes extracts new memories from recent conversations.</div>
+        <div class="card-tags"><span class="tag">Memory</span><span class="tag">Bi-Temporal</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">✈️</div>
+      <div class="card-body">
+        <div class="card-title">Telegram Admin Interface</div>
+        <div class="card-desc">Dedicated Telegram bot for admin use. Full slash-command interface: /status, /memory, /task, /kill, /persona, /model. Admin-only with PIN protection.</div>
+        <div class="card-tags"><span class="tag">Telegram</span><span class="tag">Admin</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">☠️</div>
+      <div class="card-body">
+        <div class="card-title">Killswitch</div>
+        <div class="card-desc">Immediate hard stop for all AI activity. Triggered manually or automatically on RAM overload, infinite loops, or unusual file access patterns.</div>
+        <div class="card-tags"><span class="tag">Safety</span><span class="tag">Emergency</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👥</div>
+      <div class="card-body">
+        <div class="card-title">Multi-Persona Group Chat</div>
+        <div class="card-desc">Multiple AI personas in a single chat. Each with own name, role, and system prompt. Configurable per-group and per-platform.</div>
+        <div class="card-tags"><span class="tag">Personas</span><span class="tag">WhatsApp</span></div>
+      </div>
+      <div class="card-status status-shipped">✓ Shipped</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 0 – CRITICAL BUGS
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag">Phase 0 · Immediate</span>
+    <span class="phase-title">Critical Bug Fixes</span>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🐛</div>
+    <div class="card-body">
+      <div class="card-title">Fix VEO 3 Integration Bug</div>
+      <div class="card-subtitle">Video Generation · API Connector</div>
+      <div class="card-desc">VEO 3 API calls fail silently or return malformed responses. Response parsing and error handling need hardening before public ship.</div>
+      <div class="card-tags"><span class="tag">Critical</span><span class="tag">VEO 3</span><span class="tag">API</span></div>
+    </div>
+    <div class="card-status status-bug">Bug</div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">⚡</div>
+    <div class="card-body">
+      <div class="card-title">WhatsApp Session Reconnect</div>
+      <div class="card-subtitle">Bot · Session Management</div>
+      <div class="card-desc">WhatsApp bot drops session on long idle periods without attempting reconnect. Add exponential backoff reconnect logic and session health check.</div>
+      <div class="card-tags"><span class="tag">High Priority</span><span class="tag">WhatsApp</span></div>
+    </div>
+    <div class="card-status status-bug">Bug</div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🔒</div>
+    <div class="card-body">
+      <div class="card-title">Port Collision on Restart</div>
+      <div class="card-subtitle">Dashboard · Runtime</div>
+      <div class="card-desc">When the dashboard crashes and is restarted quickly, port 3000 is not always released cleanly. Kill-logic needs a grace period and fallback port.</div>
+      <div class="card-tags"><span class="tag">Medium</span><span class="tag">macOS</span><span class="tag">Windows</span></div>
+    </div>
+    <div class="card-status status-bug">Bug</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 1 – CORE FEATURES
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag">Phase 1 · Short-term</span>
+    <span class="phase-title">Core Feature Completions</span>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🔔</div>
+    <div class="card-body">
+      <div class="card-title">Notification System</div>
+      <div class="card-subtitle">Dashboard · Alerts</div>
+      <div class="card-desc">In-dashboard notification bell plus optional OS-level desktop notifications when tasks complete or scheduled jobs fire.</div>
+      <div class="card-tags"><span class="tag">UX</span><span class="tag">Planned</span></div>
+    </div>
+    <div class="card-status status-open">Open</div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">📋</div>
+    <div class="card-body">
+      <div class="card-title">Task History & Audit Log</div>
+      <div class="card-subtitle">Tasks · Transparency</div>
+      <div class="card-desc">Every action Skales takes (file edits, web searches, API calls) logged in a browsable audit trail. Currently the log view shows raw stdout, not structured records.</div>
+      <div class="card-tags"><span class="tag">Logs</span><span class="tag">Tasks</span></div>
+    </div>
+    <div class="card-status status-open">Open</div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">💾</div>
+    <div class="card-body">
+      <div class="card-title">Memory Search & Management UI</div>
+      <div class="card-subtitle">Memory · Dashboard</div>
+      <div class="card-desc">The Memory page lists stored memories but has no search, filter, or bulk-delete functionality. Add full-text + semantic search, tag filtering, and individual/bulk memory deletion.</div>
+      <div class="card-tags"><span class="tag">Memory</span><span class="tag">Search</span></div>
+    </div>
+    <div class="card-status status-open">Open</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 2 – AI-NATIVE
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag">Phase 2 · Mid-term</span>
+    <span class="phase-title">AI-Native Features</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <div class="card-body">
+        <div class="card-title">Long-Term Memory 2.0</div>
+        <div class="card-desc">Hierarchical memory: episodic (events), semantic (facts), procedural (how-to). Dynamic relevance scoring and automatic forgetting of stale data.</div>
+        <div class="card-tags"><span class="tag">RAG</span><span class="tag">Embeddings</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-body">
+        <div class="card-title">Multi-Model Routing</div>
+        <div class="card-desc">Configure different models for different tasks. Fast model for quick replies, powerful model for deep research. Auto-route based on task complexity.</div>
+        <div class="card-tags"><span class="tag">OpenRouter</span><span class="tag">LLM</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📁</div>
+      <div class="card-body">
+        <div class="card-title">File Workspace - Watch Mode</div>
+        <div class="card-desc">Let Skales "watch" a folder and trigger workflows on file changes. Drop a PDF → Skales extracts, summarizes, and files it automatically.</div>
+        <div class="card-tags"><span class="tag">Files</span><span class="tag">Automation</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔗</div>
+      <div class="card-body">
+        <div class="card-title">Proxy & Remote Access</div>
+        <div class="card-desc">First-class support for Tailscale, Cloudflare Tunnel, and ngrok. Access your Skales instance securely from anywhere in the world.</div>
+        <div class="card-tags"><span class="tag">Tailscale</span><span class="tag">Cloudflare</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎨</div>
+      <div class="card-body">
+        <div class="card-title">Theme Creator</div>
+        <div class="card-desc">Visual theme editor - customize every color, font, border-radius, and spacing. Export themes as JSON and share with the community.</div>
+        <div class="card-tags"><span class="tag">Themes</span><span class="tag">Customization</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <div class="card-body">
+        <div class="card-title">AI-Generated Landing Page</div>
+        <div class="card-desc">Skales generates a personalized public landing page for your AI agent - capabilities, contact methods, and links. Hosted locally, shareable over LAN or via proxy.</div>
+        <div class="card-tags"><span class="tag">Marketing</span><span class="tag">Web</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PHASE 3 – PLATFORM VISION / BACKLOG
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag">Phase 3 · Long-term</span>
+    <span class="phase-title">Platform Vision</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🔌</div>
+      <div class="card-body">
+        <div class="card-title">Skill Marketplace</div>
+        <div class="card-desc">GitHub-backed registry. Publish, discover, and install community skills with a single command. Signed manifests, ratings, and install counts.</div>
+        <div class="card-tags"><span class="tag">Community</span><span class="tag">GitHub</span></div>
+      </div>
+      <div class="card-status status-backlog">Backlog</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🐧</div>
+      <div class="card-body">
+        <div class="card-title">Linux Support</div>
+        <div class="card-desc">Extend the release pipeline to include a linux/ folder with .sh scripts and a headless server mode for VPS / Raspberry Pi deployments.</div>
+        <div class="card-tags"><span class="tag">Linux</span><span class="tag">VPS</span><span class="tag">Headless</span></div>
+      </div>
+      <div class="card-status status-backlog">Backlog</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-body">
+        <div class="card-title">Analytics & Insights Dashboard</div>
+        <div class="card-desc">Weekly AI-generated reports: tasks completed, time saved, most-used skills, memory growth. Understand your own productivity patterns.</div>
+        <div class="card-tags"><span class="tag">Analytics</span><span class="tag">Reports</span></div>
+      </div>
+      <div class="card-status status-backlog">Backlog</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">☁️</div>
+      <div class="card-body">
+        <div class="card-title">Optional Cloud Sync (E2E Encrypted)</div>
+        <div class="card-desc">Opt-in encrypted backup and sync to a user-provided cloud bucket (S3, Backblaze, Cloudflare R2). Zero-knowledge - Skales never sees the keys.</div>
+        <div class="card-tags"><span class="tag">E2E</span><span class="tag">Sync</span><span class="tag">Privacy</span></div>
+      </div>
+      <div class="card-status status-backlog">Backlog</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <div class="card-body">
+        <div class="card-title">Mobile Companion App</div>
+        <div class="card-desc">Lightweight iOS / Android app connecting to the local Skales instance over LAN or via the cloud sync layer. Chat, task creation, memory review.</div>
+        <div class="card-tags"><span class="tag">iOS</span><span class="tag">Android</span></div>
+      </div>
+      <div class="card-status status-backlog">Backlog</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       V7+ – PREMIUM / AGENCY FEATURES
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag" style="color:var(--amber);border-color:var(--amber-border);">V7+ · Premium</span>
+    <span class="phase-title">Agency &amp; Power Features</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <div class="card-body">
+        <div class="card-title">FTP / SFTP Deployment</div>
+        <div class="card-subtitle">Skales+ Business tier - Agency feature</div>
+        <div class="card-desc">Skales connects to FTP/SFTP servers and can create, update, and deploy static websites and built apps autonomously. Lio AI designs and builds the site; Skales deploys it. One prompt from brief to live website. Zero manual upload step.</div>
+        <div class="card-tags"><span class="tag">FTP</span><span class="tag">Deployment</span><span class="tag">Lio AI</span><span class="tag">Skales+ Business</span></div>
+      </div>
+      <div class="card-status status-planned">Planned</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       V6 VISION
+  ════════════════════════════════════════════════ -->
+  <div class="phase-header">
+    <span class="phase-tag" style="color:var(--purple);border-color:var(--purple-border);">V6 Vision</span>
+    <span class="phase-title" style="background:linear-gradient(90deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">The Swarm</span>
+  </div>
+
+  <div class="card" style="border-color:var(--purple-border);background:var(--purple-dim);">
+    <div class="card-icon">🌐</div>
+    <div class="card-body">
+      <div class="card-title">Agent-to-Agent LAN Swarm</div>
+      <div class="card-desc">Multiple Skales instances on the same LAN automatically discover each other via /api/agent-sync, form a dynamic swarm, and collaborate on complex tasks. One instance orchestrates; others are specialized workers (research, coding, comms, media). Tasks split, delegated, results merged - all on your LAN, zero cloud.</div>
+      <div class="card-tags"><span class="tag">Multi-Agent</span><span class="tag">LAN</span><span class="tag">Swarm</span></div>
+    </div>
+    <div class="card-status status-vision">V6</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:var(--purple-border);">
+      <div class="card-icon">🖥️</div>
+      <div class="card-body">
+        <div class="card-title">Full Desktop Screen Mirroring via WebRTC</div>
+        <div class="card-desc">Capture full desktop via Electron's desktopCapturer, stream over WebRTC to any browser on your Tailscale network. AI analyzes what's on screen in real-time. Peer-to-peer, zero cloud relay.</div>
+        <div class="card-tags"><span class="tag">WebRTC</span><span class="tag">Vision</span><span class="tag">Remote</span></div>
+      </div>
+      <div class="card-status status-vision">V6</div>
+    </div>
+    <div class="card" style="border-color:var(--purple-border);">
+      <div class="card-icon">🔏</div>
+      <div class="card-body">
+        <div class="card-title">Code Signing (EV + Notarization)</div>
+        <div class="card-desc">Eliminate Gatekeeper and SmartScreen warnings permanently. Windows EV cert + Apple Developer ID notarization. Single-click, friction-free installs.</div>
+        <div class="card-tags"><span class="tag">Security</span><span class="tag">Distribution</span></div>
+      </div>
+      <div class="card-status status-vision">V6</div>
+    </div>
+  </div>
+
+</div><!-- /content -->
 
 <footer>
-  <div>Built by <strong>Mario Simic</strong> · Skales v3.5.0 · BSL 1.1</div>
-  <div>This roadmap is a living document and subject to change.</div>
+  <span class="gecko">🦎</span>
+  Built by <strong>Mario Simic</strong> · Skales v6.0.0 · BSL 1.1<br>
+  <span style="margin-top:6px;display:block;">This roadmap is a living document and subject to change.</span>
 </footer>
 
 </body>

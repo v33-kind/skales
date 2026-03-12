@@ -1,4 +1,4 @@
-# Commercial Licensing — Skales
+# Commercial Licensing - Skales
 
 Skales is released under the **Business Source License 1.1 (BSL)**.
 
@@ -32,4 +32,4 @@ Pricing is determined individually based on use case and scale. Contact us to di
 
 ---
 
-*© 2026 Skales — Mario Simic. All rights reserved.*
+*© 2026 Skales - Mario Simic. All rights reserved.*

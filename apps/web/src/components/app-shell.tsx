@@ -6,6 +6,7 @@ import Sidebar from './sidebar';
 import BootstrapGuard from './bootstrap-guard';
 import { getDashboardData } from '@/actions/dashboard';
 import { Menu, Mail, X } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
     const Component = I;
@@ -14,6 +15,7 @@ const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { t } = useTranslation();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [dashData, setDashData] = useState<any>(null);
@@ -86,6 +88,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 .catch(console.error);
         }
     }, [pathname, isBootstrap]);
+
+    // ── Telemetry: fire 'app_start' once per app launch ──────────────────────
+    // Calls the server-side route which checks settings.telemetry_enabled
+    // before sending anything. Fire-and-forget, never blocks the UI.
+    useEffect(() => {
+        fetch('/api/telemetry/ping').catch(() => {});
+    }, []);
 
     const toggleSidebar = useCallback(() => {
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
@@ -160,7 +169,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         <button
                             onClick={toggleSidebar}
                             className="p-2 rounded-lg hover:bg-[var(--surface-light)]"
-                            aria-label="Open navigation menu"
+                            aria-label={t('appShell.openNavMenu')}
                         >
                             <Icon icon={Menu} size={20} />
                         </button>
@@ -182,7 +191,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     <Icon icon={Mail} size={15} className="text-blue-400 shrink-0" />
                                     <div className="flex-1 min-w-0 flex items-baseline gap-1.5 flex-wrap">
                                         <span className="text-xs font-semibold text-blue-400 shrink-0">
-                                            {emailNotifs.length === 1 ? '1 new email' : `${emailNotifs.length} new emails`}
+                                            {emailNotifs.length === 1 ? t('appShell.email.oneNew') : t('appShell.email.manyNew', { count: emailNotifs.length })}
                                         </span>
                                         {emailNotifs[0] && (
                                             <span className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
@@ -196,8 +205,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     </div>
                                     <button onClick={dismissEmailNotifs}
                                         className="p-1 rounded-lg hover:bg-blue-500/10 transition-colors shrink-0"
-                                        title="Dismiss"
-                                        aria-label="Dismiss email notifications">
+                                        title={t('appShell.email.dismiss')}
+                                        aria-label={t('appShell.email.dismissAria')}>
                                         <Icon icon={X} size={14} className="text-blue-400" />
                                     </button>
                                 </div>

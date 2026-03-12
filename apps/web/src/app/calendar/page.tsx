@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { listCalendarEvents, loadCalendarConfig } from '@/actions/calendar';
 import { CalendarDays, RefreshCw, Clock, MapPin, ExternalLink, AlertCircle, Settings } from 'lucide-react';
 import Link from 'next/link';
@@ -58,6 +59,7 @@ function getStartStr(ev: CalendarEvent): string {
 // ─── Event Card ───────────────────────────────────────────────
 
 function EventCard({ ev }: { ev: CalendarEvent }) {
+    const { t } = useTranslation();
     const allDay = isAllDay(ev);
     const startStr = getStartStr(ev);
     const today = startStr ? isToday(startStr) : false;
@@ -67,7 +69,7 @@ function EventCard({ ev }: { ev: CalendarEvent }) {
             {/* Time column */}
             <div className="flex flex-col items-center justify-start min-w-[52px] pt-0.5">
                 {allDay ? (
-                    <span className="text-xs font-semibold text-lime-400 bg-lime-500/10 rounded-md px-1.5 py-0.5">All day</span>
+                    <span className="text-xs font-semibold text-lime-400 bg-lime-500/10 rounded-md px-1.5 py-0.5">{t('calendar.allDay')}</span>
                 ) : (
                     <>
                         <span className="text-sm font-bold text-foreground">{formatTime(ev.start.dateTime!)}</span>
@@ -91,7 +93,7 @@ function EventCard({ ev }: { ev: CalendarEvent }) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="shrink-0 text-text-secondary hover:text-lime-400 transition-colors opacity-0 group-hover:opacity-100"
-                            title="Open in Google Calendar"
+                            title={t('calendar.openInGoogle')}
                         >
                             <ExternalLink size={14} />
                         </a>
@@ -133,6 +135,7 @@ function DayGroup({ label, events, isToday }: { label: string; events: CalendarE
 // ─── Page ─────────────────────────────────────────────────────
 
 export default function CalendarPage() {
+    const { t } = useTranslation();
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -190,10 +193,10 @@ export default function CalendarPage() {
                             <CalendarDays size={20} className="text-lime-400" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">Calendar</h1>
+                            <h1 className="text-lg font-bold text-foreground">{t('calendar.title')}</h1>
                             {lastRefresh && (
                                 <p className="text-xs text-text-secondary">
-                                    Updated {lastRefresh.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    {t('calendar.updated', { time: lastRefresh.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) })}
                                 </p>
                             )}
                         </div>
@@ -206,11 +209,11 @@ export default function CalendarPage() {
                             onChange={e => setDaysAhead(Number(e.target.value))}
                             className="text-xs bg-surface-light border border-border rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:border-lime-500/50"
                         >
-                            <option value={1}>Today</option>
-                            <option value={2}>Next 2 days</option>
-                            <option value={7}>Next 7 days</option>
-                            <option value={14}>Next 2 weeks</option>
-                            <option value={30}>Next 30 days</option>
+                            <option value={1}>{t('calendar.range.today')}</option>
+                            <option value={2}>{t('calendar.range.next2Days')}</option>
+                            <option value={7}>{t('calendar.range.next7Days')}</option>
+                            <option value={14}>{t('calendar.range.next2Weeks')}</option>
+                            <option value={30}>{t('calendar.range.next30Days')}</option>
                         </select>
 
                         <button
@@ -219,7 +222,7 @@ export default function CalendarPage() {
                             className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-surface-light border border-border text-text-secondary hover:text-foreground hover:border-lime-500/30 transition-all disabled:opacity-50"
                         >
                             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-                            Refresh
+                            {t('calendar.refresh')}
                         </button>
                     </div>
                 </div>
@@ -235,15 +238,15 @@ export default function CalendarPage() {
                             <CalendarDays size={32} className="text-text-secondary" />
                         </div>
                         <div>
-                            <p className="text-foreground font-semibold mb-1">Google Calendar not configured</p>
-                            <p className="text-sm text-text-secondary">Connect your calendar in Settings → Skills → Google Calendar.</p>
+                            <p className="text-foreground font-semibold mb-1">{t('calendar.notConfigured')}</p>
+                            <p className="text-sm text-text-secondary">{t('calendar.notConfiguredDesc')}</p>
                         </div>
                         <Link
                             href="/settings"
                             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-lime-500 text-black text-sm font-semibold hover:bg-lime-400 transition-colors"
                         >
                             <Settings size={14} />
-                            Open Settings
+                            {t('calendar.openSettings')}
                         </Link>
                     </div>
                 )}
@@ -253,7 +256,7 @@ export default function CalendarPage() {
                     <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
                         <AlertCircle size={18} className="shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-sm font-semibold mb-0.5">Failed to load events</p>
+                            <p className="text-sm font-semibold mb-0.5">{t('calendar.loadFailed')}</p>
                             <p className="text-xs opacity-80">{error}</p>
                         </div>
                     </div>
@@ -292,8 +295,8 @@ export default function CalendarPage() {
                         <div className="w-14 h-14 rounded-2xl bg-surface-light flex items-center justify-center">
                             <Clock size={28} className="text-text-secondary" />
                         </div>
-                        <p className="text-foreground font-semibold">No events</p>
-                        <p className="text-sm text-text-secondary">Nothing scheduled in the next {daysAhead === 1 ? 'day' : `${daysAhead} days`}.</p>
+                        <p className="text-foreground font-semibold">{t('calendar.noEvents')}</p>
+                        <p className="text-sm text-text-secondary">{t('calendar.nothingScheduled', { range: daysAhead === 1 ? t('calendar.range.today').toLowerCase() : `${daysAhead} days` })}</p>
                     </div>
                 )}
             </div>

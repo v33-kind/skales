@@ -1,0 +1,1230 @@
+{
+  "meta": {
+    "language": "Français",
+    "locale": "fr"
+  },
+  "nav": {
+    "chat": "Chat",
+    "settings": "Paramètres",
+    "tasks": "Tâches",
+    "history": "Historique",
+    "newSession": "Nouveau",
+    "dashboard": "Dashboard",
+    "agents": "Agents",
+    "memory": "Souvenirs",
+    "autopilot": "Pilote automatique",
+    "code": "Lio AI",
+    "groupChat": "Chat de groupe",
+    "network": "Réseau et appareils",
+    "schedule": "Planification",
+    "logs": "Journaux",
+    "calendar": "Calendrier",
+    "skills": "Skills",
+    "customSkills": "Skills personnalisés",
+    "update": "Mise à jour",
+    "docs": "Docs",
+    "sections": {
+      "menu": "Menu",
+      "skills": "Skills",
+      "system": "Système"
+    }
+  },
+  "sidebar": {
+    "ariaLabel": "Barre latérale de l'app",
+    "expandSidebar": "Développer la barre latérale",
+    "collapseSidebar": "Réduire la barre latérale",
+    "docsTitle": "Documentation (ouvre dans un nouvel onglet)",
+    "stopServer": "Arrêter le serveur",
+    "status": {
+      "connected": "Connecté",
+      "notConnected": "Non connecté",
+      "localAI": "IA locale",
+      "startOllama": "Démarrer Ollama ?"
+    },
+    "shutdown": {
+      "confirm": "Es-tu sûr de vouloir arrêter Skales ? Ferme et rouvre l'app pour redémarrer.",
+      "alert": "Skales a été arrêté. Ferme et rouvre l'app pour redémarrer."
+    },
+    "theme": {
+      "light": "Mode clair",
+      "dark": "Mode sombre",
+      "switchToLight": "Passer en mode clair",
+      "switchToDark": "Passer en mode sombre"
+    }
+  },
+  "appShell": {
+    "openNavMenu": "Ouvrir le menu de navigation",
+    "email": {
+      "oneNew": "1 nouvel e-mail",
+      "manyNew": "{{count}} nouveaux e-mails",
+      "dismiss": "Fermer",
+      "dismissAria": "Fermer les notifications e-mail"
+    }
+  },
+  "chat": {
+    "loadingText": "Démarrage de Skales",
+    "defaultAgentDesc": "Buddy IA principal",
+    "approvalTitle": "Approbation requise - {{count}} action{{s}} nécessite ta confirmation",
+    "imageModelLabel": "Modèle :",
+    "placeholder": "Message à {{agentName}}...",
+    "placeholderQueuing": "Mise en file...",
+    "placeholderCaption": "Légende (optionnel)...",
+    "placeholderAboutFile": "À propos de {{fileName}}...",
+    "placeholderMultiAgent": "Multi-Agent en cours - tape pour mettre ton message en file...",
+    "send": "Envoyer le message",
+    "stop": "Arrêter la génération et vider la file",
+    "queueMessage": "Mettre en file",
+    "queueMessageCount": "Mettre en file ({{count}} déjà en file)",
+    "queueMultiAgent": "Mettre en file (Multi-Agent en cours)",
+    "attachFile": "Joindre un fichier",
+    "openSlashCommands": "Ouvrir les commandes slash",
+    "toggleSummarize": "Activer le mode résumé",
+    "imageVideoGeneration": "Génération d'images / vidéos",
+    "voiceChatEnter": "Entrer dans le chat vocal",
+    "voiceChatLeave": "Quitter le chat vocal",
+    "voice": "Voix",
+    "messages": "Messages du chat",
+    "sessionHistory": "Afficher l'historique des sessions",
+    "hideSessionHistory": "Masquer l'historique des sessions",
+    "noSessions": "Pas encore de sessions",
+    "sessions": "Sessions",
+    "refreshSessions": "Actualiser les sessions",
+    "closeSessions": "Fermer le panneau des sessions",
+    "deleteSession": "Supprimer la session",
+    "showAll": "Tout afficher ({{count}})",
+    "showLess": "Afficher moins",
+    "queued": "{{count}} message en file",
+    "queuedPlural": "{{count}} messages en file",
+    "queueSendWhenReady": "sera envoyé quand prêt",
+    "attachedImage": "Image jointe",
+    "contentPreview": "Aperçu du contenu",
+    "dateFormatDayTime": "DD Mon HH:MM",
+    "dateFormatTime": "HH:MM",
+    "recalling": "Je me souviens...",
+    "chatCleared": "Chat vidé ! Comment puis-je t'aider ? 🦎",
+    "sessionDeleted": "Session supprimée. Repartons à zéro ! 🦎",
+    "thinking": "Je réfléchis...",
+    "dateFormatYesterday": "Hier HH:MM",
+    "approval": {
+      "approveAndRun": "Approuver et exécuter les actions demandées",
+      "cancelAndDeny": "Annuler et refuser les actions demandées"
+    },
+    "queue": {
+      "clearAll": "Vider tous les messages en file",
+      "removeFromQueue": "Retirer de la file"
+    },
+    "status": {
+      "discardRecording": "Ignorer et réenregistrer",
+      "executing": "Exécution...",
+      "generating": "Génération…"
+    },
+    "input": {
+      "messageInput": "Saisie du message",
+      "newSession": "Nouvelle session",
+      "pastePreview": "Aperçu du collage",
+      "removeAttachment": "Retirer la pièce jointe",
+      "stopGenerating": "Arrêter la génération",
+      "stopMicImmediate": "Arrêter le micro → message envoyé immédiatement",
+      "stopMicReview": "Arrêter le micro → réviser la transcription → taper Envoyer",
+      "stop": "Arrêter"
+    },
+    "summarize": {
+      "tooltip": "Résumer - clic pour activer le préfixe de résumé",
+      "button": "Résumer"
+    },
+    "readFile": "Lire le fichier {{file.name}}",
+    "imageGen": {
+      "provider": "Fournisseur",
+      "replicateModel": "Modèle",
+      "customModel": "Modèle personnalisé",
+      "customModelPlaceholder": "owner/model-name",
+      "generating": "Génération en cours...",
+      "generationFailed": "Génération échouée : {{error}}",
+      "noReplicateKey": "Token API Replicate non configuré. Ajoute-le dans les Paramètres."
+    },
+    "slashCommands": {
+      "clear": "Effacer l'historique du chat",
+      "persona": "Changer de persona (ex. /persona coder)",
+      "model": "Changer de modèle (ex. /model gpt-4o)",
+      "help": "Afficher les commandes disponibles",
+      "new": "Démarrer une nouvelle session",
+      "sessions": "Lister les sessions récentes",
+      "tools": "Afficher les outils disponibles",
+      "workspace": "Afficher les infos de l'espace de travail",
+      "tasks": "Afficher les tâches en cours",
+      "stop": "Arrêter la génération du message en cours",
+      "killswitch": "Arrêt d'urgence - stopper toutes les tâches en arrière-plan"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "save": "Enregistrer",
+    "saved": "Enregistré !",
+    "saving": "Enregistrement...",
+    "apiKey": "API Key",
+    "model": "Modèle",
+    "theme": "Thème",
+    "language": "Langue",
+    "languageDesc": "Choisis la langue d'affichage pour l'interface Skales.",
+    "languageEnglishOnly": "D'autres langues arrivent bientôt.",
+    "launchAtLogin": "Démarrer à la connexion",
+    "launchAtLoginDesc": "Démarrer Skales automatiquement quand tu te connectes à ton ordinateur.",
+    "desktopBuddy": "Buddy de bureau",
+    "desktopBuddyDesc": "Affiche une mascotte Skales flottante sur ton bureau avec un accès rapide.",
+    "persona": "Persona",
+    "personaDesc": "Choisis comment Skales se comporte. Tu peux changer à tout moment.",
+    "skalesPlus": "Skales+",
+    "currentPlan": "Ton plan actuel :",
+    "blacklist": {
+      "addDomain": "Ajouter un domaine (ex. example.com)",
+      "addTerm": "Ajouter un terme (ex. pirater)"
+    },
+    "integrations": {
+      "azureKey": "Clé Azure Cognitive Services...",
+      "botToken": "Bot Token",
+      "calendarId": "ID du calendrier (défaut : primary)",
+      "channelId": "ID du canal - optionnel, limiter à un canal",
+      "deleteSession": "Supprimer la session enregistrée pour générer un nouveau QR code",
+      "customModel": "Entrer un nom de modèle personnalisé...",
+      "hello": "Bonjour Skales !",
+      "name": "Nom (ex. Sarah)",
+      "newCode": "Nouveau code",
+      "number": "Numéro (4917612345678)",
+      "oauthClientId": "OAuth Client ID",
+      "oauthClientSecret": "OAuth Client Secret",
+      "password": "Mot de passe ou mot de passe d'app",
+      "pasteAuthCode": "Coller le code d'autorisation ici (étape 2)",
+      "pasteVisionKey": "Coller ta Vision API key",
+      "reactGif": "Réagir avec un GIF",
+      "resetPrompt": "Réinitialiser le prompt système par défaut",
+      "selectLanguage": "Sélectionner la langue de l'interface",
+      "selectNativeLanguage": "Sélectionner la langue maternelle",
+      "sendGif": "Envoie-moi un GIF drôle",
+      "serverId": "ID du serveur (Guild) - optionnel, limiter à un serveur",
+      "systemPrompt": "Prompt système / Soul Identity",
+      "whatsappQr": "QR Code WhatsApp",
+      "replicate": {
+        "title": "Replicate",
+        "description": "Accède à plus de 50 modèles IA image et vidéo avec une seule clé API",
+        "tokenPlaceholder": "r8_...",
+        "testConnection": "Tester la connexion",
+        "connected": "Connecté",
+        "notConfigured": "Non configuré",
+        "getToken": "Obtenir ton token API",
+        "testSuccess": "Connecté à Replicate ✓",
+        "testFailed": "Connexion échouée. Vérifie ton token API."
+      }
+    },
+    "toggles": {
+      "browserControl": "Activer le skill de contrôle du navigateur",
+      "desktopBuddy": "Activer le Buddy de bureau",
+      "discordBot": "Activer le bot Discord",
+      "friendMode": "Activer le mode ami",
+      "gifIntegration": "Activer l'intégration GIFs et stickers",
+      "googleCalendar": "Activer le skill Google Calendar",
+      "launchAtLogin": "Activer le démarrage à la connexion",
+      "localFileChat": "Activer le skill de chat de fichiers locaux",
+      "systemMonitor": "Activer le skill de moniteur système",
+      "webhooks": "Activer les webhooks",
+      "autoApproveNav": "Activer l'approbation automatique de la navigation",
+      "fileSystemAccess": "Activer le niveau d'accès au système de fichiers",
+      "messageSignature": "Activer la signature de message",
+      "searchSafety": "Activer le filtre de sécurité de recherche",
+      "websiteBlacklist": "Activer la liste noire de sites web",
+      "desktopBuddyDesc": "Affiche une mascotte Skales flottante sur votre bureau avec un accès rapide."
+    },
+    "other": {
+      "visitApp": "Visiter skales.app (ouvre dans un nouvel onglet)",
+      "screenQuestion": "Qu'y a-t-il sur mon écran ?"
+    },
+    "customEndpoint": {
+      "title": "Personnalisé (compatible OpenAI)",
+      "description": "Connecte-toi à n'importe quel endpoint compatible OpenAI - llama.cpp, LM Studio, vLLM, koboldcpp, text-generation-webui, et plus encore.",
+      "baseUrlLabel": "URL de l'endpoint",
+      "baseUrlPlaceholder": "http://localhost:1234",
+      "apiKeyPlaceholder": "Clé API (optionnelle)",
+      "fetchModels": "Récupérer les modèles",
+      "modelSelectPlaceholder": "Sélectionner ou saisir un modèle...",
+      "modelInputPlaceholder": "Entrer le nom du modèle...",
+      "toolCalling": "Activer les appels d'outils",
+      "toolCallingDesc": "Désactive si ton modèle ne supporte pas les appels de fonction (recommandé pour la plupart des modèles locaux)",
+      "testConnection": "Tester la connexion",
+      "testSuccess": "Connecté à l'endpoint personnalisé ✓",
+      "testFailed": "Connexion échouée. Vérifie l'URL de l'endpoint.",
+      "fetchModelsError": "Impossible de récupérer les modèles depuis l'endpoint",
+      "noBaseUrl": "Entre d'abord une URL d'endpoint",
+      "noModel": "Entre ou sélectionne un nom de modèle"
+    },
+    "buddySkin": "Skin du compagnon",
+    "buddySkinDesc": "Choisis ton compagnon de bureau",
+    "skinDefault": "Par défaut",
+    "languageRestartHint": "Redémarrez Skales pour appliquer le changement de langue partout.",
+    "privacy": "Confidentialité",
+    "privacyDesc": "Contrôle comment tes données sont utilisées",
+    "enabled": "Activé",
+    "disabled": "Désactivé"
+  },
+  "onboarding": {
+    "greeting": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "heroDescription": "Ton buddy IA personnel est prêt.",
+    "connected": "Connecté via {{provider}} - passons aux choses sérieuses.",
+    "notConnected": "Configure ta connexion IA dans les Paramètres pour commencer.",
+    "agentModeActive": "Mode agent actif",
+    "newChat": "Nouveau chat",
+    "status": {
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "noApiKey": "Aucune API key configurée"
+    },
+    "stats": {
+      "sessionsLabel": "Sessions",
+      "sessions": "{{count}} sessions",
+      "activePersonality": "Personnalité active"
+    },
+    "connections": {
+      "title": "Connexions",
+      "notConfigured": "Non configuré",
+      "runningLocally": "S'exécute localement",
+      "active": "Actif",
+      "notRunning": "Ne s'exécute pas",
+      "manageConnections": "Gérer les connexions"
+    },
+    "memoryTopics": {
+      "title": "Sujets des souvenirs",
+      "subtitle": "Ce qui occupe l'esprit de Skales",
+      "noMemories": "Pas encore de souvenirs",
+      "goToMemory": "Aller aux souvenirs →",
+      "viewAll": "Voir tous les souvenirs →"
+    },
+    "recentSessions": {
+      "title": "Sessions récentes",
+      "viewAll": "Tout voir",
+      "noConversations": "Pas encore de conversations",
+      "startChat": "Commence un chat pour voir ton historique ici",
+      "startChatButton": "Commencer le chat",
+      "messageCount": "{{count}} messages · {{date}}"
+    },
+    "capabilities": {
+      "title": "Capacités de l'agent",
+      "fileSystem": "Système de fichiers",
+      "fileSystemDesc": "Créer, lire, écrire, supprimer",
+      "commands": "Commandes",
+      "commandsDesc": "Exécuter des commandes shell",
+      "webAccess": "Accès web",
+      "webAccessDesc": "Récupérer et extraire du contenu",
+      "tasks": "Tâches",
+      "tasksDesc": "Créer et gérer des todos",
+      "memory": "Souvenirs",
+      "memoryDesc": "Apprend tes préférences",
+      "multiAgent": "Multi-Agent",
+      "multiAgentDesc": "Assistants spécialisés"
+    },
+    "quickActions": {
+      "createTask": "Créer une tâche",
+      "chat": "Chat",
+      "agents": "Agents",
+      "settings": "Paramètres"
+    },
+    "bootstrap": {
+      "welcome": "Bienvenue sur Skales !",
+      "step0": {
+        "title": "Avant de continuer",
+        "readAndAccept": "Lis et accepte avant de continuer",
+        "checkboxLabel": "Je comprends que Skales est un agent autonome avec accès à mes fichiers locaux et au terminal. J'accepte la responsabilité des tâches que je lui confie et je comprends comment mes données sont traitées.",
+        "continueButton": "Je comprends - Continuer vers la configuration →",
+        "cannotSkip": "Cette confirmation ne peut pas être ignorée. Elle n'apparaîtra plus après la configuration."
+      },
+      "setupProgress": "Configuration en cours • Étape {{step}} sur {{total}}",
+      "separateWithCommas": "Séparer par des virgules",
+      "continue": "Continuer →",
+      "back": "Retour",
+      "letsGo": "C'est parti ! 🎉",
+      "settingUp": "Configuration en cours...",
+      "skip": "Passer la configuration pour l'instant",
+      "pleaseWait": "Patiente...",
+      "ready": "Prêt à démarrer ! 🚀",
+      "summaryName": "Nom",
+      "summaryOccupation": "Profession",
+      "summaryInterests": "Intérêts",
+      "summaryGoals": "Objectifs",
+      "summaryProvider": "Fournisseur IA",
+      "steps": {
+        "name": "Comment tu t'appelles ?",
+        "occupation": "Qu'est-ce que tu fais ?",
+        "interests": "Qu'est-ce qui t'intéresse ?",
+        "goals": "Quels sont tes principaux objectifs ?",
+        "provider": "Connecte ton IA",
+        "nativeLang": "Langue maternelle"
+      },
+      "namePlaceholder": "Entre ton prénom...",
+      "occupationPlaceholder": "Développeur, Entrepreneur...",
+      "interestsPlaceholder": "tech, musique, entrepreneuriat...",
+      "goalsPlaceholder": "créer une startup, apprendre l'espagnol...",
+      "nameHelper": "Skales utilisera ça pour personnaliser ton expérience.",
+      "occupationHelper": "Aide Skales à comprendre ton contexte de travail.",
+      "interestsHelper": "Skales les mentionnera quand c'est pertinent.",
+      "goalsHelper": "Skales t'aidera à progresser vers ces objectifs.",
+      "providerTitle": "Connecte ton fournisseur IA",
+      "providerDesc": "Skales a besoin d'un LLM pour fonctionner. OpenRouter est recommandé - il te donne accès à plus de 100 modèles avec une seule API key.",
+      "openRouterTitle": "OpenRouter (Recommandé)",
+      "openRouterStep1": "Va sur openrouter.ai et crée un compte gratuit",
+      "openRouterStep2": "Crée une API key dans ton dashboard",
+      "openRouterStep3": "Colle ton API key ci-dessous",
+      "apiKeyPlaceholder": "sk-or-...",
+      "apiKeyLabel": "API Key OpenRouter",
+      "testButton": "Tester la connexion",
+      "testingButton": "Test en cours...",
+      "skipProvider": "Passer pour l'instant (configurer plus tard dans les Paramètres)",
+      "connectionOk": "Connexion réussie !",
+      "connectionFail": "Connexion échouée - vérifie ta key",
+      "stepTitle": "Aide à améliorer Skales",
+      "stepDesc": "Partage des données d'utilisation anonymes. Aucune donnée personnelle."
+    }
+  },
+  "memory": {
+    "title": "Souvenirs et identité",
+    "subtitle": "Gère ce que Skales sait sur toi et ton contexte",
+    "stats": {
+      "shortTerm": "Court terme",
+      "longTerm": "Long terme",
+      "episodic": "Épisodique"
+    },
+    "topics": {
+      "title": "Sujets des souvenirs",
+      "subtitle": "Sujets les plus fréquents dans tous les souvenirs stockés"
+    },
+    "profile": {
+      "title": "Ton profil",
+      "avatar": "Avatar",
+      "avatarTooltip": "Clic pour changer l'avatar",
+      "customEmoji": "Ou tape un emoji personnalisé...",
+      "nameLabel": "Comment Skales doit-il t'appeler ?",
+      "name": "Ton prénom",
+      "occupation": "Profession (ex. Développeur)",
+      "occupationPlaceholder": "ex. Développeur, Entrepreneur...",
+      "interests": "Intérêts (séparés par des virgules)",
+      "interestsPlaceholder": "tech, musique, entrepreneuriat...",
+      "goals": "Objectifs",
+      "goalsNote": "(séparés par des virgules)",
+      "goalsPlaceholder": "créer une startup, apprendre l'espagnol...",
+      "autoLearn": "Apprendre sur toi automatiquement",
+      "scheduleDaily": "Planifier un cycle d'apprentissage d'identité quotidien",
+      "createScan": "Créer un scan d'identité",
+      "disableScan": "Désactiver le scan d'identité",
+      "editSoul": "Modifier soul.json",
+      "editHuman": "Modifier human.json",
+      "aiSummaryLabel": "Résumé IA de toi",
+      "aiSummaryBadge": "Mis à jour automatiquement par Identity CronJob",
+      "aiSummaryPlaceholder": "Skales remplira ça automatiquement avec un résumé de qui tu es basé sur tes conversations...",
+      "aiSummaryAutoUpdate": "Mise à jour automatique chaque nuit via Identity Maintenance",
+      "aiSummaryWarning": "⚠️ Active Identity Maintenance ci-dessous pour les mises à jour nocturnes automatiques",
+      "saved": "Enregistré !",
+      "saving": "Enregistrement...",
+      "saveButton": "Enregistrer le profil"
+    },
+    "identity": {
+      "title": "Identity Maintenance",
+      "description": "Analyse automatiquement tes conversations chaque nuit et met à jour le résumé de ton profil.",
+      "cronActive": "Identity CronJob est actif",
+      "cronDisabled": "Identity CronJob est désactivé",
+      "cronActiveDesc": "S'exécute chaque nuit à 3h - met à jour ton résumé IA automatiquement",
+      "cronDisabledDesc": "Réactive pour reprendre les mises à jour nocturnes automatiques du profil",
+      "disable": "Désactiver",
+      "enable": "Activer",
+      "enableButton": "Activer Identity Maintenance (s'exécute chaque nuit à 3h)",
+      "disableConfirm": "Désactiver la Maintenance d'Identité ? Ton profil ne sera plus mis à jour automatiquement."
+    },
+    "memory": {
+      "clearAll": "Tout effacer",
+      "deleteTooltip": "Supprimer ce souvenir"
+    },
+    "shortTerm": {
+      "title": "Souvenirs à court terme",
+      "sectionTitle": "Mémoire à court terme ({{count}})",
+      "empty": "Pas encore de souvenirs à court terme"
+    },
+    "longTerm": {
+      "title": "Souvenirs à long terme",
+      "sectionTitle": "Mémoire à long terme ({{count}})",
+      "empty": "Pas encore de souvenirs à long terme"
+    },
+    "episodic": {
+      "title": "Souvenirs épisodiques",
+      "sectionTitle": "Mémoire épisodique ({{count}})",
+      "empty": "Pas encore de souvenirs épisodiques"
+    },
+    "extracted": {
+      "title": "Souvenirs extraits",
+      "autoTitle": "Souvenirs extraits automatiquement",
+      "autoDesc": "Appris automatiquement de tes conversations. Utilisé pour enrichir les réponses de Skales.",
+      "autoEmpty": "Pas encore de souvenirs extraits automatiquement. Les souvenirs sont extraits toutes les 90 min de tes conversations.",
+      "runScan": "Lancer un scan maintenant",
+      "scanNow": "Scanner maintenant",
+      "count": "{{count}} souvenir(s) extrait(s) automatiquement",
+      "subtitle": "Extraits les plus récents des conversations",
+      "empty": "Pas encore de souvenirs extraits"
+    },
+    "facts": {
+      "title": "Connaissances et faits",
+      "description": "Faits spécifiques que Skales connaît sur toi (ex. \"Mot de passe WiFi\", \"Code de porte\"). Tu peux les modifier manuellement.",
+      "empty": "Pas encore de faits spécifiques stockés. Dis à Skales : \"Souviens-toi que mon code de porte est 1234\".",
+      "addNew": "Ajouter un nouveau fait",
+      "keyPlaceholder": "Clé (ex. WiFi)",
+      "valuePlaceholder": "Valeur (ex. abcd-1234)",
+      "save": "Enregistrer le fait",
+      "deleteNotSupported": "La suppression n'est pas encore disponible dans l'interface. Demande à Skales dans le chat d'\"oublier le fait {{key}}\".",
+      "deleteTooltip": "Supprimer (demande à Skales dans le chat pour l'instant)"
+    },
+    "dangerZone": {
+      "title": "Zone de danger",
+      "deleteAll": "Supprimer tous les souvenirs"
+    },
+    "scanning": {
+      "title": "Scanner les conversations",
+      "subtitle": "Scanner toutes les sessions pour de nouveaux insights"
+    },
+    "readFile": "Lire le fichier {{file.name}}"
+  },
+  "skills": {
+    "title": "Skills personnalisés",
+    "subtitle": "Créer et gérer des skills IA",
+    "empty": "Pas encore de skills",
+    "create": "Créer un skill",
+    "createFromCode": "Créer un skill depuis du code",
+    "import": "Importer un skill",
+    "page": {
+      "title": "Skills",
+      "subtitle": "Gérer et activer les skills IA pour Skales",
+      "activeCount": "{{count}} skill(s) actif(s) - barre de génération visible dans le chat"
+    },
+    "filter": {
+      "all": "Tous"
+    },
+    "sections": {
+      "builtIn": "Intégrés (toujours actifs)",
+      "premium": "Premium"
+    },
+    "badges": {
+      "alwaysOn": "Toujours actif",
+      "active": "Actif",
+      "codeBuilder": "Code Builder"
+    },
+    "toggles": {
+      "disable": "Désactiver",
+      "enable": "Activer"
+    },
+    "noSkillsInCategory": "Pas encore de skills dans cette catégorie.",
+    "customSection": {
+      "title": "Skills personnalisés et Skill AI",
+      "desc": "Génère des skills avec l'IA ou importe les tiens.",
+      "link": "Ouvrir →"
+    },
+    "aiProvider": "Fournisseur IA",
+    "lioAI": {
+      "title": "Lio AI",
+      "desc": "Ton agent de code personnel - crée des apps complètes, corrige des bugs et écrit des scripts pour toi.",
+      "enabled": "● Activé",
+      "enable": "Activer Lio AI",
+      "requires": "⚡ Requis : N'importe quel fournisseur LLM configuré",
+      "credits": "💰 Utilise tes crédits API existants",
+      "open": "🦁 Ouvrir Lio AI"
+    },
+    "form": {
+      "createNew": "Créer un nouveau skill",
+      "skillName": "Nom du skill (ex. Assistant e-mail)",
+      "skillNameRequired": "Nom du skill",
+      "namePlaceholder": "ex. Tracker de prix Bitcoin",
+      "skillDescription": "Comment Skales doit-il l'utiliser ?",
+      "descriptionPlaceholder": "Nom du skill, objectif et instructions d'utilisation...",
+      "category": "Catégorie du skill",
+      "categoryLabel": "Catégorie",
+      "icon": "Icône",
+      "iconLabel": "Icône",
+      "addSkill": "Ajouter le skill",
+      "boilerplate": "Utiliser le modèle d'exemple",
+      "boilerplateTemplate": "Modèle de skill",
+      "viewCode": "Voir le code du skill",
+      "copyCode": "Copier le code",
+      "hasUI": "Ce skill a-t-il une interface ?",
+      "needsSidebar": "Nécessite une entrée dans la barre latérale",
+      "sidebarYes": "Oui - ajoute une entrée dans la barre latérale",
+      "sidebarNo": "Pas d'entrée dans la barre latérale",
+      "sidebarMenuName": "Nom dans le menu de la barre latérale",
+      "uiLabel": "Étiquette de l'élément de menu UI",
+      "requiresApiKeys": "Nécessite des API keys externes ?",
+      "requiresApiKeysYes": "Oui - Skill AI générera une entrée requiredSecrets dans le manifest",
+      "requiresApiKeysNo": "Pas besoin d'API keys externes",
+      "llmProvider": "Fournisseur LLM",
+      "llmProviderNote": "(aussi utilisé pour Fix)",
+      "modelId": "ID du modèle",
+      "saveDefault": "Enregistrer le fournisseur et le modèle par défaut",
+      "modelSaved": "Enregistré !",
+      "modelSave": "Enregistrer",
+      "promptLabel": "Que doit faire ce skill ?",
+      "promptPlaceholder": "ex. Récupérer le prix actuel du Bitcoin depuis CoinGecko et le retourner formaté en USD. Utiliser le module https de Node.js - pas de packages externes.",
+      "generateButton": "Générer le skill",
+      "generating": "Génération…",
+      "fillRequired": "Merci de remplir le nom du skill et le prompt.",
+      "regenLabel": "Régénérer le code du skill",
+      "regenPlaceholder": "Décris les changements souhaités (ex. 'Ajouter une section graphique', 'Utiliser les couleurs du mode sombre', 'Corriger la mise en page des boutons')...",
+      "regenButton": "Régénérer",
+      "regenerating": "Régénération..."
+    },
+    "installed": {
+      "title": "Skills installés",
+      "activeBadge": "{{active}}/{{total}} actifs",
+      "brokenBadge": "{{count}} en erreur",
+      "emptyHint": "Génère-en un avec Skill AI ci-dessous, ou importe un fichier .js.",
+      "installSamples": "Installer les skills d'exemple (Gallery + Quoty)",
+      "hasUI": "🖥 A une UI",
+      "fix": "Réparer",
+      "exportZipTitle": "Exporter en ZIP",
+      "editTitle": "Modifier les métadonnées du skill",
+      "deactivate": "Désactiver",
+      "activate": "Activer"
+    },
+    "skillAI": {
+      "title": "Skill AI - Auto-programmation",
+      "description": "Décris ce que tu veux et Skill AI écrira, validera et activera le code de façon autonome. Jusqu'à 3 tentatives d'auto-correction sont faites avant la sauvegarde.",
+      "warningTitle": "Recommandation : Utilise des modèles Premium ou de programmation pour Skill AI.",
+      "warningBody": "Avertissement : Phase Alpha/Bêta ! Teste à tes risques et périls. Des skills défectueux peuvent corrompre ta configuration Skales. Crée d'abord un backup !",
+      "navWarning": "Ne navigue pas - Skill AI est en train de travailler"
+    },
+    "edit": {
+      "title": "Modifier le skill",
+      "nameLabel": "Nom",
+      "iconLabel": "Icône",
+      "descriptionLabel": "Description",
+      "categoryLabel": "Catégorie",
+      "hasSidebarYes": "A une entrée dans la barre latérale",
+      "hasSidebarNo": "Pas d'entrée dans la barre latérale",
+      "menuNameLabel": "Nom dans le menu",
+      "saveButton": "Enregistrer",
+      "cancelButton": "Annuler",
+      "metaTitle": "Modifier les métadonnées du skill",
+      "save": "Enregistrer les métadonnées"
+    },
+    "upload": {
+      "title": "Importer un skill personnalisé",
+      "description": "Importe un fichier .js, .ts ou .zip fait à la main. Les archives ZIP peuvent contenir plusieurs skills.",
+      "dropZone": "Ou glisse un fichier ici",
+      "importTitle": "Importer des skills",
+      "importDescription": "Importer un fichier .zip ou .js/.ts",
+      "installing": "Installation…",
+      "dropToInstall": "Déposer pour installer",
+      "clickToUpload": "Glisser-déposer ou clic pour importer",
+      "fileTypes": ".js · .ts · .zip (max 10 Mo)"
+    },
+    "sdk": {
+      "info": "Format CommonJS · Built-ins Node.js disponibles · Pas de sandbox - vérifie le code avant d'installer"
+    },
+    "list": {
+      "count": "{{count}} skills",
+      "actions": "Activer / Désactiver",
+      "status": "Statut",
+      "createdAt": "Créé le {{date}}",
+      "error": "Erreur : {{error}}",
+      "fix": "Réparer",
+      "export": "Exporter",
+      "delete": "Supprimer"
+    },
+    "deletion": {
+      "deleteSkill": "Supprimer le skill",
+      "notSupported": "La suppression n'est pas encore disponible dans l'interface. Demande à Skales dans le chat d'\"oublier le fait...",
+      "alternative": "Supprimer (demande à Skales dans le chat pour l'instant)"
+    },
+    "status": {
+      "working": "Skill AI travaille…",
+      "repairing": "Skill AI répare…"
+    }
+  },
+  "buddy": {
+    "openChat": "Ouvrir le chat",
+    "errorMessage": "Oups.. quelque chose n'a pas marché. Tu peux regarder ça ?",
+    "placeholder": "Question ou commande…",
+    "ariaLabel": "Demande à Skales - tape ta question ou commande",
+    "approve": "Approuver",
+    "decline": "Refuser",
+    "working": "En cours...",
+    "cancelled": "Annulé",
+    "resultSummary": "Fait ! {{summary}}",
+    "openChatDetails": "Ouvrir le Chat pour les détails",
+    "approvalNeeded": "Cette action nécessite ton accord :"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "noTasks": "Pas encore de tâches",
+    "createTask": "Créer une tâche",
+    "runNow": "Exécuter maintenant",
+    "delete": "Supprimer",
+    "subtitle": "Gérer les tâches et les workflows multi-agents",
+    "status": {
+      "running": "En cours...",
+      "done": "Terminé",
+      "failed": "Échoué",
+      "stopped": "Arrêté",
+      "pending": "En attente"
+    },
+    "multiAgent": "Multi-Agent",
+    "stopAll": "Tout arrêter",
+    "sections": {
+      "multiAgentJobs": "Jobs multi-agents",
+      "individualTasks": "Tâches individuelles"
+    },
+    "runningBanner": "{{count}} tâche(s) en cours en arrière-plan",
+    "runningDesc": "Tu peux utiliser le Chat pour envoyer des messages pendant que les tâches s'exécutent.",
+    "modal": {
+      "createTitle": "Créer une tâche",
+      "titleLabel": "Titre",
+      "descLabel": "Description",
+      "priorityLabel": "Priorité",
+      "agentLabel": "Assigner un agent"
+    },
+    "priorities": {
+      "high": "🔴 Haute",
+      "medium": "🟡 Moyenne",
+      "low": "🔵 Basse"
+    },
+    "defaultAgent": "🦎 Skales (Défaut)",
+    "emptyTasks": "Pas encore de tâches - crée-en une ci-dessus",
+    "emptyJobs": "Pas encore de jobs multi-agents"
+  },
+  "autopilot": {
+    "title": "Pilote automatique",
+    "subtitle": "Assistant autonome",
+    "tabs": {
+      "controlRoom": "Salle de contrôle",
+      "executionBoard": "Tableau d'exécution",
+      "identityMemory": "Identité et souvenirs",
+      "liveHistory": "Historique en direct"
+    },
+    "state": {
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "completed": "Terminé",
+      "blocked": "Bloqué",
+      "cancelled": "Annulé",
+      "failed": "Échoué"
+    },
+    "runner": {
+      "status": "Statut du runner",
+      "active": "Actif",
+      "paused": "En pause",
+      "heartbeat": "Intervalle de heartbeat",
+      "apiCalls": "Appels API cette heure",
+      "tasks": "Tâches cette session"
+    },
+    "cost": {
+      "title": "Contrôle des coûts API",
+      "maxCalls": "Max appels API/heure",
+      "pauseAfter": "Pause après N tâches",
+      "unlimited": "0 = illimité",
+      "save": "Enregistrer les paramètres de coût"
+    },
+    "interview": {
+      "title": "🧠 Interview stratégique approfondie",
+      "desc": "Découverte guidée des objectifs"
+    },
+    "quickTask": "Tâche rapide",
+    "answerPlaceholder": "Ta réponse...",
+    "generatePlan": "Générer le plan maître",
+    "generatingPlan": "Génération du plan...",
+    "pause": "Mettre en pause le pilote automatique",
+    "resume": "Reprendre le pilote automatique",
+    "rateLimited": "Limite de débit - Reprendre",
+    "priority": {
+      "high": "Haute priorité",
+      "normal": "Priorité normale",
+      "low": "Basse priorité",
+      "noProject": "Aucun projet",
+      "highShort": "Haute",
+      "normalShort": "Normale",
+      "lowShort": "Basse"
+    },
+    "empty": {
+      "tasks": "Pas encore de tâches",
+      "noTasks": "Aucune tâche",
+      "log": "Pas encore d'entrées dans le journal. Démarre le pilote automatique pour voir l'activité ici."
+    },
+    "identity": {
+      "title": "Identité et mémoire à long terme",
+      "saveMemory": "Enregistrer le souvenir",
+      "edit": "Modifier",
+      "clear": "Effacer",
+      "lastUpdated": "Dernière mise à jour :",
+      "strategicRoadmap": "Feuille de route stratégique",
+      "currentRoadmap": "Feuille de route actuelle",
+      "previousRoadmaps": "Feuilles de route précédentes",
+      "labels": {
+        "preferredName": "Nom préféré",
+        "primaryGoal": "Objectif principal",
+        "niche": "Niche / Domaine",
+        "budget": "Budget / Ressources",
+        "constraints": "Contraintes",
+        "additionalContext": "Contexte supplémentaire"
+      }
+    },
+    "board": {
+      "boardView": "Tableau",
+      "listView": "Liste",
+      "blockedFailed": "Bloqué / Échoué",
+      "addTaskToCol": "Ajouter une tâche à {{col}}",
+      "cleanFinished": "Nettoyer",
+      "standaloneTasks": "Tâches indépendantes",
+      "noTasksClickToStart": "Clique sur \"+Tâche\" ou crée un projet pour commencer."
+    },
+    "standup": {
+      "title": "Rapport de standup quotidien",
+      "generate": "Générer",
+      "clickToGenerate": "Clique sur \"Générer\" pour obtenir un rapport de ce qui s'est passé pendant ton absence."
+    },
+    "awaitingApproval": "{{count}} en attente d'approbation",
+    "addTask": "Ajouter"
+  },
+  "agents": {
+    "title": "Agents",
+    "subtitle": "Assistants IA spécialisés pour différentes tâches",
+    "createAgent": "Créer un agent",
+    "skales": {
+      "name": "Skales",
+      "alwaysAvailable": "Toujours disponible",
+      "default": "Par défaut",
+      "desc": "Ton buddy IA principal - prêt à aider pour tout.",
+      "about": "🦎 À propos de Skales",
+      "cannotEdit": "Skales ne peut pas être modifié"
+    },
+    "capabilities": {
+      "chat": "chat",
+      "tasks": "tâches",
+      "tools": "outils",
+      "memory": "souvenirs"
+    },
+    "run": "Exécuter",
+    "editAgent": "Modifier l'agent",
+    "deleteAgent": "Supprimer l'agent",
+    "modal": {
+      "create": "Créer un agent personnalisé",
+      "edit": "Modifier : {{name}}"
+    },
+    "form": {
+      "name": "Nom",
+      "emoji": "Emoji",
+      "description": "Description",
+      "systemPrompt": "Prompt système",
+      "capabilities": "Capacités (séparées par des virgules)",
+      "provider": "Fournisseur",
+      "model": "Modèle",
+      "namePlaceholder": "Nom de l'agent...",
+      "descPlaceholder": "Que fait cet agent ?",
+      "promptPlaceholder": "Prompt système pour cet agent...",
+      "capsPlaceholder": "chat, tâches, outils"
+    },
+    "providers": {
+      "default": "Par défaut (actif dans les Paramètres)",
+      "openrouter": "OpenRouter",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic",
+      "google": "Google",
+      "ollama": "Ollama (Local)",
+      "custom": "Personnalisé (compatible OpenAI)"
+    },
+    "defaultModel": "Modèle par défaut",
+    "cancel": "Annuler",
+    "saveChanges": "Enregistrer les modifications",
+    "createAgentBtn": "Créer l'agent",
+    "deleteConfirm": "Supprimer cet agent ?",
+    "card": {
+      "lastUsed": "Dernière utilisation {{date}}"
+    }
+  },
+  "network": {
+    "title": "Réseau et appareils",
+    "subtitle": "Scanner ton réseau local et diffuser des médias vers des appareils DLNA",
+    "tabs": {
+      "scanner": "Scanner réseau",
+      "dlna": "Diffusion DLNA"
+    },
+    "scanOptions": "Options de scan",
+    "modes": {
+      "networkInfo": "Info réseau",
+      "skalesDevices": "Appareils Skales",
+      "fullScan": "Scan complet /24"
+    },
+    "scanning": "Scan en cours…",
+    "runScan": "Lancer le scan",
+    "singleHost": "Hôte unique :",
+    "probe": "Sonder",
+    "localNetInfo": "Info réseau local",
+    "interfaces": "Interfaces",
+    "devicesFound": "{{count}} appareil(s) trouvé(s)",
+    "dlna": {
+      "discoverHeading": "Découvrir les renderers",
+      "discoverBtn": "Découvrir les appareils",
+      "discovering": "Découverte…",
+      "renderersFound": "{{count}} renderer(s) trouvé(s)",
+      "selected": "Sélectionné",
+      "castTo": "Diffuser vers :",
+      "mediaUrl": "URL du média",
+      "mimeType": "Type MIME",
+      "titleOptional": "Titre (optionnel)",
+      "cast": "Diffuser",
+      "pause": "Pause",
+      "stop": "Arrêter"
+    }
+  },
+  "schedule": {
+    "title": "Planification",
+    "subtitle": "Automatiser les tâches et configurer des jobs récurrents",
+    "newSchedule": "Nouvelle planification",
+    "form": {
+      "title": "Nouveau job planifié",
+      "frequency": "Fréquence",
+      "name": "Nom",
+      "time": "Heure",
+      "cronExpression": "Expression cron",
+      "taskDesc": "Description de la tâche",
+      "namePlaceholder": "Briefing matinal",
+      "create": "Créer le job",
+      "cancel": "Annuler",
+      "runs": "S'exécute :"
+    },
+    "templates": "Modèles de démarrage rapide",
+    "loading": "Chargement des planifications...",
+    "empty": "Pas encore de jobs planifiés...",
+    "active": "Actif",
+    "activate": "Activer",
+    "managedByMemory": "Géré par les paramètres des Souvenirs...",
+    "cronTip": "Utilise la syntaxe cron : minute heure jour mois jour-semaine (ex. 0 9 * * 1-5 = Lun–Ven 9h)"
+  },
+  "logs": {
+    "title": "Journaux système",
+    "subtitle": "Surveiller l'activité de Skales ({{count}} entrées)",
+    "download": "Télécharger le rapport",
+    "refresh": "Actualiser",
+    "logFile": "Fichier journal :",
+    "loading": "Chargement des journaux...",
+    "empty": "Pas encore de journaux...",
+    "noMatch": "Aucun journal ne correspond à ce filtre."
+  },
+  "groupChat": {
+    "settings": {
+      "title": "Paramètres du chat de groupe",
+      "subtitle": "Configurer les participants IA et les paramètres de discussion",
+      "back": "Retour au chat de groupe",
+      "costWarning": "⚠️ Le chat de groupe utilise plusieurs appels API par tour. Chaque participant utilise ton fournisseur configuré.",
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement...",
+      "saved": "Paramètres enregistrés !"
+    },
+    "sections": {
+      "discussion": "Paramètres de discussion",
+      "participants": "Participants"
+    },
+    "language": "Langue de la discussion",
+    "rounds": "Tours de discussion",
+    "timeout": "Délai de réponse",
+    "perParticipant": "par participant",
+    "perParticipantHint": "Chaque participant parle une fois par tour.",
+    "removeParticipant": "Retirer le participant",
+    "participantNameHint": "Donne à chaque participant un nom et une personnalité uniques",
+    "roundsOptions": {
+      "one": "1 tour",
+      "n": "{{n}} tours"
+    },
+    "timeoutOptions": {
+      "60": "60 secondes",
+      "120": "120 secondes (recommandé)",
+      "180": "180 secondes",
+      "300": "300 secondes"
+    },
+    "provider": "Fournisseur",
+    "model": "Modèle",
+    "persona": "Persona",
+    "namePlaceholder": "Nom du participant...",
+    "addParticipant": "Ajouter un participant",
+    "participantCount": "{{count}} participant(s)",
+    "providerHint": "Les fournisseurs marqués avec ⚠ nécessitent leur propre API key dans les Paramètres.",
+    "input": {
+      "placeholder": "Posez une question ou proposez un sujet de discussion...",
+      "inProgress": "Discussion en cours..."
+    }
+  },
+  "update": {
+    "title": "🔄 Mise à jour logicielle",
+    "subtitle": "Garde Skales à jour",
+    "versions": {
+      "current": "Version actuelle",
+      "latest": "Dernière version"
+    },
+    "status": {
+      "upToDate": "À jour",
+      "updateAvailable": "Mise à jour disponible",
+      "downloading": "Téléchargement...",
+      "installing": "Installation...",
+      "error": "Erreur lors de la vérification des mises à jour"
+    },
+    "checkNow": "Vérifier maintenant",
+    "checking": "Vérification...",
+    "lastChecked": "Dernière vérification :",
+    "cached": "(en cache)",
+    "whatsNew": "Nouveautés de la v{{version}}",
+    "downloadMac": "Télécharger la mise à jour pour macOS",
+    "downloadWin": "Télécharger la mise à jour pour Windows",
+    "download": {
+      "complete": "Téléchargement terminé !",
+      "verified": "SHA-256 vérifié",
+      "safetyNote": "Ton dossier .skales-data est en sécurité - seul le binaire de l'app est remplacé."
+    },
+    "install": {
+      "now": "Installer maintenant (automatisé)",
+      "later": "Installer plus tard"
+    },
+    "doNotClose": "⚠️ Ne ferme pas cet onglet pendant l'installation.",
+    "restart": "Redémarrage dans {{seconds}}s...",
+    "restartingMsg": "✅ Mise à jour installée ! Redémarrage de Skales...",
+    "installed": "✅ Mise à jour installée !",
+    "installNow": "Installer maintenant",
+    "dismiss": "Fermer",
+    "restore": "Restaurer",
+    "downloadFailed": "Téléchargement échoué",
+    "installFailed": "Installation échouée",
+    "rollingBack": "Annulation...",
+    "installingUpdate": "Installation de la mise à jour...",
+    "reloadNow": "Recharger maintenant",
+    "previous": "Versions précédentes",
+    "backups": "Sauvegardes locales",
+    "security": "Sécurité :",
+    "updateSettings": "Paramètres de mise à jour →"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "updated": "Mis à jour {{time}}",
+    "range": {
+      "today": "Aujourd'hui",
+      "next2Days": "2 prochains jours",
+      "next7Days": "7 prochains jours",
+      "next2Weeks": "2 prochaines semaines",
+      "next30Days": "30 prochains jours"
+    },
+    "refresh": "Actualiser",
+    "notConfigured": "Google Calendar non configuré",
+    "notConfiguredDesc": "Connecte Google Calendar dans les Paramètres pour voir tes événements ici.",
+    "openSettings": "Ouvrir les Paramètres",
+    "loadFailed": "Échec du chargement des événements",
+    "allDay": "Toute la journée",
+    "openInGoogle": "Ouvrir dans Google Calendar",
+    "noEvents": "Aucun événement",
+    "nothingScheduled": "Rien de planifié dans les {{range}} prochains"
+  },
+  "code": {
+    "error": "Quelque chose s'est mal passé",
+    "random": "Surprise aléatoire",
+    "preview": "Aperçu",
+    "previewEmpty": "L'aperçu apparaît une fois que index.html est construit",
+    "projectComplete": "Projet terminé !",
+    "noHtmlPreview": "Aucun aperçu HTML disponible"
+  },
+  "system": {
+    "approval": {
+      "required": "Cette action nécessite ton approbation",
+      "approved": "Action approuvée",
+      "declined": "Action refusée",
+      "expired": "Demande d'approbation expirée",
+      "timeout": "Aucune réponse reçue. Action annulée.",
+      "sendEmail": "📧 Envoyer un e-mail à **{{to}}** - Sujet : \"{{subject}}\"",
+      "replyEmail": "📧 Répondre à l'e-mail UID {{uid}} sur le compte \"{{account}}\"",
+      "deleteEmail": "🗑️ Supprimer l'e-mail UID {{uid}} du compte \"{{account}}\"",
+      "emptyTrash": "🗑️ Vider la corbeille du compte \"{{account}}\"",
+      "deleteFile": "🗑️ Supprimer le fichier : `{{path}}`",
+      "writeFile": "💾 Écrire le fichier : `{{path}}`",
+      "createDocument": "📄 Créer le document : `{{filename}}`",
+      "executeCommand": "⚡ Exécuter la commande shell :\n```\n{{command}}\n```",
+      "createCalendar": "📅 Créer un événement de calendrier : \"{{title}}\" - Quand : {{start}}",
+      "updateCalendar": "📅 Mettre à jour l'événement de calendrier ID : {{eventId}}",
+      "deleteCalendar": "📅 Supprimer l'événement de calendrier ID : {{eventId}}",
+      "postTweet": "🐦 Publier un tweet :\n\"{{text}}\"",
+      "replyTweet": "🐦 Répondre au tweet {{tweetId}} :\n\"{{text}}\"",
+      "deleteTask": "🗑️ Supprimer la tâche : \"{{taskId}}\"",
+      "deleteScheduledTask": "🗑️ Supprimer la tâche planifiée : \"{{taskId}}\"",
+      "browserOpen": "🌐 Ouvrir le navigateur et accéder à :\n{{url}}",
+      "dispatchSubtasks": "🤖 Distribuer {{count}} sous-tâche(s) parallèle(s)",
+      "executeTask": "⚙️ Exécuter la tâche : \"{{goal}}\"",
+      "runTool": "🔧 Exécuter l'outil **{{name}}** avec : {{args}}"
+    },
+    "agent": {
+      "thinking": "Je réfléchis...",
+      "executing": "Exécution de la tâche...",
+      "completed": "Tâche terminée",
+      "failed": "Tâche échouée : {{error}}",
+      "stopped": "Tâche arrêtée par l'utilisateur",
+      "noProvider": "Aucun fournisseur IA configuré. Ajoute une API key dans les Paramètres.",
+      "rateLimited": "Limite de débit atteinte. Attends un moment.",
+      "contextTooLong": "Conversation trop longue. Démarre un nouveau chat."
+    },
+    "buddy": {
+      "greeting": "Salut ! Clique sur moi pour poser une question.",
+      "error": "Oups.. tu peux regarder ça ?",
+      "openChat": "Ouvrir le chat",
+      "taskDone": "Terminé ! Consulte le chat pour les détails.",
+      "needsApproval": "Ceci nécessite ton approbation. Va dans le chat pour le vérifier.",
+      "offline": "S'exécute localement. Pas d'internet requis."
+    },
+    "telegram": {
+      "welcome": "Skales connecté ! Envoie-moi un message.",
+      "notAuthorized": "Non autorisé. Vérifie les paramètres Telegram dans Skales.",
+      "approvalPrompt": "L'action nécessite une approbation :",
+      "approve": "Approuver",
+      "decline": "Refuser",
+      "approved": "Approuvé. Exécution...",
+      "declined": "Refusé. Action annulée.",
+      "killed": "Arrêt d'urgence activé.",
+      "statusOnline": "Skales est en ligne.",
+      "statusOffline": "Skales est hors ligne.",
+      "taskComplete": "Tâche terminée : {{task}}",
+      "noActiveTask": "Aucune tâche active en cours.",
+      "contextCleared": "🧹 Contexte effacé !",
+      "pairingSuccess": "✅ *Connecté avec succès !*\n\nSalut {{name}}, tu es maintenant connecté à Skales.\nEnvoie-moi simplement un message et je te répondrai.\n\nTes messages apparaîtront aussi dans le Dashboard Skales.",
+      "pairingFailed": "❌ Code de couplage incorrect.\n\nVérifie ton code dans le Dashboard Skales → Paramètres → Telegram.",
+      "notPaired": "🔒 Tu n'es pas connecté à cette instance Skales.\n\nObtiens ton code depuis le Dashboard Skales → Paramètres → Telegram, puis tape :\n/pair TON_CODE"
+    },
+    "tools": {
+      "fileCreated": "Fichier créé : {{filename}}",
+      "fileDeleted": "Fichier supprimé : {{filename}}",
+      "emailSent": "E-mail envoyé à {{recipient}}",
+      "emailDraft": "Brouillon d'e-mail enregistré",
+      "browserOpened": "Ouvert : {{url}}",
+      "calendarCreated": "Événement calendrier créé : {{title}}",
+      "calendarUpdated": "Événement calendrier mis à jour : {{title}}",
+      "calendarDeleted": "Événement calendrier supprimé : {{title}}",
+      "tweetPosted": "Tweet publié",
+      "tweetReplied": "Réponse publiée",
+      "commandExecuted": "Commande exécutée",
+      "commandFailed": "Commande échouée : {{error}}",
+      "documentCreated": "Document créé : {{filename}}",
+      "skillExecuted": "Skill exécuté : {{name}}",
+      "searchResults": "{{count}} résultats trouvés",
+      "screenshotTaken": "Capture d'écran prise",
+      "memoryUpdated": "Souvenir mis à jour",
+      "taskCreated": "Tâche créée : {{title}}",
+      "taskDeleted": "Tâche supprimée : {{title}}"
+    },
+    "errors": {
+      "generic": "Quelque chose s'est mal passé. Réessaie.",
+      "network": "Erreur réseau. Vérifie ta connexion.",
+      "apiKey": "API key invalide. Vérifie tes paramètres.",
+      "modelNotFound": "Modèle non disponible. Essaies-en un autre.",
+      "permissionDenied": "Bloqué par le mode de sécurité. Passe en Avancé ou Sans restrictions dans les Paramètres.",
+      "blacklisted": "🚫 **{{domain}}** est bloqué par ta liste noire.",
+      "fileNotFound": "Fichier introuvable : {{path}}",
+      "toolNotFound": "Outil non disponible : {{name}}",
+      "timeout": "Délai de la requête dépassé. Réessaie."
+    },
+    "killswitch": {
+      "activated": "Arrêt d'urgence activé. Toutes les tâches arrêtées.",
+      "reason": "Raison : {{reason}}",
+      "deactivated": "Killswitch désactivé. Skales est de nouveau en ligne."
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Quelque chose s'est mal passé",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "approve": "Approuver",
+    "deny": "Refuser",
+    "yes": "Oui",
+    "no": "Non",
+    "back": "Retour",
+    "next": "Suivant",
+    "done": "Terminé",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "retry": "Réessayer",
+    "refresh": "Actualiser",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré !",
+    "create": "Créer",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "open": "Ouvrir",
+    "close2": "Fermer",
+    "optional": "Optionnel"
+  },
+  "skalesPlus": {
+    "title": "Skales+",
+    "subtitle": "Libère toute la puissance de ton IA de bureau",
+    "free": {
+      "name": "Gratuit pour toujours",
+      "badge": "Plan actuel",
+      "button": "Tu es sur ce plan"
+    },
+    "personal": {
+      "name": "Skales+ Personnel",
+      "subtitle": "Pour les utilisateurs avancés et les professionnels",
+      "price": "Bientôt disponible",
+      "button": "Rejoindre la liste d'attente"
+    },
+    "business": {
+      "name": "Skales+ Business",
+      "subtitle": "Pour les équipes et les agences",
+      "price": "Bientôt disponible",
+      "button": "Rejoindre la liste d'attente"
+    },
+    "features": {
+      "allCore": "Toutes les fonctions principales",
+      "byok": "Apporte ta propre clé API",
+      "unlimitedChats": "Conversations illimitées",
+      "localStorage": "Stockage local uniquement",
+      "communitySupport": "Support communautaire",
+      "fourLanguages": "4 langues",
+      "hostedAI": "IA hébergée par Skales (sans clé API)",
+      "prioritySupport": "Support prioritaire",
+      "earlyAccess": "Accès anticipé aux nouvelles fonctionnalités",
+      "cloudBackup": "Sauvegarde cloud (chiffrement E2E)",
+      "morningBriefing": "Briefing matinal automatisé",
+      "allSkins": "Tous les skins du buddy",
+      "advancedMemory": "Recherche avancée en mémoire",
+      "teamSeats": "Jusqu'à {{count}} sièges d'équipe",
+      "sharedMemory": "Mémoire et contexte partagés",
+      "auditLog": "Export du journal d'audit",
+      "priorityRouting": "Routage API prioritaire",
+      "invoicing": "Gestion des factures",
+      "whiteLabel": "Option marque blanche"
+    },
+    "waitlist": {
+      "emailPlaceholder": "ton@email.com",
+      "submit": "Rejoindre la liste d'attente",
+      "success": "Tu es sur la liste ! Nous te notifierons quand Skales+ sera lancé.",
+      "alreadyJoined": "Tu es déjà sur la liste d'attente.",
+      "invalidEmail": "Veuillez entrer une adresse email valide."
+    },
+    "settingsLink": "Voir les plans",
+    "settingsDesc": "Débloque des fonctionnalités avancées, une IA hébergée et un support prioritaire.",
+    "comingSoon": "Bientôt disponible"
+  },
+  "telemetry": {
+    "title": "Aide à améliorer Skales",
+    "description": "Partage des données d'utilisation anonymes pour nous aider à améliorer Skales. Nous collectons uniquement : la version de l'app, le système d'exploitation et les événements de démarrage/crash. Aucune donnée personnelle, aucune conversation, aucune clé API. Jamais.",
+    "optIn": "Oui, partager des statistiques anonymes",
+    "optOut": "Non merci",
+    "settingsLabel": "Partager des données d'utilisation anonymes",
+    "settingsSection": "Confidentialité"
+  },
+  "bugReport": {
+    "title": "Signaler un bug",
+    "placeholder": "Décris ce qui s'est passé...",
+    "includeSystemInfo": "Inclure les infos système (version, OS)",
+    "send": "Envoyer le rapport",
+    "success": "Merci ! Ton rapport a été envoyé.",
+    "tooShort": "Veuillez décrire le problème en au moins 10 caractères.",
+    "sidebar": "Signaler un bug"
+  }
+}

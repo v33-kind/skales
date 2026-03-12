@@ -23,7 +23,7 @@ function ensureDirs() {
 
 // ─── Types ───────────────────────────────────────────────────
 
-export type Provider = 'openrouter' | 'openai' | 'anthropic' | 'google' | 'ollama' | 'groq' | 'mistral' | 'deepseek' | 'xai' | 'together';
+export type Provider = 'openrouter' | 'openai' | 'anthropic' | 'google' | 'ollama' | 'groq' | 'mistral' | 'deepseek' | 'xai' | 'together' | 'custom';
 
 
 export interface ProviderConfig {
@@ -87,6 +87,13 @@ export interface SkalesSettings {
     isAutonomousMode?: boolean;
     // Google Places API key
     googlePlacesApiKey?: string;
+    // Replicate API token (BYOK — gives access to 50+ image/video models)
+    replicate_api_token?: string;
+    // Image/video generation provider preference ('google' | 'replicate')
+    imageGenProvider?: 'google' | 'replicate';
+    // Custom OpenAI-compatible endpoint — whether to enable tool/function calling
+    // Some local models (llama.cpp, LM Studio, etc.) don't support the tools array
+    customEndpointToolCalling?: boolean;
     // Skills — enabled/disabled flags for built-in skill modules
     skills?: {
         systemMonitor?: { enabled: boolean };
@@ -210,6 +217,12 @@ const DEFAULT_SETTINGS: SkalesSettings = {
             model: 'meta-llama/Llama-3-70b-chat-hf',
             enabled: false,
         },
+        custom: {
+            apiKey: '',
+            baseUrl: '',
+            model: '',
+            enabled: false,
+        },
     },
 };
 
@@ -329,8 +342,13 @@ async function callProvider(
         return callGoogle(config, messages);
     }
 
-    // OpenAI-compatible: OpenRouter, OpenAI, Ollama
-    const baseUrl = config.baseUrl || DEFAULT_SETTINGS.providers[provider].baseUrl!;
+    // OpenAI-compatible: OpenRouter, OpenAI, Ollama, custom, etc.
+    let baseUrl = config.baseUrl || DEFAULT_SETTINGS.providers[provider].baseUrl!;
+    // For custom endpoints, normalise the base URL — append /v1 if the user didn't include it
+    if (provider === 'custom' && baseUrl) {
+        const trimmed = baseUrl.trim().replace(/\/$/, '');
+        baseUrl = trimmed.endsWith('/v1') ? trimmed : trimmed + '/v1';
+    }
     const model = config.model || DEFAULT_SETTINGS.providers[provider].model!;
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',

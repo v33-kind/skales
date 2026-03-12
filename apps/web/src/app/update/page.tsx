@@ -11,6 +11,7 @@ import {
     saveInstallLater, getInstallLater, clearInstallLater, listBackups, type BackupEntry,
 } from '@/actions/updates';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n';
 
 const Icon = ({ icon: I, ...props }: { icon: any; [key: string]: any }) => {
     const C = I;
@@ -67,6 +68,7 @@ type InstallState =
     | { phase: 'rollback' };
 
 export default function UpdatePage() {
+    const { t } = useTranslation();
     const [result, setResult] = useState<UpdateCheckResult | null>(null);
     const [checking, setChecking] = useState(false);
     const [downloadState, setDownloadState] = useState<DownloadPhase>({ phase: 'idle' });
@@ -197,7 +199,7 @@ export default function UpdatePage() {
                         } else if (evt.event === 'rollback') {
                             setInstallState({ phase: 'rollback' });
                         } else if (evt.event === 'rollback_done') {
-                            setInstallState({ phase: 'error', message: 'Install failed — your previous version has been restored.', rolledBack: true });
+                            setInstallState({ phase: 'error', message: 'Install failed - your previous version has been restored.', rolledBack: true });
                         }
                     } catch { /* skip */ }
                 }
@@ -231,11 +233,11 @@ export default function UpdatePage() {
                     <div className="flex gap-2 shrink-0">
                         <button onClick={() => handleInstallNow(pendingInstall.zipPath)}
                             className="text-xs px-3 py-1.5 rounded-lg font-bold" style={{ background: '#84cc16', color: 'black' }}>
-                            Install Now
+                            {t('update.installNow')}
                         </button>
                         <button onClick={async () => { await clearInstallLater(); setPendingInstall(null); }}
                             className="text-xs px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-                            Dismiss
+                            {t('update.dismiss')}
                         </button>
                     </div>
                 </div>
@@ -243,8 +245,8 @@ export default function UpdatePage() {
 
             {/* ── Header ────────────────────────────────────── */}
             <div>
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>🔄 Software Update</h1>
-                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Keep Skales up to date with the latest features and bug fixes.</p>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t('update.title')}</h1>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t('update.subtitle')}</p>
             </div>
 
             {/* ── Version Status ────────────────────────────── */}
@@ -253,12 +255,12 @@ export default function UpdatePage() {
                     <div className="space-y-3 flex-1">
                         <div className="flex items-center gap-8">
                             <div>
-                                <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Current Version</p>
+                                <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>{t('update.versions.current')}</p>
                                 <p className="text-2xl font-bold bg-gradient-to-r from-lime-400 to-green-500 bg-clip-text text-transparent">v{result?.currentVersion ?? '…'}</p>
                             </div>
                             {info && (
                                 <div>
-                                    <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Latest Version</p>
+                                    <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>{t('update.versions.latest')}</p>
                                     <p className={`text-2xl font-bold ${result?.updateAvailable ? 'text-lime-400' : 'text-green-400'}`}>v{info.version}{result?.updateAvailable ? ' ✨' : ''}</p>
                                 </div>
                             )}
@@ -273,12 +275,12 @@ export default function UpdatePage() {
                     <button onClick={handleCheck} disabled={checking}
                         className="shrink-0 px-4 py-2.5 rounded-xl bg-lime-500 hover:bg-lime-400 text-black font-bold text-sm flex items-center gap-2 transition-all disabled:opacity-50">
                         <Icon icon={RefreshCw} size={15} className={checking ? 'animate-spin' : ''} />
-                        {checking ? 'Checking...' : 'Check Now'}
+                        {checking ? t('update.checking') : t('update.checkNow')}
                     </button>
                 </div>
                 {result?.lastChecked && (
                     <p className="text-xs mt-3 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                        <Icon icon={Clock} size={11} /> Last checked: {timeAgo(result.lastChecked)}{result.fromCache && ' (cached)'}
+                        <Icon icon={Clock} size={11} /> {t('update.lastChecked')} {timeAgo(result.lastChecked)}{result.fromCache && ` ${t('update.cached')}`}
                     </p>
                 )}
             </div>
@@ -306,7 +308,7 @@ export default function UpdatePage() {
                     {downloadState.phase === 'idle' && (
                         <button onClick={handleDownload} className="w-full py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-black font-bold flex items-center justify-center gap-2 transition-all text-sm">
                             <Icon icon={Download} size={16} />
-                            Download Update for {result.platform === 'macos' ? 'macOS' : 'Windows'}
+                            {result.platform === 'macos' ? t('update.downloadMac') : t('update.downloadWin')}
                         </button>
                     )}
 
@@ -331,8 +333,8 @@ export default function UpdatePage() {
                     {downloadState.phase === 'done' && (
                         <div className="rounded-xl border p-4 space-y-3" style={{ background: 'rgba(132,204,22,0.05)', borderColor: 'rgba(132,204,22,0.3)' }}>
                             <div className="flex items-center gap-2 text-lime-400 font-bold text-sm">
-                                <Icon icon={CheckCircle} size={16} /> Download complete!
-                                {downloadState.checksumVerified && <span className="ml-auto flex items-center gap-1 text-xs text-green-400 font-normal"><Icon icon={Shield} size={11} /> SHA-256 verified</span>}
+                                <Icon icon={CheckCircle} size={16} /> {t('update.download.complete')}
+                                {downloadState.checksumVerified && <span className="ml-auto flex items-center gap-1 text-xs text-green-400 font-normal"><Icon icon={Shield} size={11} /> {t('update.download.verified')}</span>}
                             </div>
                             <p className="text-xs font-mono px-2 py-1.5 rounded-lg break-all" style={{ background: 'var(--surface-light)', color: 'var(--text-secondary)' }}>{downloadState.filePath}</p>
                             <div className="text-xs px-3 py-2 rounded-lg" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', color: '#c4b5fd' }}>
@@ -342,11 +344,11 @@ export default function UpdatePage() {
                             <div className="flex gap-2 flex-wrap">
                                 <button onClick={() => handleInstallNow(downloadState.filePath)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm" style={{ background: '#84cc16', color: 'black' }}>
-                                    <Icon icon={Zap} size={14} /> Install Now (automated)
+                                    <Icon icon={Zap} size={14} /> {t('update.install.now')}
                                 </button>
                                 <button onClick={() => handleInstallLater(downloadState.filePath, info.version)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm border" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-                                    <Icon icon={Clock} size={14} /> Install Later
+                                    <Icon icon={Clock} size={14} /> {t('update.install.later')}
                                 </button>
                             </div>
                         </div>
@@ -354,10 +356,10 @@ export default function UpdatePage() {
 
                     {downloadState.phase === 'error' && (
                         <div className="rounded-xl border p-4 space-y-2" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.3)' }}>
-                            <div className="flex items-center gap-2 text-red-400 font-bold text-sm"><Icon icon={AlertCircle} size={16} /> Download failed</div>
+                            <div className="flex items-center gap-2 text-red-400 font-bold text-sm"><Icon icon={AlertCircle} size={16} /> {t('update.downloadFailed')}</div>
                             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{downloadState.message}</p>
                             <div className="flex gap-2">
-                                <button onClick={handleDownload} className="text-xs px-3 py-1.5 rounded-lg bg-lime-500 text-black font-semibold">Retry</button>
+                                <button onClick={handleDownload} className="text-xs px-3 py-1.5 rounded-lg bg-lime-500 text-black font-semibold">{t('common.retry')}</button>
                                 <a href="https://skales.app" target="_blank" rel="noopener noreferrer" className="text-xs px-3 py-1.5 rounded-lg border flex items-center gap-1" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                                     Download manually <Icon icon={ExternalLink} size={10} />
                                 </a>
@@ -372,7 +374,7 @@ export default function UpdatePage() {
                 <div className="rounded-2xl border p-5 space-y-4" style={{ background: 'var(--surface)', borderColor: 'rgba(139,92,246,0.35)' }}>
                     <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Loader2 size={15} className="animate-spin text-purple-400" />
-                        {installState.phase === 'rollback' ? 'Rolling back...' : 'Installing update...'}
+                        {installState.phase === 'rollback' ? t('update.rollingBack') : t('update.installingUpdate')}
                     </h3>
                     {installState.phase === 'installing' && (
                         <div className="space-y-2.5">
@@ -398,7 +400,7 @@ export default function UpdatePage() {
                             ))}
                         </div>
                     )}
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>⚠️ Do not close this tab during installation.</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('update.doNotClose')}</p>
                 </div>
             )}
 
@@ -406,8 +408,8 @@ export default function UpdatePage() {
             {installState.phase === 'restart' && (
                 <div className="rounded-2xl border p-6 text-center space-y-3" style={{ background: 'rgba(132,204,22,0.06)', borderColor: 'rgba(132,204,22,0.4)' }}>
                     <div className="text-5xl font-black text-lime-400">{reloadCounter}s</div>
-                    <p className="font-bold text-lime-400">✅ Update installed! Restarting Skales...</p>
-                    <button onClick={() => window.location.reload()} className="text-xs px-3 py-1.5 rounded-lg bg-lime-500 text-black font-bold">Reload Now</button>
+                    <p className="font-bold text-lime-400">{t('update.restartingMsg')}</p>
+                    <button onClick={() => window.location.reload()} className="text-xs px-3 py-1.5 rounded-lg bg-lime-500 text-black font-bold">{t('update.reloadNow')}</button>
                 </div>
             )}
 
@@ -422,10 +424,10 @@ export default function UpdatePage() {
             {/* ── Install Error ─────────────────────────────── */}
             {installState.phase === 'error' && (
                 <div className="rounded-2xl border p-5 space-y-3" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.3)' }}>
-                    <div className="flex items-center gap-2 text-red-400 font-bold text-sm"><Icon icon={AlertCircle} size={16} /> Installation failed</div>
+                    <div className="flex items-center gap-2 text-red-400 font-bold text-sm"><Icon icon={AlertCircle} size={16} /> {t('update.installFailed')}</div>
                     <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{installState.message}</p>
                     {installState.rolledBack && <p className="text-xs text-green-400 flex items-center gap-1"><Icon icon={RotateCcw} size={12} /> Automatically rolled back to previous version.</p>}
-                    <button onClick={() => setInstallState({ phase: 'idle' })} className="text-xs px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>Dismiss</button>
+                    <button onClick={() => setInstallState({ phase: 'idle' })} className="text-xs px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>{t('update.dismiss')}</button>
                 </div>
             )}
 
@@ -444,7 +446,7 @@ export default function UpdatePage() {
             {info?.previous && info.previous.length > 0 && (
                 <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
                     <button onClick={() => setPreviousExpanded(v => !v)} className="w-full flex items-center justify-between px-5 py-4" style={{ background: 'var(--surface)' }}>
-                        <span className="flex items-center gap-2 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}><Icon icon={Package} size={16} style={{ color: 'var(--text-muted)' }} /> 📦 Previous Versions</span>
+                        <span className="flex items-center gap-2 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}><Icon icon={Package} size={16} style={{ color: 'var(--text-muted)' }} /> 📦 {t('update.previous')}</span>
                         <Icon icon={previousExpanded ? ChevronDown : ChevronRight} size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
                     {previousExpanded && (
@@ -467,7 +469,7 @@ export default function UpdatePage() {
             {backups.length > 0 && (
                 <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
                     <button onClick={() => setBackupsExpanded(v => !v)} className="w-full flex items-center justify-between px-5 py-4" style={{ background: 'var(--surface)' }}>
-                        <span className="flex items-center gap-2 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}><Icon icon={Archive} size={16} style={{ color: 'var(--text-muted)' }} /> 🗄️ Local Backups ({backups.length})</span>
+                        <span className="flex items-center gap-2 font-semibold text-sm" style={{ color: 'var(--text-primary)' }}><Icon icon={Archive} size={16} style={{ color: 'var(--text-muted)' }} /> 🗄️ {t('update.backups')} ({backups.length})</span>
                         <Icon icon={backupsExpanded ? ChevronDown : ChevronRight} size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
                     {backupsExpanded && (
@@ -480,7 +482,7 @@ export default function UpdatePage() {
                                     </div>
                                     <button onClick={() => handleInstallNow(backup.path)}
                                         className="text-xs px-3 py-1 rounded-lg border flex items-center gap-1 transition-all" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-                                        <Icon icon={RotateCcw} size={11} /> Restore
+                                        <Icon icon={RotateCcw} size={11} /> {t('update.restore')}
                                     </button>
                                 </div>
                             ))}
@@ -496,7 +498,7 @@ export default function UpdatePage() {
             <div className="rounded-xl border px-4 py-3 flex items-start gap-3" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <Icon icon={Shield} size={15} className="text-blue-400 mt-0.5 shrink-0" />
                 <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>Security: </span>
+                    <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{t('update.security')} </span>
                     Updates fetched from <code className="px-1 rounded" style={{ background: 'var(--surface-light)' }}>skales.app</code> (hardcoded).
                     SHA-256 verified. <code className="px-1 rounded" style={{ background: 'var(--surface-light)' }}>.skales-data/</code> and <code className="px-1 rounded" style={{ background: 'var(--surface-light)' }}>node_modules/</code> are NEVER deleted.
                     Automatic backup before each install.
@@ -504,7 +506,7 @@ export default function UpdatePage() {
             </div>
 
             <div className="text-center pb-2">
-                <Link href="/settings#updates" className="text-xs hover:underline" style={{ color: 'var(--text-muted)' }}>Update settings →</Link>
+                <Link href="/settings#updates" className="text-xs hover:underline" style={{ color: 'var(--text-muted)' }}>{t('update.updateSettings')}</Link>
             </div>
         </div>
     );

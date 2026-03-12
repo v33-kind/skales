@@ -19,6 +19,7 @@ import {
     CheckSquare, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, Settings,
     FolderOpen, ExternalLink, LayoutGrid, List, FolderPlus, ArrowRightLeft,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 const Icon = ({ icon: I, ...p }: { icon: any; [k: string]: any }) => <I {...p} />;
 
@@ -143,6 +144,7 @@ async function openWorkspaceFolder() {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AutopilotPage() {
+    const { t } = useTranslation();
 
     // ── Global State ─────────────────────────────────────────────────────────
     const [activeSection, setActiveSection] = useState<'memory' | 'control' | 'board' | 'logs'>('control');
@@ -224,7 +226,7 @@ export default function AutopilotPage() {
                     setAutopilotEnabled(d.running ?? false);
                 }
             }
-        } catch { /* network error — skip silently */ }
+        } catch { /* network error - skip silently */ }
     }, []);
 
     const fetchProfile = useCallback(async () => {
@@ -589,10 +591,10 @@ export default function AutopilotPage() {
     // ─── Nav Tabs ─────────────────────────────────────────────────────────────
 
     const TABS = [
-        { id: 'control', label: 'Control Room', icon: Star },
-        { id: 'board',   label: 'Execution Board', icon: CheckSquare },
-        { id: 'memory',  label: 'Identity & Memory', icon: Brain },
-        { id: 'logs',    label: 'Live History', icon: Terminal },
+        { id: 'control', label: t('autopilot.tabs.controlRoom'), icon: Star },
+        { id: 'board',   label: t('autopilot.tabs.executionBoard'), icon: CheckSquare },
+        { id: 'memory',  label: t('autopilot.tabs.identityMemory'), icon: Brain },
+        { id: 'logs',    label: t('autopilot.tabs.liveHistory'), icon: Terminal },
     ] as const;
 
     // ─── Render ───────────────────────────────────────────────────────────────
@@ -608,8 +610,8 @@ export default function AutopilotPage() {
                             <Icon icon={Star} size={20} style={{ color: '#f59e0b' }} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Autopilot</h1>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Autonomous Chief of Staff</p>
+                            <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{t('autopilot.title')}</h1>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('autopilot.subtitle')}</p>
                         </div>
                     </div>
 
@@ -617,12 +619,12 @@ export default function AutopilotPage() {
                     <div className="flex items-center gap-3">
                         {runnerStatus?.costControl?.paused && (
                             <button onClick={resumeCostPause} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}>
-                                <Icon icon={AlertCircle} size={12} /> Rate limited — Resume
+                                <Icon icon={AlertCircle} size={12} /> {t('autopilot.rateLimited')}
                             </button>
                         )}
                         {taskStats.approval > 0 && (
                             <span className="px-2.5 py-1 rounded-full text-xs font-bold animate-pulse" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                                {taskStats.approval} awaiting approval
+                                {t('autopilot.awaitingApproval', { count: taskStats.approval })}
                             </span>
                         )}
                         <button
@@ -636,7 +638,7 @@ export default function AutopilotPage() {
                             }}
                         >
                             {toggling ? <Icon icon={Loader2} size={14} className="animate-spin" /> : <Icon icon={autopilotEnabled ? Pause : Play} size={14} />}
-                            {autopilotEnabled ? 'Pause Autopilot' : 'Resume Autopilot'}
+                            {autopilotEnabled ? t('autopilot.pause') : t('autopilot.resume')}
                         </button>
                     </div>
                 </div>
@@ -669,10 +671,10 @@ export default function AutopilotPage() {
                         {/* Status Row */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             {[
-                                { label: 'Pending',     value: taskStats.pending,     color: '#94a3b8', icon: Clock },
-                                { label: 'In Progress', value: taskStats.in_progress, color: '#f59e0b', icon: Activity },
-                                { label: 'Completed',   value: taskStats.completed,   color: '#22c55e', icon: CheckCircle },
-                                { label: 'Blocked',     value: taskStats.blocked,     color: '#ef4444', icon: AlertTriangle },
+                                { label: t('autopilot.state.pending'),     value: taskStats.pending,     color: '#94a3b8', icon: Clock },
+                                { label: t('autopilot.state.inProgress'), value: taskStats.in_progress, color: '#f59e0b', icon: Activity },
+                                { label: t('autopilot.state.completed'),   value: taskStats.completed,   color: '#22c55e', icon: CheckCircle },
+                                { label: t('autopilot.state.blocked'),     value: taskStats.blocked,     color: '#ef4444', icon: AlertTriangle },
                             ].map(s => (
                                 <div key={s.label} className={card} style={{ ...cs, textAlign: 'center' }}>
                                     <Icon icon={s.icon} size={20} style={{ color: s.color, margin: '0 auto 6px' }} />
@@ -687,17 +689,17 @@ export default function AutopilotPage() {
                             <div className={card} style={cs}>
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                        <Icon icon={Activity} size={14} style={{ color: '#f59e0b' }} /> Runner Status
+                                        <Icon icon={Activity} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.runner.status')}
                                     </h3>
                                     <span className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium" style={{ background: runnerStatus.running ? 'rgba(34,197,94,0.12)' : 'rgba(107,114,128,0.12)', color: runnerStatus.running ? '#22c55e' : '#6b7280' }}>
                                         <span className={`w-1.5 h-1.5 rounded-full ${runnerStatus.running ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
-                                        {runnerStatus.running ? 'Active' : 'Paused'}
+                                        {runnerStatus.running ? t('autopilot.runner.active') : t('autopilot.runner.paused')}
                                     </span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.intervalMinutes}m</p><p>Heartbeat interval</p></div>
-                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.costControl?.apiCallsThisHour ?? 0}/{runnerStatus.costControl?.maxCallsPerHour ?? 20}</p><p>API calls this hour</p></div>
-                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.costControl?.tasksThisSession ?? 0}</p><p>Tasks this session</p></div>
+                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.intervalMinutes}m</p><p>{t('autopilot.runner.heartbeat')}</p></div>
+                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.costControl?.apiCallsThisHour ?? 0}/{runnerStatus.costControl?.maxCallsPerHour ?? 20}</p><p>{t('autopilot.runner.apiCalls')}</p></div>
+                                    <div><p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{runnerStatus.costControl?.tasksThisSession ?? 0}</p><p>{t('autopilot.runner.tasks')}</p></div>
                                 </div>
                             </div>
                         )}
@@ -706,7 +708,7 @@ export default function AutopilotPage() {
                         <div className={card} style={cs}>
                             <button className="w-full flex items-center justify-between" onClick={() => setShowCostPanel(!showCostPanel)}>
                                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={Shield} size={14} style={{ color: '#f59e0b' }} /> API Cost Control
+                                    <Icon icon={Shield} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.cost.title')}
                                 </h3>
                                 <Icon icon={showCostPanel ? ChevronDown : ChevronRight} size={14} style={{ color: 'var(--text-muted)' }} />
                             </button>
@@ -714,22 +716,22 @@ export default function AutopilotPage() {
                                 <div className="mt-4 space-y-3">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-primary)' }}>Max API calls/hour</label>
+                                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-primary)' }}>{t('autopilot.cost.maxCalls')}</label>
                                             <input type="number" min={1} max={200} className={inp} style={inps}
                                                 value={costConfig.maxCallsPerHour}
                                                 onChange={e => setCostConfig(c => ({ ...c, maxCallsPerHour: Number(e.target.value) }))} />
-                                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>0 = unlimited</p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('autopilot.cost.unlimited')}</p>
                                         </div>
                                         <div>
-                                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-primary)' }}>Pause after N tasks</label>
+                                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-primary)' }}>{t('autopilot.cost.pauseAfter')}</label>
                                             <input type="number" min={0} max={100} className={inp} style={inps}
                                                 value={costConfig.pauseAfterTasks}
                                                 onChange={e => setCostConfig(c => ({ ...c, pauseAfterTasks: Number(e.target.value) }))} />
-                                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>0 = unlimited</p>
+                                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('autopilot.cost.unlimited')}</p>
                                         </div>
                                     </div>
                                     <button onClick={saveCostConfig} disabled={costSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
-                                        {costSaving ? <Icon icon={Loader2} size={12} className="animate-spin" /> : <Icon icon={Save} size={12} />} Save Cost Settings
+                                        {costSaving ? <Icon icon={Loader2} size={12} className="animate-spin" /> : <Icon icon={Save} size={12} />} {t('autopilot.cost.save')}
                                     </button>
                                 </div>
                             )}
@@ -739,10 +741,10 @@ export default function AutopilotPage() {
                         <div className={card} style={{ ...cs, borderColor: 'rgba(245,158,11,0.25)' }}>
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                                    🧠 Deep-Dive Strategic Interview
+                                    {t('autopilot.interview.title')}
                                 </h3>
                                 {!showInterview && (
-                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Guided goal discovery</p>
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('autopilot.interview.desc')}</p>
                                 )}
                             </div>
 
@@ -781,7 +783,7 @@ export default function AutopilotPage() {
 
                                     {!interviewDone ? (
                                         <div className="flex gap-2">
-                                            <input className={`flex-1 ${inp}`} style={inps} placeholder="Your answer..."
+                                            <input className={`flex-1 ${inp}`} style={inps} placeholder={t('autopilot.answerPlaceholder')}
                                                 value={interviewInput}
                                                 onChange={e => setInterviewInput(e.target.value)}
                                                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendInterviewMessage()} />
@@ -796,7 +798,7 @@ export default function AutopilotPage() {
                                             <button onClick={generatePlan} disabled={planLoading}
                                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all"
                                                 style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1.5px solid rgba(245,158,11,0.4)' }}>
-                                                {planLoading ? <><Icon icon={Loader2} size={14} className="animate-spin" /> Generating plan...</> : <><Icon icon={Sparkles} size={14} /> Generate Master Plan</>}
+                                                {planLoading ? <><Icon icon={Loader2} size={14} className="animate-spin" /> {t('autopilot.generatingPlan')}</> : <><Icon icon={Sparkles} size={14} /> {t('autopilot.generatePlan')}</>}
                                             </button>
                                             <button onClick={() => setShowInterview(false)} className="px-3 py-2 rounded-xl text-xs" style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                                                 <Icon icon={X} size={14} />
@@ -807,10 +809,10 @@ export default function AutopilotPage() {
                             )}
                         </div>
 
-                        {/* Quick Task Input — command center, visually prominent */}
+                        {/* Quick Task Input - command center, visually prominent */}
                         <div className={card} style={{ ...cs, border: '1.5px solid rgba(99,102,241,0.45)', boxShadow: '0 0 0 1px rgba(99,102,241,0.12), 0 4px 24px rgba(99,102,241,0.08)' }}>
                             <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: '#818cf8' }}>
-                                <Icon icon={Zap} size={14} style={{ color: '#818cf8' }} /> Quick Task
+                                <Icon icon={Zap} size={14} style={{ color: '#818cf8' }} /> {t('autopilot.quickTask')}
                                 <span className="ml-auto text-[9px] font-normal px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8' }}>⏎ Enter</span>
                             </h3>
                             <div className="flex gap-2">
@@ -819,7 +821,7 @@ export default function AutopilotPage() {
                                     style={{ ...inps, border: '1.5px solid rgba(99,102,241,0.3)', transition: 'border-color 0.2s, box-shadow 0.2s' }}
                                     onFocus={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.7)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
                                     onBlur={e => { e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
-                                    placeholder="Give Autopilot a goal — e.g. 'Research AI trends and create a report'…"
+                                    placeholder="Give Autopilot a goal - e.g. 'Research AI trends and create a report'…"
                                     value={quickTaskInput}
                                     onChange={e => setQuickTaskInput(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && submitQuickTask()}
@@ -838,7 +840,7 @@ export default function AutopilotPage() {
                         {planResult && (
                             <div className={card} style={{ ...cs, borderColor: 'rgba(34,197,94,0.25)' }}>
                                 <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color: '#22c55e' }}>
-                                    <Icon icon={Sparkles} size={14} /> {planResult.planTitle} — {planResult.taskCount} tasks queued
+                                    <Icon icon={Sparkles} size={14} /> {planResult.planTitle} - {planResult.taskCount} tasks queued
                                 </h3>
                                 <p className="text-xs whitespace-pre-wrap" style={{ color: 'var(--text-secondary)' }}>{planResult.roadmap}</p>
                             </div>
@@ -848,7 +850,7 @@ export default function AutopilotPage() {
                         {profile.masterPlan && !planResult && (
                             <div className={card} style={cs}>
                                 <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={TrendingUp} size={14} style={{ color: '#f59e0b' }} /> Current Roadmap
+                                    <Icon icon={TrendingUp} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.identity.currentRoadmap')}
                                     {profile.masterPlanTitle && (
                                         <span className="text-[10px] font-normal px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>
                                             {profile.masterPlanTitle}
@@ -863,7 +865,7 @@ export default function AutopilotPage() {
                         {Array.isArray(profile.roadmapHistory) && profile.roadmapHistory.length > 0 && (
                             <div className={card} style={{ ...cs, borderColor: 'rgba(100,116,139,0.2)' }}>
                                 <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={ChevronDown} size={14} style={{ color: 'var(--text-muted)' }} /> Previous Roadmaps
+                                    <Icon icon={ChevronDown} size={14} style={{ color: 'var(--text-muted)' }} /> {t('autopilot.identity.previousRoadmaps')}
                                 </h3>
                                 <div className="space-y-3">
                                     {profile.roadmapHistory.map((entry: { roadmap: string; planTitle: string; createdAt: number }, idx: number) => (
@@ -874,7 +876,7 @@ export default function AutopilotPage() {
                                                     {entry.planTitle || 'Plan'}
                                                 </span>
                                                 <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
-                                                    {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                                    {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
                                                 </span>
                                             </summary>
                                             <p className="text-xs whitespace-pre-wrap leading-relaxed mt-2 px-2 pb-1" style={{ color: 'var(--text-muted)' }}>{entry.roadmap}</p>
@@ -888,16 +890,16 @@ export default function AutopilotPage() {
                         <div className={card} style={cs}>
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={BarChart3} size={14} style={{ color: '#f59e0b' }} /> Daily Stand-up Report
+                                    <Icon icon={BarChart3} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.standup.title')}
                                 </h3>
                                 <button onClick={fetchStandup} disabled={standupLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium" style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.25)' }}>
-                                    {standupLoading ? <Icon icon={Loader2} size={12} className="animate-spin" /> : <Icon icon={RefreshCw} size={12} />} Generate
+                                    {standupLoading ? <Icon icon={Loader2} size={12} className="animate-spin" /> : <Icon icon={RefreshCw} size={12} />} {t('autopilot.standup.generate')}
                                 </button>
                             </div>
                             {standup ? (
                                 <pre className="text-xs whitespace-pre-wrap leading-relaxed font-mono" style={{ color: 'var(--text-secondary)' }}>{standup}</pre>
                             ) : (
-                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Click "Generate" to get a report of what happened while you were away.</p>
+                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('autopilot.standup.clickToGenerate')}</p>
                             )}
                         </div>
                     </div>
@@ -932,12 +934,12 @@ export default function AutopilotPage() {
                                     <button onClick={() => setBoardView('kanban')}
                                         className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium"
                                         style={{ background: boardView === 'kanban' ? 'rgba(245,158,11,0.15)' : 'var(--surface)', color: boardView === 'kanban' ? '#f59e0b' : 'var(--text-muted)' }}>
-                                        <Icon icon={LayoutGrid} size={11} /> Board
+                                        <Icon icon={LayoutGrid} size={11} /> {t('autopilot.board.boardView')}
                                     </button>
                                     <button onClick={() => setBoardView('list')}
                                         className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium"
                                         style={{ background: boardView === 'list' ? 'rgba(245,158,11,0.15)' : 'var(--surface)', color: boardView === 'list' ? '#f59e0b' : 'var(--text-muted)', borderLeft: '1px solid var(--border)' }}>
-                                        <Icon icon={List} size={11} /> List
+                                        <Icon icon={List} size={11} /> {t('autopilot.board.listView')}
                                     </button>
                                 </div>
                                 <button onClick={fetchTasks} className="p-1.5 rounded-lg" style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
@@ -1010,12 +1012,12 @@ export default function AutopilotPage() {
                                     <textarea rows={2} className={inp} style={inps} placeholder="Description (optional)..." value={newTask.description} onChange={e => setNewTask(t => ({ ...t, description: e.target.value }))} />
                                     <div className="grid grid-cols-2 gap-2">
                                         <select className={inp} style={inps} value={newTask.priority} onChange={e => setNewTask(t => ({ ...t, priority: e.target.value }))}>
-                                            <option value="high">High Priority</option>
-                                            <option value="normal">Normal Priority</option>
-                                            <option value="low">Low Priority</option>
+                                            <option value="high">{t('autopilot.priority.high')}</option>
+                                            <option value="normal">{t('autopilot.priority.normal')}</option>
+                                            <option value="low">{t('autopilot.priority.low')}</option>
                                         </select>
                                         <select className={inp} style={inps} value={newTask.planTitle} onChange={e => setNewTask(t => ({ ...t, planTitle: e.target.value }))}>
-                                            <option value="">No Project</option>
+                                            <option value="">{t('autopilot.priority.noProject')}</option>
                                             {projectNames.map(pn => <option key={pn} value={pn}>{pn}</option>)}
                                         </select>
                                     </div>
@@ -1051,9 +1053,9 @@ export default function AutopilotPage() {
                                                 <input className={inp} style={{ ...inps, fontSize: '12px' }} value={editingTask.title} onChange={e => setEditingTask((t: any) => ({ ...t, title: e.target.value }))} />
                                                 <textarea rows={2} className={inp} style={{ ...inps, fontSize: '11px' }} value={editingTask.description} onChange={e => setEditingTask((t: any) => ({ ...t, description: e.target.value }))} />
                                                 <select className={inp} style={{ ...inps, fontSize: '11px' }} value={editingTask.priority} onChange={e => setEditingTask((t: any) => ({ ...t, priority: e.target.value }))}>
-                                                    <option value="high">High</option>
-                                                    <option value="normal">Normal</option>
-                                                    <option value="low">Low</option>
+                                                    <option value="high">{t('autopilot.priority.highShort')}</option>
+                                                    <option value="normal">{t('autopilot.priority.normalShort')}</option>
+                                                    <option value="low">{t('autopilot.priority.lowShort')}</option>
                                                 </select>
                                                 <div className="flex gap-1.5">
                                                     <button onClick={saveEditTask} disabled={taskAction === 'saving'} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
@@ -1192,7 +1194,7 @@ export default function AutopilotPage() {
                                                             value={task.planTitle?.trim() || ''}
                                                             onChange={e => moveTaskToProject(task.id, e.target.value)}
                                                             onBlur={() => setMovingTaskId(null)}>
-                                                            <option value="">No Project</option>
+                                                            <option value="">{t('autopilot.priority.noProject')}</option>
                                                             {projectNames.map(pn => <option key={pn} value={pn}>{pn}</option>)}
                                                         </select>
                                                     ) : (
@@ -1226,9 +1228,9 @@ export default function AutopilotPage() {
                                                     {task.state === 'pending' && (
                                                         <select className="text-[9px] px-1 py-0.5 rounded border ml-auto" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: PRIORITY_COLORS[task.priority] }}
                                                             value={task.priority} onChange={e => setPriority(task.id, e.target.value)}>
-                                                            <option value="high">High</option>
-                                                            <option value="normal">Normal</option>
-                                                            <option value="low">Low</option>
+                                                            <option value="high">{t('autopilot.priority.highShort')}</option>
+                                                            <option value="normal">{t('autopilot.priority.normalShort')}</option>
+                                                            <option value="low">{t('autopilot.priority.lowShort')}</option>
                                                         </select>
                                                     )}
                                                 </div>
@@ -1246,8 +1248,8 @@ export default function AutopilotPage() {
                                 return (
                                     <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
                                         <Icon icon={LayoutGrid} size={36} style={{ margin: '0 auto 10px', opacity: 0.2 }} />
-                                        <p className="text-sm font-medium mb-1">No tasks yet</p>
-                                        <p className="text-xs">Click "+ Task" or create a project to get started.</p>
+                                        <p className="text-sm font-medium mb-1">{t('autopilot.empty.tasks')}</p>
+                                        <p className="text-xs">{t('autopilot.board.noTasksClickToStart')}</p>
                                     </div>
                                 );
                             }
@@ -1287,7 +1289,7 @@ export default function AutopilotPage() {
                                                     {/* Column body: task cards */}
                                                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
                                                         {colTasks.length === 0 ? (
-                                                            <p className="text-center text-[10px] py-6" style={{ color: `${col.color}60` }}>No tasks</p>
+                                                            <p className="text-center text-[10px] py-6" style={{ color: `${col.color}60` }}>{t('autopilot.empty.noTasks')}</p>
                                                         ) : colTasks.map((task: any) => (
                                                             <KanbanCard key={task.id} task={task} />
                                                         ))}
@@ -1333,7 +1335,7 @@ export default function AutopilotPage() {
                                                         <Icon icon={isCollapsed ? ChevronRight : ChevronDown} size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                                                         {!isStandalone && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: projColor }} />}
                                                         <span className="text-xs font-bold truncate" style={{ color: isStandalone ? 'var(--text-muted)' : 'var(--text-primary)' }}>
-                                                            {isStandalone ? 'Standalone Tasks' : projectTitle}
+                                                            {isStandalone ? t('autopilot.board.standaloneTasks') : projectTitle}
                                                         </span>
                                                         <div className="flex items-center gap-1 shrink-0">
                                                             {pStats.in_progress > 0 && (
@@ -1387,7 +1389,7 @@ export default function AutopilotPage() {
                         <div className={card} style={{ ...cs, borderColor: 'rgba(245,158,11,0.2)' }}>
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={Brain} size={14} style={{ color: '#f59e0b' }} /> Identity & Long-Term Memory
+                                    <Icon icon={Brain} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.identity.title')}
                                 </h3>
                                 <div className="flex items-center gap-2">
                                     {!profileEditing && (
@@ -1401,7 +1403,7 @@ export default function AutopilotPage() {
                                             }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
                                             style={{ background: 'rgba(239,68,68,0.06)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
-                                            Clear
+                                            {t('autopilot.identity.clear')}
                                         </button>
                                     )}
                                     {profileEditing && (
@@ -1409,14 +1411,14 @@ export default function AutopilotPage() {
                                             onClick={() => { setProfileDraft(profile); setProfileEditing(false); }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
                                             style={{ background: 'rgba(100,116,139,0.08)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                                            Cancel
+                                            {t('common.cancel')}
                                         </button>
                                     )}
                                     <button onClick={() => profileEditing ? saveProfile() : setProfileEditing(true)} disabled={profileSaving}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
                                         style={{ background: profileEditing ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.08)', color: profileEditing ? '#22c55e' : '#f59e0b', border: `1px solid ${profileEditing ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.25)'}` }}>
                                         {profileSaving ? <Icon icon={Loader2} size={11} className="animate-spin" /> : <Icon icon={profileEditing ? Save : Edit3} size={11} />}
-                                        {profileEditing ? 'Save Memory' : 'Edit'}
+                                        {profileEditing ? t('autopilot.identity.saveMemory') : t('autopilot.identity.edit')}
                                     </button>
                                 </div>
                             </div>
@@ -1456,7 +1458,7 @@ export default function AutopilotPage() {
                         {profile.masterPlan && (
                             <div className={card} style={cs}>
                                 <h3 className="text-sm font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                    <Icon icon={TrendingUp} size={14} style={{ color: '#f59e0b' }} /> Strategic Roadmap
+                                    <Icon icon={TrendingUp} size={14} style={{ color: '#f59e0b' }} /> {t('autopilot.identity.strategicRoadmap')}
                                 </h3>
                                 {profileEditing ? (
                                     <textarea rows={5} className={inp} style={inps} value={profileDraft.masterPlan ?? ''}
@@ -1512,7 +1514,7 @@ export default function AutopilotPage() {
                             {/* Log entries */}
                             <div className="p-4 space-y-1 overflow-y-auto max-h-[60vh] font-mono text-xs">
                                 {filteredLogs.length === 0 ? (
-                                    <p style={{ color: 'rgba(255,255,255,0.2)' }}>No log entries yet. Start Autopilot to see activity here.</p>
+                                    <p style={{ color: 'rgba(255,255,255,0.2)' }}>{t('autopilot.empty.log')}</p>
                                 ) : filteredLogs.map(entry => (
                                     <div key={entry.id} className="flex items-start gap-2 py-0.5">
                                         <span style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>

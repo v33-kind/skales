@@ -66,7 +66,7 @@ export async function testVTApiKey(apiKey: string): Promise<{ success: boolean; 
             const email = data?.data?.attributes?.email;
             return { success: true, message: email ? `Connected (${email})` : 'API key valid ✓' };
         }
-        if (res.status === 401) return { success: false, message: 'Invalid API key — check your VirusTotal key.' };
+        if (res.status === 401) return { success: false, message: 'Invalid API key - check your VirusTotal key.' };
         return { success: false, message: `API returned status ${res.status}` };
     } catch (e: any) {
         return { success: false, message: `Connection failed: ${e.message}` };
@@ -110,7 +110,7 @@ async function lookupHash(apiKey: string, sha256: string): Promise<any | null> {
         headers: { 'x-apikey': apiKey },
         signal: AbortSignal.timeout(15000),
     });
-    if (res.status === 404) return null;   // Not found — needs upload
+    if (res.status === 404) return null;   // Not found - needs upload
     if (!res.ok) throw new Error(`VT hash lookup failed: ${res.status} ${res.statusText}`);
     return await res.json();
 }
@@ -189,13 +189,13 @@ function parseVTFileReport(data: any, sha256: string, filename: string): VTScanR
 
     if (maliciousCount > 0) {
         status = 'malicious';
-        verdict = `🚨 **DANGEROUS** — ${maliciousCount} of ${totalEngines} antivirus engines flagged this file as malicious. Do NOT open it.`;
+        verdict = `🚨 **DANGEROUS** - ${maliciousCount} of ${totalEngines} antivirus engines flagged this file as malicious. Do NOT open it.`;
     } else if (suspiciousCount > 0) {
         status = 'suspicious';
-        verdict = `⚠️ **SUSPICIOUS** — ${suspiciousCount} of ${totalEngines} engines flagged this file as suspicious. Treat with caution.`;
+        verdict = `⚠️ **SUSPICIOUS** - ${suspiciousCount} of ${totalEngines} engines flagged this file as suspicious. Treat with caution.`;
     } else {
         status = 'clean';
-        verdict = `✅ **CLEAN** — 0 of ${totalEngines} antivirus engines flagged this file. It appears safe.`;
+        verdict = `✅ **CLEAN** - 0 of ${totalEngines} antivirus engines flagged this file. It appears safe.`;
     }
 
     return {
@@ -279,7 +279,7 @@ export async function scanAttachment(base64: string, filename: string): Promise<
             filename,
             status: 'pending',
             analysisId,
-            verdict: `⏳ **Scan queued** — VirusTotal is scanning this file. Check back in a few minutes via the permalink.`,
+            verdict: `⏳ **Scan queued** - VirusTotal is scanning this file. Check back in a few minutes via the permalink.`,
             permalink: `https://www.virustotal.com/gui/file/${sha256}`,
         };
 

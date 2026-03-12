@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             success: result.success,
             logPath: result.logPath,
-            message: 'Killswitch triggered — Skales is shutting down.',
+            message: 'Killswitch triggered - Skales is shutting down.',
             error: result.error,
         });
     } catch (e: any) {

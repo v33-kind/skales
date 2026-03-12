@@ -1,4 +1,4 @@
-// Skales v5.5.0 — Created by Mario Simic — skales.app
+// Skales v6.0.0 — Created by Mario Simic — skales.app
 'use strict';
 
 const { app, BrowserWindow, shell, ipcMain, dialog, screen } = require('electron');
@@ -656,11 +656,55 @@ async function startServer() {
   }, 45_000);
 }
 
+// ─── Telemetry (anonymous, opt-in only) ──────────────────────────────────────
+// Only sends: app version, OS, event name, anonymous UUID.
+// Never sends: API keys, conversations, personal data, stack traces.
+// Opt-in: fires only when settings.telemetry_enabled === true.
+function sendTelemetry(event, extra) {
+  try {
+    const settings = readSettings();
+    if (!settings.telemetry_enabled) return;
+
+    // Generate or reuse anonymous UUID (never regenerated)
+    let anonId = settings.telemetry_anonymous_id;
+    if (!anonId) {
+      anonId = require('crypto').randomUUID?.() ||
+               Math.random().toString(36).slice(2) + Date.now().toString(36);
+      writeSettings({ telemetry_anonymous_id: anonId });
+    }
+
+    const payload = JSON.stringify({
+      type:         'telemetry',
+      version:      '6.0.0',
+      os:           process.platform,
+      event,
+      anonymous_id: anonId,
+      ...extra,
+    });
+
+    // Fire-and-forget via https.request — never blocks the app
+    const url = new URL('https://skales.app/api/collect.php');
+    const opts = {
+      hostname: url.hostname,
+      path:     url.pathname,
+      method:   'POST',
+      headers:  { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+    };
+    const req = require('https').request(opts);
+    req.on('error', () => {}); // silently ignore
+    req.write(payload);
+    req.end();
+  } catch { /* never crash for telemetry */ }
+}
+
 // ─── App Lifecycle ────────────────────────────────────────────────────────────
 app.on('ready', async () => {
   // Load persisted settings before anything else
   try { desktopBuddyEnabled = !!readSettings().desktopBuddy; } catch { desktopBuddyEnabled = false; }
   console.log('[Skales] Desktop Buddy enabled (persisted):', desktopBuddyEnabled);
+
+  // Anonymous app_start telemetry (opt-in only)
+  sendTelemetry('app_start');
 
   showSplash();
   createTray(() => mainWindow, app, () => PORT);
@@ -778,5 +822,22 @@ ipcMain.handle('execute-skill', async (_event, skillId, args) => {
   } catch (e) {
     console.error(`[Skales] execute-skill (${skillId}) failed:`, e.message);
     return { error: e.message };
+  }
+});
+
+// ─── Local bug report fallback ──────────────────────────────────────────────
+// If the remote endpoint is unreachable, save the report to DATA_DIR/bugreports.jsonl
+// so it can be reviewed and submitted later.
+ipcMain.handle('save-bug-report', (_event, payload) => {
+  try {
+    const DATA_DIR   = getDataDir();
+    const reportPath = path.join(DATA_DIR, 'bugreports.jsonl');
+    const line       = JSON.stringify({ ...payload, saved_at: new Date().toISOString() });
+    fs.appendFileSync(reportPath, line + '\n', 'utf-8');
+    console.log('[Skales] Bug report saved locally:', reportPath);
+    return { ok: true };
+  } catch (e) {
+    console.error('[Skales] save-bug-report failed:', e.message);
+    return { ok: false, error: e.message };
   }
 });

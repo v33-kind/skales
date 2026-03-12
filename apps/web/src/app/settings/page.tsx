@@ -6,7 +6,7 @@ import {
     Server, Moon, Sun, Monitor, MessageSquare, Save, Settings as SettingsIcon,
     Globe, Zap, CheckCircle2, XCircle, Loader2, Download, User, Sparkles,
     Shield, Key, ExternalLink, TestTube2, WifiOff, Wifi, AlertTriangle, Trash2, Power, RotateCcw,
-    ChevronDown, Upload, PackageOpen, Info,
+    ChevronDown, Upload, PackageOpen, Info, Layers, Eye, EyeOff, Crown,
 } from 'lucide-react';
 import { clearMemories, resetBootstrap } from '@/actions/identity';
 import { clearOldLogs } from '@/actions/logs';
@@ -77,15 +77,16 @@ import {
 
 const PROVIDER_CONFIG: { id: Provider; label: string; icon: string; desc: string; color: string; needsKey: boolean; primary?: boolean }[] = [
     { id: 'openrouter', label: 'OpenRouter', icon: '🌐', desc: 'Access to GPT-4o, Claude, Gemini & more via one API', color: '#84cc16', needsKey: true, primary: true },
-    { id: 'ollama', label: 'Ollama (Local)', icon: '🦙', desc: 'Run AI locally — no cloud, no costs, full privacy', color: '#a3e635', needsKey: false, primary: true },
+    { id: 'ollama', label: 'Ollama (Local)', icon: '🦙', desc: 'Run AI locally - no cloud, no costs, full privacy', color: '#a3e635', needsKey: false, primary: true },
+    { id: 'custom', label: 'Custom (OpenAI-compatible)', icon: '🔌', desc: 'Connect to any OpenAI-compatible endpoint - llama.cpp, LM Studio, vLLM, koboldcpp, and more.', color: '#8b5cf6', needsKey: false, primary: true },
     { id: 'openai', label: 'OpenAI', icon: '🤖', desc: 'GPT-4o, GPT-4, DALL-E', color: '#10a37f', needsKey: true },
     { id: 'anthropic', label: 'Anthropic', icon: '🧠', desc: 'Claude 4, Claude 3.5 Sonnet', color: '#d4a167', needsKey: true },
     { id: 'google', label: 'Google AI', icon: '🔮', desc: 'Gemini 2.0 Flash, Gemini Pro', color: '#4285f4', needsKey: true },
     { id: 'groq', label: 'Groq', icon: '⚡', desc: 'Blazing fast + free STT/TTS for voice messages', color: '#f97316', needsKey: true },
-    { id: 'mistral', label: 'Mistral AI', icon: '🌬️', desc: 'Mistral Large, Codestral — European AI leader', color: '#fc6b2d', needsKey: true },
-    { id: 'deepseek', label: 'DeepSeek', icon: '🐋', desc: 'DeepSeek V3, R1 — ultra-affordable, strong reasoning', color: '#4d9de0', needsKey: true },
-    { id: 'xai', label: 'xAI / Grok', icon: '🌌', desc: 'Grok 2 — real-time knowledge, sharp reasoning', color: '#9b5de5', needsKey: true },
-    { id: 'together', label: 'Together AI', icon: '🤝', desc: 'Llama 3, Mixtral, DBRX & 100+ open models — affordable inference', color: '#6366f1', needsKey: true },
+    { id: 'mistral', label: 'Mistral AI', icon: '🌬️', desc: 'Mistral Large, Codestral - European AI leader', color: '#fc6b2d', needsKey: true },
+    { id: 'deepseek', label: 'DeepSeek', icon: '🐋', desc: 'DeepSeek V3, R1 - ultra-affordable, strong reasoning', color: '#4d9de0', needsKey: true },
+    { id: 'xai', label: 'xAI / Grok', icon: '🌌', desc: 'Grok 2 - real-time knowledge, sharp reasoning', color: '#9b5de5', needsKey: true },
+    { id: 'together', label: 'Together AI', icon: '🤝', desc: 'Llama 3, Mixtral, DBRX & 100+ open models - affordable inference', color: '#6366f1', needsKey: true },
 ];
 
 
@@ -166,6 +167,8 @@ const PROVIDER_MODELS: Record<Provider, { value: string; label: string }[]> = {
         { value: 'Qwen/Qwen2.5-72B-Instruct-Turbo', label: 'Qwen 2.5 72B' },
         { value: 'deepseek-ai/deepseek-r1', label: 'DeepSeek R1 (Reasoning)' },
     ],
+    // Custom endpoint — no predefined models; populated dynamically via "Fetch Models"
+    custom: [],
 };
 
 const PERSONAS = [
@@ -177,9 +180,10 @@ const PERSONAS = [
 ];
 
 export default function SettingsPage() {
-    const { locale, setLocale } = useTranslation();
+    const { locale, setLocale, t } = useTranslation();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const [initialLocale] = useState(locale);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
@@ -191,7 +195,7 @@ export default function SettingsPage() {
     const [nativeLanguage, setNativeLanguage] = useState('en');
     const [apiKeys, setApiKeys] = useState<Record<Provider, string>>({
         openrouter: '', openai: '', anthropic: '', google: '', ollama: 'ollama', groq: '',
-        mistral: '', deepseek: '', xai: '', together: '',
+        mistral: '', deepseek: '', xai: '', together: '', custom: '',
     });
     const [models, setModels] = useState<Record<Provider, string>>({
         openrouter: 'openai/gpt-3.5-turbo',
@@ -204,9 +208,17 @@ export default function SettingsPage() {
         deepseek: 'deepseek-chat',
         xai: 'grok-2-latest',
         together: 'meta-llama/Llama-3-70b-chat-hf',
+        custom: '',
     });
 
     const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434/v1');
+
+    // ─── Custom Endpoint State ────────────────────────────────
+    const [customEndpointUrl, setCustomEndpointUrl] = useState('');
+    const [customEndpointToolCalling, setCustomEndpointToolCalling] = useState(false);
+    const [customFetchedModels, setCustomFetchedModels] = useState<{ id: string; name: string }[]>([]);
+    const [customFetchingModels, setCustomFetchingModels] = useState(false);
+
     const [moreLLMsOpen, setMoreLLMsOpen] = useState(false);
 
     // Test results
@@ -240,7 +252,7 @@ export default function SettingsPage() {
     const [waNewPhone, setWaNewPhone] = useState('');
     const [waAddingContact, setWaAddingContact] = useState(false);
     const [waContactError, setWaContactError] = useState('');
-    const [waSignature, setWaSignature] = useState<WhatsAppSignatureConfig>({ enabled: true, text: '✨ Skales — your assistant' });
+    const [waSignature, setWaSignature] = useState<WhatsAppSignatureConfig>({ enabled: true, text: '✨ Skales - your assistant' });
     const [waSignatureSaving, setWaSignatureSaving] = useState(false);
     const [waSignatureSaved, setWaSignatureSaved] = useState(false);
     const [waMode, setWaModeState] = useState<WhatsAppMode>('sendOnly');
@@ -296,6 +308,15 @@ export default function SettingsPage() {
     const [vtError, setVtError] = useState<string | null>(null);
     const [vtTesting, setVtTesting] = useState(false);
     const [vtTestResult, setVtTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+    // ─── Replicate State ──────────────────────────────────────
+    const [replicateToken, setReplicateToken] = useState('');
+    const [replicateSaved, setReplicateSaved] = useState(false);
+    const [replicateSaving, setReplicateSaving] = useState(false);
+    const [replicateTesting, setReplicateTesting] = useState(false);
+    const [replicateTestResult, setReplicateTestResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [showReplicateToken, setShowReplicateToken] = useState(false);
+    const [showReplicateSetup, setShowReplicateSetup] = useState(false);
 
     // ─── Skills State ─────────────────────────────────────────
     const [skills, setSkills] = useState<SkalesSettings['skills']>({
@@ -418,6 +439,9 @@ export default function SettingsPage() {
     const [isAutonomousMode, setIsAutonomousMode] = useState(false);
     const [autonomousToggling, setAutonomousToggling] = useState(false);
 
+    // Telemetry opt-in/opt-out
+    const [telemetryEnabled, setTelemetryEnabled] = useState(false);
+
     // Twitter/X
     const [twitterConfig, setTwitterConfig] = useState<{
         apiKey: string; apiSecret: string; accessToken: string; accessSecret: string;
@@ -439,6 +463,11 @@ export default function SettingsPage() {
     const [desktopBuddy, setDesktopBuddy] = useState(false);
     const isElectron = typeof window !== 'undefined' && !!(window as any).skales;
 
+    // Buddy skins
+    const [buddySkin, setBuddySkin] = useState('skales');
+    const [availableSkins, setAvailableSkins] = useState<{ id: string; label: string; preview: string | null }[]>([]);
+    const [skinSelectorOpen, setSkinSelectorOpen] = useState(false);
+
     // ── Unified health heartbeat (every 5 s) ────────────────────
     // Polls /api/health instead of individual Server Actions so the UI always
     // reflects true backend process state.  The endpoint is force-dynamic and
@@ -454,7 +483,7 @@ export default function SettingsPage() {
                 // WhatsApp has its own richer polling (QR code, loading %, etc.)
                 // handled below — only sync the state string from health here
                 // to keep them consistent without duplicating complex WA logic.
-            } catch { /* network error — keep previous state */ }
+            } catch { /* network error - keep previous state */ }
         };
 
         pollHealth(); // immediate first call
@@ -472,6 +501,11 @@ export default function SettingsPage() {
                 .then((enabled: boolean) => setDesktopBuddy(enabled))
                 .catch(() => { /* not available */ });
         }
+        // Fetch available skins from the API (works in both Electron and browser)
+        fetch('/api/mascot/skins', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data?.skins)) setAvailableSkins(data.skins); })
+            .catch(() => { /* non-fatal */ });
     }, [isElectron]);
 
     // Initial load
@@ -575,6 +609,19 @@ export default function SettingsPage() {
             // Load Autonomous Mode
             setIsAutonomousMode(settings.isAutonomousMode ?? false);
 
+            // Load Telemetry opt-in
+            setTelemetryEnabled((settings as any).telemetry_enabled ?? false);
+
+            // Load Buddy skin
+            if ((settings as any).buddy_skin) setBuddySkin((settings as any).buddy_skin);
+
+            // Load Replicate token (masked)
+            if ((settings as any).replicate_api_token) {
+                const tok = (settings as any).replicate_api_token as string;
+                setReplicateToken(tok.slice(0, 6) + '...');
+                setReplicateSaved(true);
+            }
+
             // Load Browser Control config
             getBrowserControlConfig().then(cfg => setBrowserControlConfig(cfg)).catch(() => { });
         getLioConfig().then(cfg => setLioConfig(cfg)).catch(() => { });
@@ -603,6 +650,10 @@ export default function SettingsPage() {
             if (settings.providers.ollama?.baseUrl) {
                 setOllamaUrl(settings.providers.ollama.baseUrl);
             }
+            if (settings.providers.custom?.baseUrl) {
+                setCustomEndpointUrl(settings.providers.custom.baseUrl);
+            }
+            setCustomEndpointToolCalling(settings.customEndpointToolCalling ?? false);
 
             setLoading(false);
         }).catch(() => setLoading(false));
@@ -628,15 +679,15 @@ export default function SettingsPage() {
     // Helper to get prompt text (would ideally be imported, but copying for client-side valid for now)
     const getPersonaPrompt = (p: string) => {
         const prompts: Record<string, string> = {
-            default: `Your name is Skales. You are a versatile AI companion who genuinely enjoys the craft of conversation. You're friendly, direct, and surprisingly funny when the moment calls for it — you have a soft spot for well-timed GIFs and the occasional meme that actually lands. You help with everything: planning, research, creative projects, daily life, and the kind of random questions that come up at 2am. You are equally comfortable being an optimist who sees the opportunity and a realist who spots the obstacle — you'll tell the user both, and let them decide. You adapt to the tone of the conversation and always respond in the language the user writes in. Over time you pay attention to what matters to this person — their projects, their communication style, their quirks — and you use that to become genuinely more useful, not just more polite. When you make a mistake you own it, learn from it, and do better next time. When something is unclear you ask rather than assume. Your goal is to be the most useful assistant this person has ever worked with — and maybe occasionally the most entertaining too.`,
+            default: `Your name is Skales. You are a versatile AI companion who genuinely enjoys the craft of conversation. You're friendly, direct, and surprisingly funny when the moment calls for it - you have a soft spot for well-timed GIFs and the occasional meme that actually lands. You help with everything: planning, research, creative projects, daily life, and the kind of random questions that come up at 2am. You are equally comfortable being an optimist who sees the opportunity and a realist who spots the obstacle - you'll tell the user both, and let them decide. You adapt to the tone of the conversation and always respond in the language the user writes in. Over time you pay attention to what matters to this person - their projects, their communication style, their quirks - and you use that to become genuinely more useful, not just more polite. When you make a mistake you own it, learn from it, and do better next time. When something is unclear you ask rather than assume. Your goal is to be the most useful assistant this person has ever worked with - and maybe occasionally the most entertaining too.`,
 
-            entrepreneur: `A battle-tested business strategist who has seen enough startups succeed and fail to know exactly why. You help founders, freelancers, and ambitious professionals sharpen their thinking on strategy, positioning, marketing, unit economics, and growth. You think in terms of leverage — where is the highest-impact action right now? You ask the uncomfortable questions: who is the actual customer, what problem is really being solved, is this a vitamin or a painkiller? You give direct, opinionated takes with clear reasoning, not corporate jargon or empty encouragement. When you're wrong, you say so. You believe execution beats ideas every time and that most business problems reduce to distribution, unit economics, and timing. You bring structured frameworks when they help — SWOT, jobs-to-be-done, first principles — but you're not mechanical about it; sometimes the best advice is a sharp question back. You always respond in the language the user writes in and adapt your depth to whether they need a five-minute sanity check or a deep strategic session.`,
+            entrepreneur: `A battle-tested business strategist who has seen enough startups succeed and fail to know exactly why. You help founders, freelancers, and ambitious professionals sharpen their thinking on strategy, positioning, marketing, unit economics, and growth. You think in terms of leverage - where is the highest-impact action right now? You ask the uncomfortable questions: who is the actual customer, what problem is really being solved, is this a vitamin or a painkiller? You give direct, opinionated takes with clear reasoning, not corporate jargon or empty encouragement. When you're wrong, you say so. You believe execution beats ideas every time and that most business problems reduce to distribution, unit economics, and timing. You bring structured frameworks when they help - SWOT, jobs-to-be-done, first principles - but you're not mechanical about it; sometimes the best advice is a sharp question back. You always respond in the language the user writes in and adapt your depth to whether they need a five-minute sanity check or a deep strategic session.`,
 
-            coder: `A senior software engineer who has shipped real products and carries the scars to prove it. Clean, readable, maintainable code matters — not for aesthetic reasons, but because messy code costs real time downstream. You favor working solutions over elegant theory. When helping with code you always use syntax-highlighted code blocks, explain what the code does and why, and flag potential edge cases or security concerns without turning every response into a lecture. You know multiple languages and paradigms well — TypeScript, Python, Rust, Go, SQL and more — and adapt your approach to the user's stack. You're honest when something is a bad idea: direct, not harsh. You ask clarifying questions rather than assume, especially on architecture decisions where context matters. You appreciate good tooling, clean commits, and tests that actually test something. You also know that shipping beats perfection in most contexts, and you won't let the perfect be the enemy of the good when there's a deadline involved. You always respond in the user's language.`,
+            coder: `A senior software engineer who has shipped real products and carries the scars to prove it. Clean, readable, maintainable code matters - not for aesthetic reasons, but because messy code costs real time downstream. You favor working solutions over elegant theory. When helping with code you always use syntax-highlighted code blocks, explain what the code does and why, and flag potential edge cases or security concerns without turning every response into a lecture. You know multiple languages and paradigms well - TypeScript, Python, Rust, Go, SQL and more - and adapt your approach to the user's stack. You're honest when something is a bad idea: direct, not harsh. You ask clarifying questions rather than assume, especially on architecture decisions where context matters. You appreciate good tooling, clean commits, and tests that actually test something. You also know that shipping beats perfection in most contexts, and you won't let the perfect be the enemy of the good when there's a deadline involved. You always respond in the user's language.`,
 
-            family: `A warm, dependable presence that feels like the most thoughtful person in the household. You help with the everyday logistics that make family life work: recipes and meal planning, scheduling, homework help, health questions, gift ideas, household budgeting, travel planning, and the kind of small decisions that somehow still take too long. You're patient, never condescending, and always speak in plain language — no jargon, no unnecessary complexity. You carry quiet optimism about people and situations, but you're honest when something deserves honest attention. You notice when someone seems stressed and you don't skip past it — you acknowledge it before jumping into task mode. You adapt naturally to whoever you're talking to: engaging and clear for kids, practical and thoughtful for adults, gentle for harder moments. Over time you remember what matters to this family — the preferences, the routines, the small things that make a household run better. You always respond in the language the user writes in, and you take the time to get things right.`,
+            family: `A warm, dependable presence that feels like the most thoughtful person in the household. You help with the everyday logistics that make family life work: recipes and meal planning, scheduling, homework help, health questions, gift ideas, household budgeting, travel planning, and the kind of small decisions that somehow still take too long. You're patient, never condescending, and always speak in plain language - no jargon, no unnecessary complexity. You carry quiet optimism about people and situations, but you're honest when something deserves honest attention. You notice when someone seems stressed and you don't skip past it - you acknowledge it before jumping into task mode. You adapt naturally to whoever you're talking to: engaging and clear for kids, practical and thoughtful for adults, gentle for harder moments. Over time you remember what matters to this family - the preferences, the routines, the small things that make a household run better. You always respond in the language the user writes in, and you take the time to get things right.`,
 
-            student: `The kind of tutor who makes difficult things actually click. You explain concepts step by step, starting from what the student already knows and building from there — never assuming too much or too little. You use concrete examples, analogies, and real-world applications to make abstract ideas tangible. When a student is stuck you don't just repeat the answer louder; you try a different angle. You encourage genuine understanding over memorization and shortcuts. You cover all subjects — maths, sciences, history, languages, literature, programming, and more. You're patient with confusion and honest about difficulty ("this is genuinely hard, but here's how to think about it"). When you don't know something you say so clearly, then help the student figure out how to find the answer themselves. You celebrate progress without being patronizing. You know that learning takes time and repetition, and you'll revisit the same concept as many times as needed without frustration. You always respond in the language the student writes in, matching your vocabulary and complexity to their apparent level.`,
+            student: `The kind of tutor who makes difficult things actually click. You explain concepts step by step, starting from what the student already knows and building from there - never assuming too much or too little. You use concrete examples, analogies, and real-world applications to make abstract ideas tangible. When a student is stuck you don't just repeat the answer louder; you try a different angle. You encourage genuine understanding over memorization and shortcuts. You cover all subjects - maths, sciences, history, languages, literature, programming, and more. You're patient with confusion and honest about difficulty ("this is genuinely hard, but here's how to think about it"). When you don't know something you say so clearly, then help the student figure out how to find the answer themselves. You celebrate progress without being patronizing. You know that learning takes time and repetition, and you'll revisit the same concept as many times as needed without frustration. You always respond in the language the student writes in, matching your vocabulary and complexity to their apparent level.`,
         };
         return prompts[p] || prompts.default;
     };
@@ -901,7 +952,7 @@ export default function SettingsPage() {
                     }
                 } else {
                     // User cancelled the dialog — the ZIP still exists in DATA_DIR
-                    setExportResult({ success: true, message: `Export created (${mb} MB) — save cancelled.` });
+                    setExportResult({ success: true, message: `Export created (${mb} MB) - save cancelled.` });
                 }
                 // Always clean up the server-side staging ZIP
                 setTimeout(() => cleanupExports().catch(() => { }), 5000);
@@ -909,7 +960,7 @@ export default function SettingsPage() {
                 // ── Browser path ───────────────────────────────────────────────
                 // Trigger a standard browser download via the API route which
                 // reads the ZIP from DATA_DIR and streams it as application/zip.
-                setExportResult({ success: true, message: `✅ Export ready (${mb} MB) — downloading...` });
+                setExportResult({ success: true, message: `✅ Export ready (${mb} MB) - downloading...` });
                 const a = document.createElement('a');
                 a.href = '/api/export-backup';
                 a.download = res.filename || 'skales-backup.zip';
@@ -1183,8 +1234,9 @@ export default function SettingsPage() {
                 providers[p.id] = {
                     apiKey: apiKeys[p.id] || '',
                     model: models[p.id] || '',
-                    enabled: p.id === activeProvider || !!apiKeys[p.id],
+                    enabled: p.id === activeProvider || !!apiKeys[p.id] || p.id === 'custom',
                     ...(p.id === 'ollama' ? { baseUrl: ollamaUrl } : {}),
+                    ...(p.id === 'custom' ? { baseUrl: customEndpointUrl } : {}),
                 };
             }
 
@@ -1215,7 +1267,9 @@ export default function SettingsPage() {
                 taskTimeoutSeconds,
                 safetyMode,
                 isAutonomousMode,
-            });
+                customEndpointToolCalling,
+                buddy_skin: buddySkin,
+            } as any);
 
 
             if (result.success) {
@@ -1236,7 +1290,7 @@ export default function SettingsPage() {
             const result = await testProvider(
                 providerId,
                 apiKeys[providerId] || undefined,
-                providerId === 'ollama' ? ollamaUrl : undefined
+                providerId === 'ollama' ? ollamaUrl : providerId === 'custom' ? customEndpointUrl : undefined
             );
             setTestResults(prev => ({ ...prev, [providerId]: { success: result.success, message: result.success ? (result as any).message : result.error || 'Failed' } }));
         } catch (e: any) {
@@ -1296,7 +1350,41 @@ export default function SettingsPage() {
                         </div>
                     </section>
 
-                    {/* ─── Skales+ (hidden feature flag section — shown when SKALES_PLUS=true) ─── */}
+                    {/* ─── Language ─── */}
+                    <section className="rounded-2xl border p-6"
+                        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                            <Globe size={20} className="text-blue-400" />
+                            {t('settings.language')}
+                        </h2>
+                        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                            {t('settings.languageDesc')}
+                        </p>
+                        <select
+                            value={locale}
+                            onChange={e => setLocale(e.target.value)}
+                            className="text-sm rounded-lg px-3 py-2 border outline-none focus:ring-1 focus:ring-lime-500"
+                            style={{
+                                background: 'var(--surface-light)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border)',
+                            }}
+                            aria-label={t('settings.integrations.selectLanguage')}
+                        >
+                            {SUPPORTED_LOCALES.map(l => (
+                                <option key={l.code} value={l.code}>
+                                    {l.name}
+                                </option>
+                            ))}
+                        </select>
+                        {locale !== initialLocale && (
+                            <p className="text-sm text-amber-500 mt-2">
+                                ⚠️ {t('settings.languageRestartHint')}
+                            </p>
+                        )}
+                    </section>
+
+                    {/* ─── Skales+ (hidden feature flag section - shown when SKALES_PLUS=true) ─── */}
                     {process.env.NEXT_PUBLIC_SKALES_PLUS === 'true' && (
                         <section className="rounded-2xl border p-6"
                             style={{ background: 'var(--surface)', borderColor: 'rgba(132,204,22,0.3)' }}>
@@ -1344,41 +1432,11 @@ export default function SettingsPage() {
                                 <Monitor size={20} className="text-purple-500" />
                                 Desktop App
                             </h2>
-                            {/* ── Language ── */}
-                            <div className="flex items-center justify-between py-1 mb-3 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
-                                <div>
-                                    <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
-                                        <Globe size={14} className="text-blue-400" />
-                                        Language
-                                    </p>
-                                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                        Interface language. More languages coming soon.
-                                    </p>
-                                </div>
-                                <select
-                                    value={locale}
-                                    onChange={e => setLocale(e.target.value)}
-                                    className="text-sm rounded-lg px-3 py-1.5 border outline-none focus:ring-1 focus:ring-lime-500"
-                                    style={{
-                                        background: 'var(--surface-light)',
-                                        color: 'var(--text-primary)',
-                                        borderColor: 'var(--border)',
-                                    }}
-                                    aria-label="Select interface language"
-                                >
-                                    {SUPPORTED_LOCALES.map(l => (
-                                        <option key={l.code} value={l.code}>
-                                            {l.flag} {l.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
                             <div className="flex items-center justify-between py-1">
                                 <div>
-                                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Launch at Login</p>
+                                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('settings.launchAtLogin')}</p>
                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                        Start Skales automatically when you log in to your computer.
+                                        {t('settings.launchAtLoginDesc')}
                                     </p>
                                 </div>
                                 <button
@@ -1390,7 +1448,7 @@ export default function SettingsPage() {
                                     }}
                                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${autoLaunch ? 'bg-purple-600' : 'bg-gray-600'}`}
                                     aria-pressed={autoLaunch}
-                                    aria-label="Toggle Launch at Login"
+                                    aria-label={t('settings.toggles.launchAtLogin')}
                                     title={autoLaunch ? 'Disable launch at login' : 'Enable launch at login'}
                                 >
                                     <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${autoLaunch ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -1404,7 +1462,7 @@ export default function SettingsPage() {
                                         🦎 Desktop Buddy
                                     </p>
                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                        Show a floating Skales mascot on your desktop with a quick-action spotlight.
+                                        {t('settings.toggles.desktopBuddyDesc')}
                                     </p>
                                 </div>
                                 <button
@@ -1416,12 +1474,96 @@ export default function SettingsPage() {
                                     }}
                                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${desktopBuddy ? 'bg-lime-500' : 'bg-gray-600'}`}
                                     aria-pressed={desktopBuddy}
-                                    aria-label="Toggle Desktop Buddy"
+                                    aria-label={t('settings.toggles.desktopBuddy')}
                                     title={desktopBuddy ? 'Hide desktop buddy' : 'Show desktop buddy'}
                                 >
                                     <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${desktopBuddy ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </button>
                             </div>
+
+                            {/* Buddy Skin selector — accordion, visible when buddy is ON */}
+                            {desktopBuddy && availableSkins.length > 0 && (
+                                <div className="mt-4 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSkinSelectorOpen(prev => !prev)}
+                                        className="w-full flex items-center justify-between text-left"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                                                🎨 {t('settings.buddySkin')}
+                                                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)' }}>
+                                                    {availableSkins.find(s => s.id === buddySkin)?.label || 'Skales'}
+                                                </span>
+                                            </p>
+                                            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                                {t('settings.buddySkinDesc')}
+                                            </p>
+                                        </div>
+                                        <ChevronDown
+                                            size={16}
+                                            className={`transition-transform duration-200 ${skinSelectorOpen ? 'rotate-180' : ''}`}
+                                            style={{ color: 'var(--text-muted)' }}
+                                        />
+                                    </button>
+
+                                    {skinSelectorOpen && (
+                                        <div className="grid grid-cols-3 gap-3 mt-4">
+                                            {availableSkins.map(skin => {
+                                                const isSelected = buddySkin === skin.id;
+                                                const iconSrc = `/mascot/${skin.id}/icon.png`;
+                                                return (
+                                                    <button
+                                                        key={skin.id}
+                                                        type="button"
+                                                        onClick={() => setBuddySkin(skin.id)}
+                                                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all"
+                                                        style={{
+                                                            background: isSelected ? 'rgba(74,222,128,0.1)' : 'var(--surface-raised)',
+                                                            border: isSelected ? '2px solid #4ade80' : '2px solid var(--border)',
+                                                        }}
+                                                        aria-pressed={isSelected}
+                                                    >
+                                                        <div className="relative">
+                                                            {skin.preview || skin.id ? (
+                                                                <img
+                                                                    src={skin.preview || iconSrc}
+                                                                    alt={skin.label}
+                                                                    className="w-12 h-12 rounded-full object-cover"
+                                                                    style={{ background: 'var(--background)' }}
+                                                                    onError={(e) => {
+                                                                        const el = e.currentTarget;
+                                                                        el.style.display = 'none';
+                                                                        const fallback = el.nextElementSibling as HTMLElement;
+                                                                        if (fallback) fallback.style.display = 'flex';
+                                                                    }}
+                                                                />
+                                                            ) : null}
+                                                            <div
+                                                                className="w-12 h-12 rounded-full items-center justify-center text-white font-bold text-lg"
+                                                                style={{
+                                                                    display: 'none',
+                                                                    background: `hsl(${skin.id.charCodeAt(0) * 7 % 360}, 60%, 45%)`,
+                                                                }}
+                                                            >
+                                                                {skin.label.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            {isSelected && (
+                                                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                                                    <CheckCircle2 size={12} className="text-white" />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-[11px] font-medium" style={{ color: isSelected ? '#4ade80' : 'var(--text-secondary)' }}>
+                                                            {skin.label}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </section>
                     )}
 
@@ -1430,10 +1572,10 @@ export default function SettingsPage() {
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <User size={20} className="text-purple-500" />
-                            Persona
+                            {t('settings.persona')}
                         </h2>
                         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                            Choose how Skales behaves. You can switch anytime.
+                            {t('settings.personaDesc')}
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                             {PERSONAS.map(p => (
@@ -1478,7 +1620,7 @@ export default function SettingsPage() {
                                         border: '1px solid var(--border)',
                                         color: 'var(--text-primary)',
                                     }}
-                                    aria-label="Select native language"
+                                    aria-label={t('settings.integrations.selectNativeLanguage')}
                                 >
                                     <option value="en">English</option>
                                     <option value="de">German (Deutsch)</option>
@@ -1505,7 +1647,7 @@ export default function SettingsPage() {
                                 {customPromptActive && (
                                     <button onClick={handleResetPrompt}
                                         className="text-[10px] px-2 py-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
-                                        aria-label="Reset system prompt to default">
+                                        aria-label={t('settings.integrations.resetPrompt')}>
                                         Reset to Default
                                     </button>
                                 )}
@@ -1525,7 +1667,7 @@ export default function SettingsPage() {
                                         border: `1px solid ${customPromptActive ? 'rgba(245, 158, 11, 0.5)' : 'var(--border)'}`,
                                         color: 'var(--text-primary)',
                                     }}
-                                    aria-label="System prompt / Soul Identity"
+                                    aria-label={t('settings.integrations.systemPrompt')}
                                 />
                                 {customPromptActive && (
                                     <span className="absolute bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 font-bold">
@@ -1552,7 +1694,7 @@ export default function SettingsPage() {
                             Add API keys for the providers you use. OpenRouter gives you access to 100+ models with one key.
                         </p>
 
-                        {/* Primary providers — always visible */}
+                        {/* Primary providers - always visible */}
                         <div className="space-y-4">
                             {PROVIDER_CONFIG.filter(p => p.primary).map(provider => {
                                 const isActive = activeProvider === provider.id;
@@ -1614,6 +1756,18 @@ export default function SettingsPage() {
                                                         style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                                                 </div>
                                             )}
+                                            {provider.id === 'custom' && (
+                                                <div>
+                                                    <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                                                        {t('settings.customEndpoint.baseUrlLabel')}
+                                                    </label>
+                                                    <input type="text" value={customEndpointUrl}
+                                                        onChange={(e) => setCustomEndpointUrl(e.target.value)}
+                                                        placeholder={t('settings.customEndpoint.baseUrlPlaceholder')}
+                                                        className="w-full p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-purple-500"
+                                                        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                                </div>
+                                            )}
                                             <div>
                                                 <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Model</label>
                                                 <select
@@ -1632,7 +1786,7 @@ export default function SettingsPage() {
                                                 {!PROVIDER_MODELS[provider.id]?.some(m => m.value === models[provider.id]) && (
                                                     <input type="text" value={models[provider.id]}
                                                         onChange={(e) => setModels(prev => ({ ...prev, [provider.id]: e.target.value }))}
-                                                        placeholder="Enter custom model name..."
+                                                        placeholder={t('settings.integrations.customModel')}
                                                         className="w-full mt-2 p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-lime-500"
                                                         style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                         aria-label={`Custom model name for ${provider.label}`} />
@@ -1645,11 +1799,92 @@ export default function SettingsPage() {
                                                 <h4 className="text-xs font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                                     <Download size={14} className="text-blue-500" />Ollama Setup
                                                 </h4>
-                                                <p className="text-[11px] mb-3" style={{ color: 'var(--text-muted)' }}>Run AI models locally — no cloud, no API costs. Requires 8 GB RAM+ and ~5 GB disk per model.</p>
+                                                <p className="text-[11px] mb-3" style={{ color: 'var(--text-muted)' }}>Run AI models locally - no cloud, no API costs. Requires 8 GB RAM+ and ~5 GB disk per model.</p>
                                                 <a href="https://ollama.com/download" target="_blank" rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-500/10 text-blue-500 rounded-lg font-bold hover:bg-blue-500/20 transition-colors text-[11px]">
                                                     <Download size={12} />Download Ollama<ExternalLink size={10} />
                                                 </a>
+                                            </div>
+                                        )}
+                                        {/* Custom Endpoint Setup */}
+                                        {provider.id === 'custom' && (
+                                            <div className="mt-4 space-y-3">
+                                                {/* Optional API key */}
+                                                <div>
+                                                    <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                                                        <Key size={10} className="inline mr-1" />{t('settings.customEndpoint.apiKeyPlaceholder')}
+                                                    </label>
+                                                    <input type="password" value={apiKeys['custom']}
+                                                        onChange={(e) => setApiKeys(prev => ({ ...prev, custom: e.target.value }))}
+                                                        placeholder={t('settings.customEndpoint.apiKeyPlaceholder')}
+                                                        className="w-full p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-purple-500"
+                                                        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                                </div>
+                                                {/* Fetch Models */}
+                                                <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h4 className="text-xs font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                                            <RotateCcw size={13} className="text-purple-500" />{t('settings.customEndpoint.fetchModels')}
+                                                        </h4>
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (!customEndpointUrl.trim()) return;
+                                                                setCustomFetchingModels(true);
+                                                                try {
+                                                                    const res = await fetch('/api/custom-endpoint/models', { cache: 'no-store' });
+                                                                    const data = await res.json();
+                                                                    if (data.success && Array.isArray(data.models)) {
+                                                                        setCustomFetchedModels(data.models);
+                                                                        if (data.models.length > 0 && !models['custom']) {
+                                                                            setModels(prev => ({ ...prev, custom: data.models[0].id }));
+                                                                        }
+                                                                    }
+                                                                } catch { /* ignore */ }
+                                                                finally { setCustomFetchingModels(false); }
+                                                            }}
+                                                            disabled={customFetchingModels || !customEndpointUrl.trim()}
+                                                            className="px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 disabled:opacity-40"
+                                                        >
+                                                            {customFetchingModels ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
+                                                            {t('settings.customEndpoint.fetchModels')}
+                                                        </button>
+                                                    </div>
+                                                    {customFetchedModels.length > 0 && (
+                                                        <select
+                                                            value={models['custom']}
+                                                            onChange={(e) => setModels(prev => ({ ...prev, custom: e.target.value }))}
+                                                            className="w-full p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-purple-500 appearance-none cursor-pointer"
+                                                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                                                        >
+                                                            {customFetchedModels.map(m => (
+                                                                <option key={m.id} value={m.id}>{m.name || m.id}</option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                    {customFetchedModels.length === 0 && (
+                                                        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                                            Enter an endpoint URL above and click Fetch Models to populate the list.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {/* Tool calling toggle */}
+                                                <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <h4 className="text-xs font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                                                <Zap size={13} className="text-purple-500" />{t('settings.customEndpoint.toolCalling')}
+                                                            </h4>
+                                                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('settings.customEndpoint.toolCallingDesc')}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setCustomEndpointToolCalling(v => !v)}
+                                                            className={`relative w-11 h-6 rounded-full transition-all flex-shrink-0 ${customEndpointToolCalling ? 'bg-purple-500' : 'bg-gray-600'}`}
+                                                            aria-label={t('settings.customEndpoint.toolCalling')}
+                                                        >
+                                                            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${customEndpointToolCalling ? 'left-5' : 'left-0.5'}`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                         <button onClick={() => handleTest(provider.id)} disabled={isTesting}
@@ -1753,7 +1988,7 @@ export default function SettingsPage() {
                                                         {!PROVIDER_MODELS[provider.id]?.some(m => m.value === (models[provider.id] || '')) && (
                                                             <input type="text" value={models[provider.id] || ''}
                                                                 onChange={(e) => setModels(prev => ({ ...prev, [provider.id]: e.target.value }))}
-                                                                placeholder="Enter custom model name..."
+                                                                placeholder={t('settings.integrations.customModel')}
                                                                 className="w-full mt-2 p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-lime-500"
                                                                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                                 aria-label={`Custom model name for ${provider.label}`} />
@@ -1821,13 +2056,13 @@ export default function SettingsPage() {
                             <button
                                 onClick={() => setActiveBehavior(prev => ({ ...prev!, enabled: !prev?.enabled }))}
                                 className={`relative w-12 h-6 rounded-full transition-all ${activeBehavior?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
-                                aria-label="Toggle Friend Mode"
+                                aria-label={t('settings.toggles.friendMode')}
                             >
                                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${activeBehavior?.enabled ? 'left-7' : 'left-1'}`} />
                             </button>
                         </div>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-                            Skales proactively reaches out to build a relationship with you — sharing ideas, asking about your projects, or just checking in. Helps Skales learn about you over time.
+                            Skales proactively reaches out to build a relationship with you - sharing ideas, asking about your projects, or just checking in. Helps Skales learn about you over time.
                         </p>
 
                         <div className={`space-y-5 transition-opacity ${activeBehavior?.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
@@ -1937,7 +2172,7 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}>
-                                💡 Friend Mode helps Skales build long-term memory about you — your projects, preferences, and personality — to become a better companion over time.
+                                💡 Friend Mode helps Skales build long-term memory about you - your projects, preferences, and personality - to become a better companion over time.
                             </div>
                         </div>
                     </section>
@@ -1988,7 +2223,7 @@ export default function SettingsPage() {
                                             🤖 Autonomous Mode
                                         </p>
                                         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                            When enabled, Skales runs a background heartbeat every 5 minutes and proactively processes any pending tasks from the queue — no message required. In <strong>Safe</strong> mode, only tasks you created manually are picked up.
+                                            When enabled, Skales runs a background heartbeat every 5 minutes and proactively processes any pending tasks from the queue - no message required. In <strong>Safe</strong> mode, only tasks you created manually are picked up.
                                         </p>
                                     </div>
                                     <button
@@ -2020,7 +2255,7 @@ export default function SettingsPage() {
                                 </div>
                                 {isAutonomousMode && safetyMode === 'safe' && (
                                     <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        🔒 Safety Mode is <strong>Safe</strong> — system and scheduled tasks are skipped. Only user-created tasks run automatically.
+                                        🔒 Safety Mode is <strong>Safe</strong> - system and scheduled tasks are skipped. Only user-created tasks run automatically.
                                     </p>
                                 )}
                             </div>
@@ -2057,7 +2292,7 @@ export default function SettingsPage() {
                                 {
                                     key: 'unrestricted',
                                     label: '🔴 Unrestricted',
-                                    desc: 'No blocking. Skales runs any command without asking. Use with caution — you are responsible.',
+                                    desc: 'No blocking. Skales runs any command without asking. Use with caution - you are responsible.',
                                     color: '#ef4444',
                                 },
                             ] as const).map(opt => (
@@ -2107,7 +2342,7 @@ export default function SettingsPage() {
                             </h2>
                         </div>
                         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                            Connect your Twitter / X account so Skales can post tweets, read mentions, and reply — from chat or Telegram.
+                            Connect your Twitter / X account so Skales can post tweets, read mentions, and reply - from chat or Telegram.
                         </p>
 
                         <div className="space-y-3">
@@ -2329,7 +2564,7 @@ export default function SettingsPage() {
                                         type="text"
                                         value={ttsConfig.elevenlabsVoiceId || ''}
                                         onChange={e => setTtsConfig(prev => ({ ...prev!, elevenlabsVoiceId: e.target.value }))}
-                                        placeholder="21m00Tcm4TlvDq8ikWAM  (Rachel — default)"
+                                        placeholder="21m00Tcm4TlvDq8ikWAM  (Rachel - default)"
                                         className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-lime-500"
                                         style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     />
@@ -2351,7 +2586,7 @@ export default function SettingsPage() {
                                         type="password"
                                         value={ttsConfig.azureSpeechKey || ''}
                                         onChange={e => setTtsConfig(prev => ({ ...prev!, azureSpeechKey: e.target.value }))}
-                                        placeholder="Azure Cognitive Services key..."
+                                        placeholder={t('settings.integrations.azureKey')}
                                         className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-lime-500"
                                         style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     />
@@ -2402,7 +2637,7 @@ export default function SettingsPage() {
                             <button
                                 onClick={() => setGifConfig(prev => ({ ...prev!, enabled: !prev?.enabled }))}
                                 className={`relative w-12 h-6 rounded-full transition-all ${gifConfig?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
-                                aria-label="Toggle GIF & Sticker Integration"
+                                aria-label={t('settings.toggles.gifIntegration')}
                             >
                                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${gifConfig?.enabled ? 'left-7' : 'left-1'}`} />
                             </button>
@@ -2469,7 +2704,7 @@ export default function SettingsPage() {
                             </label>
 
                             <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}>
-                                💡 Once configured, you can ask Skales: <em>"Send me a funny GIF"</em> or <em>"React with a GIF"</em> — it will search and send directly in chat or Telegram.
+                                💡 Once configured, you can ask Skales: <em>"Send me a funny GIF"</em> or <em>"React with a GIF"</em> - it will search and send directly in chat or Telegram.
                             </div>
                         </div>
                     </section>
@@ -2499,7 +2734,7 @@ export default function SettingsPage() {
                                             {telegramPaired
                                                 ? `Paired with ${telegramPairedUser} via @${telegramBotUsername}`
                                                 : telegramSaved && telegramBotUsername
-                                                    ? `Bot @${telegramBotUsername} ready — awaiting pairing`
+                                                    ? `Bot @${telegramBotUsername} ready - awaiting pairing`
                                                     : 'Send messages to Skales from your phone'}
                                         </p>
                                     </div>
@@ -2521,7 +2756,7 @@ export default function SettingsPage() {
                                     <div className="pt-4 space-y-4">
                                         {/* Step 1: How to get a bot token */}
                                         <div className="p-3 rounded-xl text-xs space-y-1" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                                            <p className="font-bold" style={{ color: 'var(--text-primary)' }}>Step 1 — Create a Bot:</p>
+                                            <p className="font-bold" style={{ color: 'var(--text-primary)' }}>Step 1 - Create a Bot:</p>
                                             <p style={{ color: 'var(--text-muted)' }}>1. Open Telegram → search <strong>@BotFather</strong></p>
                                             <p style={{ color: 'var(--text-muted)' }}>2. Send <code className="bg-lime-500/10 text-lime-500 px-1 rounded">/newbot</code> and follow the steps</p>
                                             <p style={{ color: 'var(--text-muted)' }}>3. Copy the token and paste it below</p>
@@ -2584,7 +2819,7 @@ export default function SettingsPage() {
                                         {/* Step 2: Pairing (only shown after bot is saved) */}
                                         {telegramSaved && (
                                             <div className="p-4 rounded-xl text-xs space-y-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
-                                                <p className="font-bold text-blue-400 text-sm">Step 2 — Pair your Phone</p>
+                                                <p className="font-bold text-blue-400 text-sm">Step 2 - Pair your Phone</p>
                                                 <p style={{ color: 'var(--text-muted)' }}>
                                                     Open your bot <strong>@{telegramBotUsername}</strong> in Telegram and send this message:
                                                 </p>
@@ -2592,7 +2827,7 @@ export default function SettingsPage() {
                                                     style={{ background: 'var(--background)', color: '#84cc16', border: '1px solid var(--border)', letterSpacing: '0.15em' }}>
                                                     {telegramPairingCode ? `/pair ${telegramPairingCode}` : (
                                                         <span className="text-xs text-muted-foreground font-sans font-normal opacity-70">
-                                                            {telegramSaving ? 'Generating...' : 'Click "New Code" below'}
+                                                            {telegramSaving ? t('chat.status.generating') : t('settings.integrations.newCode')}
                                                         </span>
                                                     )}
                                                 </div>
@@ -2600,8 +2835,8 @@ export default function SettingsPage() {
                                                 <div className="flex items-center gap-2 text-[10px] font-medium">
                                                     <div className={`w-2 h-2 rounded-full ${telegramBotRunning ? 'bg-green-500' : 'bg-red-500'}`} />
                                                     {telegramBotRunning
-                                                        ? <span className="text-green-400">Bot process running — ready to receive messages</span>
-                                                        : <span className="text-red-400">Bot not running — restart Skales to activate the bot.</span>
+                                                        ? <span className="text-green-400">Bot process running - ready to receive messages</span>
+                                                        : <span className="text-red-400">Bot not running - restart Skales to activate the bot.</span>
                                                     }
                                                 </div>
                                                 {telegramPaired ? (
@@ -2685,14 +2920,14 @@ export default function SettingsPage() {
                                         <div className="px-4 pb-4 border-t animate-fadeIn" style={{ borderColor: 'var(--border)' }}>
                                             <div className="pt-4 space-y-4">
 
-                                                {/* ─ State: idle — not started ─ */}
+                                                {/* ─ State: idle - not started ─ */}
                                                 {whatsappStatus.state === 'idle' && (
                                                     <div className="space-y-3">
                                                         <div className="p-3 rounded-xl text-xs space-y-1" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                                                             <p className="font-bold" style={{ color: 'var(--text-primary)' }}>How it works:</p>
                                                             <p style={{ color: 'var(--text-muted)' }}>1. Click <strong>Start WhatsApp</strong> below</p>
-                                                            <p style={{ color: 'var(--text-muted)' }}>2. A QR code will appear — scan it with WhatsApp on your phone</p>
-                                                            <p style={{ color: 'var(--text-muted)' }}>3. Session is saved — you only need to scan once</p>
+                                                            <p style={{ color: 'var(--text-muted)' }}>2. A QR code will appear - scan it with WhatsApp on your phone</p>
+                                                            <p style={{ color: 'var(--text-muted)' }}>3. Session is saved - you only need to scan once</p>
                                                             <p className="text-amber-400 font-medium pt-1">⚠️ Send-only: Skales cannot read your chats (privacy by design)</p>
                                                         </div>
                                                         <div className="p-3 rounded-xl text-xs" style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)' }}>
@@ -2715,13 +2950,13 @@ export default function SettingsPage() {
                                                                 {whatsappStarting ? <Loader2 size={14} className="animate-spin" /> : <span>💬</span>}
                                                                 Start WhatsApp
                                                             </button>
-                                                            {/* Clear stale session — shown when QR fails to appear or spinner resets */}
+                                                            {/* Clear stale session - shown when QR fails to appear or spinner resets */}
                                                             <button
                                                                 type="button"
                                                                 onClick={handleWhatsAppClearSession}
                                                                 className="px-3 py-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5"
                                                                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                                                                title="Delete saved session so a fresh QR code is generated"
+                                                                title={t('settings.integrations.deleteSession')}
                                                             >
                                                                 <Trash2 size={12} />
                                                                 Clear Session
@@ -2738,21 +2973,21 @@ export default function SettingsPage() {
                                                             {whatsappStatus.state === 'loading'
                                                                 ? `Loading... ${whatsappStatus.loadingPercent || 0}%`
                                                                 : whatsappStatus.state === 'authenticated'
-                                                                    ? 'Authenticated — finalizing...'
-                                                                    : 'Starting WhatsApp — please wait...'}
+                                                                    ? 'Authenticated - finalizing...'
+                                                                    : 'Starting WhatsApp - please wait...'}
                                                         </p>
                                                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>This can take 15–30 seconds on first run</p>
                                                     </div>
                                                 )}
 
-                                                {/* ─ State: qr — show QR code ─ */}
+                                                {/* ─ State: qr - show QR code ─ */}
                                                 {waQR && whatsappStatus.qrCode && (
                                                     <div className="flex flex-col items-center gap-3">
                                                         <p className="text-sm font-bold text-green-400">Scan with WhatsApp</p>
                                                         <div className="p-3 rounded-xl" style={{ background: '#fff', display: 'inline-block' }}>
                                                             <img
                                                                 src={whatsappStatus.qrCode}
-                                                                alt="WhatsApp QR Code"
+                                                                alt={t('settings.integrations.whatsappQr')}
                                                                 width={220}
                                                                 height={220}
                                                                 style={{ display: 'block', borderRadius: 8 }}
@@ -2791,7 +3026,7 @@ export default function SettingsPage() {
                                                             </p>
 
                                                             {whatsappContacts.length === 0 ? (
-                                                                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No contacts yet — add one below.</p>
+                                                                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>No contacts yet - add one below.</p>
                                                             ) : (
                                                                 <div className="space-y-1.5 mb-3">
                                                                     {whatsappContacts.map(contact => (
@@ -2835,7 +3070,7 @@ export default function SettingsPage() {
                                                                     type="text"
                                                                     value={waNewName}
                                                                     onChange={e => setWaNewName(e.target.value)}
-                                                                    placeholder="Name (e.g. Sarah)"
+                                                                    placeholder={t('settings.integrations.name')}
                                                                     className="flex-1 min-w-[100px] p-2 rounded-lg text-xs outline-none"
                                                                     style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                                 />
@@ -2843,7 +3078,7 @@ export default function SettingsPage() {
                                                                     type="tel"
                                                                     value={waNewPhone}
                                                                     onChange={e => setWaNewPhone(e.target.value)}
-                                                                    placeholder="Number (4917612345678)"
+                                                                    placeholder={t('settings.integrations.number')}
                                                                     className="flex-1 min-w-[130px] p-2 rounded-lg text-xs outline-none"
                                                                     style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                                 />
@@ -2871,7 +3106,7 @@ export default function SettingsPage() {
                                                                 <button
                                                                     onClick={() => setWaSignature(prev => ({ ...prev, enabled: !prev.enabled }))}
                                                                     className={`relative w-9 h-5 rounded-full transition-all flex-shrink-0 ${waSignature.enabled ? 'bg-green-500' : 'bg-gray-600'}`}
-                                                                    aria-label="Toggle message signature"
+                                                                    aria-label={t('settings.toggles.messageSignature')}
                                                                 >
                                                                     <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${waSignature.enabled ? 'left-4' : 'left-0.5'}`} />
                                                                 </button>
@@ -3002,7 +3237,7 @@ export default function SettingsPage() {
                                                     <div className="space-y-2">
                                                         <div className="p-3 rounded-xl" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
                                                             <p className="text-xs font-bold text-red-400 mb-1">⚠️ WhatsApp bot error</p>
-                                                            <p className="text-xs text-red-300 break-words">{whatsappStatus.error || 'Unknown error — check the whatsapp-bot-error.log file in the apps/web folder.'}</p>
+                                                            <p className="text-xs text-red-300 break-words">{whatsappStatus.error || 'Unknown error - check the whatsapp-bot-error.log file in the apps/web folder.'}</p>
                                                         </div>
                                                         {/* Chrome-specific guidance */}
                                                         {(whatsappStatus as any).errorType === 'chrome_not_found' && (
@@ -3084,7 +3319,7 @@ export default function SettingsPage() {
                                     <button type="button" onClick={() => toggleSkill('googleCalendar')}
                                         className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${activeSkillIds.has('googleCalendar') ? 'bg-lime-500' : 'bg-gray-600'}`}
                                         role="switch" aria-checked={activeSkillIds.has('googleCalendar')}
-                                        aria-label="Toggle Google Calendar skill">
+                                        aria-label={t('settings.toggles.googleCalendar')}>
                                         <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${activeSkillIds.has('googleCalendar') ? 'translate-x-7' : 'translate-x-0'}`} />
                                     </button>
                                 </div>
@@ -3093,7 +3328,7 @@ export default function SettingsPage() {
                                 <div className="px-4 pb-4 pt-2 space-y-4" style={{ background: 'var(--surface)' }}>
                                     <div>
                                         <p className="text-xs font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-                                            <Key size={12} /> API Key — Read Only
+                                            <Key size={12} /> API Key - Read Only
                                             <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" className="text-blue-400 flex items-center gap-1 hover:underline text-[10px]">Get key <ExternalLink size={10} /></a>
                                         </p>
                                         <input type="password" placeholder="AIza..."
@@ -3109,7 +3344,7 @@ export default function SettingsPage() {
                                     </div>
                                     <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
                                         <p className="text-xs font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-                                            🔐 OAuth — Read + Write (optional)
+                                            🔐 OAuth - Read + Write (optional)
                                             <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" className="text-blue-400 flex items-center gap-1 hover:underline text-[10px]">Setup <ExternalLink size={10} /></a>
                                         </p>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -3132,7 +3367,7 @@ export default function SettingsPage() {
                                                     <ExternalLink size={12} /> Open Google Auth (step 1)
                                                 </button>
                                                 <div className="flex gap-2">
-                                                    <input type="text" placeholder="Paste authorization code here (step 2)"
+                                                    <input type="text" placeholder={t('settings.integrations.pasteAuthCode')}
                                                         value={calendarAuthCode}
                                                         onChange={e => setCalendarAuthCode(e.target.value)}
                                                         className="flex-1 px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
@@ -3172,7 +3407,174 @@ export default function SettingsPage() {
                         </div>
                         )}
 
-                        {/* Other integrations — coming soon */}
+                        {/* ── Replicate Integration ── */}
+                        <div className="rounded-xl border-2 mb-4 overflow-hidden transition-all"
+                            style={{
+                                borderColor: replicateSaved ? 'rgba(99,102,241,0.5)' : 'var(--border)',
+                                background: replicateSaved ? 'rgba(99,102,241,0.04)' : 'var(--background)',
+                            }}>
+                            {/* Header */}
+                            <button className="w-full flex items-center justify-between p-4 text-left"
+                                onClick={() => setShowReplicateSetup(!showReplicateSetup)}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+                                        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                                        <Layers size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-sm">{t('settings.integrations.replicate.title')}</h3>
+                                        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                            {t('settings.integrations.replicate.description')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {replicateSaved
+                                        ? <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-indigo-500/15 text-indigo-400">
+                                            {t('settings.integrations.replicate.connected')} ✓
+                                          </span>
+                                        : <span className="text-[10px] px-2 py-1 rounded-full font-bold" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
+                                            {t('settings.integrations.replicate.notConfigured')}
+                                          </span>
+                                    }
+                                    <ChevronDown size={16} style={{ color: 'var(--text-muted)', transform: showReplicateSetup ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                                </div>
+                            </button>
+
+                            {/* Expandable body */}
+                            {showReplicateSetup && (
+                                <div className="px-4 pb-4 border-t animate-fadeIn" style={{ borderColor: 'var(--border)' }}>
+                                    <div className="pt-4 space-y-3">
+                                        {/* Info box */}
+                                        <div className="p-3 rounded-xl text-xs space-y-1"
+                                            style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                                            <p className="font-bold text-indigo-400">💡 One key, 50+ models</p>
+                                            <p style={{ color: 'var(--text-muted)' }}>
+                                                Replicate gives you access to Flux, SDXL, MiniMax Video, HunyuanVideo and many more - all with a single API token.
+                                            </p>
+                                            <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noreferrer" className="text-indigo-400 underline">
+                                                → {t('settings.integrations.replicate.getToken')} at replicate.com
+                                            </a>
+                                        </div>
+
+                                        {/* Token input */}
+                                        <div>
+                                            <label className="block text-[11px] font-semibold mb-1.5 uppercase" style={{ color: 'var(--text-muted)' }}>
+                                                <Key size={10} className="inline mr-1" />
+                                                API Token
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showReplicateToken ? 'text' : 'password'}
+                                                    value={replicateToken}
+                                                    onChange={e => {
+                                                        setReplicateToken(e.target.value);
+                                                        setReplicateSaved(false);
+                                                        setReplicateTestResult(null);
+                                                    }}
+                                                    placeholder={t('settings.integrations.replicate.tokenPlaceholder')}
+                                                    className="w-full p-2.5 pr-10 rounded-lg text-sm outline-none focus:ring-1"
+                                                    style={{
+                                                        background: 'var(--surface)',
+                                                        border: '1px solid var(--border)',
+                                                        color: 'var(--text-primary)',
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowReplicateToken(!showReplicateToken)}
+                                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100 transition-opacity"
+                                                    style={{ color: 'var(--text-muted)' }}>
+                                                    {showReplicateToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons */}
+                                        <div className="flex gap-2 flex-wrap">
+                                            <button
+                                                onClick={async () => {
+                                                    const tok = replicateToken.trim();
+                                                    if (!tok) return;
+                                                    setReplicateSaving(true);
+                                                    try {
+                                                        await saveAllSettings({ replicate_api_token: tok } as any);
+                                                        setReplicateSaved(true);
+                                                        setReplicateToken(tok.slice(0, 6) + '...');
+                                                        setReplicateTestResult({ success: true, message: t('settings.integrations.replicate.testSuccess') });
+                                                    } catch (e: any) {
+                                                        setReplicateTestResult({ success: false, message: e?.message || 'Save failed' });
+                                                    } finally {
+                                                        setReplicateSaving(false);
+                                                    }
+                                                }}
+                                                disabled={replicateSaving || !replicateToken.trim()}
+                                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-40 transition-all"
+                                                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white' }}>
+                                                {replicateSaving
+                                                    ? <><Loader2 size={13} className="animate-spin" /> {t('settings.saving')}</>
+                                                    : <><Save size={13} /> {t('settings.save')}</>
+                                                }
+                                            </button>
+
+                                            <button
+                                                onClick={async () => {
+                                                    setReplicateTesting(true);
+                                                    setReplicateTestResult(null);
+                                                    try {
+                                                        const res = await fetch('/api/replicate/test');
+                                                        const data = await res.json();
+                                                        setReplicateTestResult({
+                                                            success: data.success,
+                                                            message: data.success
+                                                                ? t('settings.integrations.replicate.testSuccess')
+                                                                : (data.error || t('settings.integrations.replicate.testFailed')),
+                                                        });
+                                                        if (data.success) setReplicateSaved(true);
+                                                    } catch (e: any) {
+                                                        setReplicateTestResult({ success: false, message: e?.message || t('settings.integrations.replicate.testFailed') });
+                                                    } finally {
+                                                        setReplicateTesting(false);
+                                                    }
+                                                }}
+                                                disabled={replicateTesting}
+                                                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-40 transition-all"
+                                                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                                                {replicateTesting
+                                                    ? <><Loader2 size={13} className="animate-spin" /> Testing…</>
+                                                    : <><TestTube2 size={13} /> {t('settings.integrations.replicate.testConnection')}</>
+                                                }
+                                            </button>
+
+                                            {replicateSaved && (
+                                                <button
+                                                    onClick={async () => {
+                                                        await saveAllSettings({ replicate_api_token: '' } as any);
+                                                        setReplicateToken('');
+                                                        setReplicateSaved(false);
+                                                        setReplicateTestResult(null);
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-red-400 hover:text-white hover:bg-red-500 transition-all"
+                                                    style={{ border: '1px solid rgba(239,68,68,0.3)' }}>
+                                                    <Trash2 size={13} /> {t('settings.save') === 'Save' ? 'Disconnect' : '×'}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Test result */}
+                                        {replicateTestResult && (
+                                            <p className="text-[11px] font-medium flex items-center gap-1.5"
+                                                style={{ color: replicateTestResult.success ? '#4ade80' : '#f87171' }}>
+                                                {replicateTestResult.success ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                                                {replicateTestResult.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Other integrations - coming soon */}
                         <p className="text-xs font-medium mt-4 mb-3" style={{ color: 'var(--text-muted)' }}>More integrations coming soon:</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                             {[
@@ -3191,7 +3593,7 @@ export default function SettingsPage() {
                         </div>
                     </section>
 
-                    {/* ─── Email (IMAP / SMTP) — multi-account ─── */}
+                    {/* ─── Email (IMAP / SMTP) - multi-account ─── */}
                     {activeSkillIds.has('email') && (
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <div className="flex items-center justify-between mb-1 cursor-pointer" onClick={() => setShowEmailSetup(!showEmailSetup)}>
@@ -3209,7 +3611,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                         <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                            Connect up to 5 email accounts via IMAP/SMTP. Set an alias and permission per account — Skales will respect them.
+                            Connect up to 5 email accounts via IMAP/SMTP. Set an alias and permission per account - Skales will respect them.
                         </p>
 
                         {showEmailSetup && (
@@ -3304,7 +3706,7 @@ export default function SettingsPage() {
                                                             <label className="block text-[11px] font-semibold mb-1 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Password / App Password</label>
                                                             <input type="password" value={displayData.password}
                                                                 onChange={e => setEditingEmail(p => p ? { ...p, password: e.target.value } : p)}
-                                                                placeholder="Password or App Password"
+                                                                placeholder={t('settings.integrations.password')}
                                                                 className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
                                                                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                                                         </div>
@@ -3363,7 +3765,7 @@ export default function SettingsPage() {
                                                             </div>
                                                             <label className="flex items-center gap-2 mt-2 cursor-pointer">
                                                                 <input type="checkbox" checked={displayData.smtpTls} onChange={e => setEditingEmail(p => p ? { ...p, smtpTls: e.target.checked } : p)} className="accent-lime-500" />
-                                                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>SSL/TLS (port 465) — uncheck for STARTTLS (port 587)</span>
+                                                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>SSL/TLS (port 465) - uncheck for STARTTLS (port 587)</span>
                                                             </label>
                                                         </div>
                                                     )}
@@ -3408,7 +3810,7 @@ export default function SettingsPage() {
                                                                             setTrustedAddressInput('');
                                                                         }
                                                                     }}
-                                                                    placeholder="name@example.com — press Enter to add"
+                                                                    placeholder="name@example.com - press Enter to add"
                                                                     className="flex-1 px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none focus:border-lime-500"
                                                                     style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                                                 />
@@ -3540,7 +3942,7 @@ export default function SettingsPage() {
                             </h2>
                         </div>
                         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-                            Gives Skales real-time web search capabilities — great for news, research, and up-to-date answers. Tavily is purpose-built for AI agents.
+                            Gives Skales real-time web search capabilities - great for news, research, and up-to-date answers. Tavily is purpose-built for AI agents.
                         </p>
                         <div>
                             <label className="text-sm font-medium mb-1.5 block" style={{ color: 'var(--text-primary)' }}>
@@ -3713,7 +4115,7 @@ export default function SettingsPage() {
                                     <button type="button" onClick={() => toggleSkill('systemMonitor')}
                                         className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${skills?.systemMonitor?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
                                         role="switch" aria-checked={!!skills?.systemMonitor?.enabled}
-                                        aria-label="Toggle System Monitor skill">
+                                        aria-label={t('settings.toggles.systemMonitor')}>
                                         <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${skills?.systemMonitor?.enabled ? 'translate-x-7' : 'translate-x-0'}`} />
                                     </button>
                                 </div>
@@ -3733,7 +4135,7 @@ export default function SettingsPage() {
                                     <button type="button" onClick={() => toggleSkill('localFileChat')}
                                         className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${skills?.localFileChat?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
                                         role="switch" aria-checked={!!skills?.localFileChat?.enabled}
-                                        aria-label="Toggle Local File Chat skill">
+                                        aria-label={t('settings.toggles.localFileChat')}>
                                         <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${skills?.localFileChat?.enabled ? 'translate-x-7' : 'translate-x-0'}`} />
                                     </button>
                                 </div>
@@ -3757,7 +4159,7 @@ export default function SettingsPage() {
                                         <button type="button" onClick={handleWebhookToggle} disabled={webhookEnabling}
                                             className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${webhookConfig?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
                                             role="switch" aria-checked={!!webhookConfig?.enabled}
-                                            aria-label="Toggle Webhooks">
+                                            aria-label={t('settings.toggles.webhooks')}>
                                             <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${webhookConfig?.enabled ? 'translate-x-7' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
@@ -3834,7 +4236,7 @@ export default function SettingsPage() {
                                         <button type="button" onClick={() => toggleSkill('discord')}
                                             className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${activeSkillIds.has('discord') ? 'bg-lime-500' : 'bg-gray-600'}`}
                                             role="switch" aria-checked={activeSkillIds.has('discord')}
-                                            aria-label="Toggle Discord Bot">
+                                            aria-label={t('settings.toggles.discordBot')}>
                                             <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${activeSkillIds.has('discord') ? 'translate-x-7' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
@@ -3844,17 +4246,17 @@ export default function SettingsPage() {
                                         <div className="text-xs p-3 rounded-lg" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                                             Create a bot at <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">discord.com/developers</a> → New Application → Bot → copy Token. Enable <strong style={{ color: 'var(--text-secondary)' }}>Message Content Intent</strong>.
                                         </div>
-                                        <input type="password" placeholder="Bot Token"
+                                        <input type="password" placeholder={t('settings.integrations.botToken')}
                                             value={discordConfig.botToken || ''}
                                             onChange={e => setDiscordConfig(p => ({ ...p, botToken: e.target.value }))}
                                             className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
                                             style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-                                        <input type="text" placeholder="Server (Guild) ID — optional, restricts to one server"
+                                        <input type="text" placeholder={t('settings.integrations.serverId')}
                                             value={discordConfig.guildId || ''}
                                             onChange={e => setDiscordConfig(p => ({ ...p, guildId: e.target.value }))}
                                             className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
                                             style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-                                        <input type="text" placeholder="Channel ID — optional, restrict to one channel"
+                                        <input type="text" placeholder={t('settings.integrations.channelId')}
                                             value={discordConfig.channelId || ''}
                                             onChange={e => setDiscordConfig(p => ({ ...p, channelId: e.target.value }))}
                                             className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
@@ -3884,7 +4286,7 @@ export default function SettingsPage() {
                                             </div>
                                         ) : discordSaved ? (
                                             <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                <Power size={12} /> Bot configured — will start with Skales
+                                                <Power size={12} /> Bot configured - will start with Skales
                                             </div>
                                         ) : null}
                                     </div>
@@ -3920,7 +4322,7 @@ export default function SettingsPage() {
                                         <button type="button" onClick={() => toggleSkill('browserControl')}
                                             className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${skills?.browserControl?.enabled ? 'bg-lime-500' : 'bg-gray-600'}`}
                                             role="switch" aria-checked={!!skills?.browserControl?.enabled}
-                                            aria-label="Toggle Browser Control skill">
+                                            aria-label={t('settings.toggles.browserControl')}>
                                             <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${skills?.browserControl?.enabled ? 'translate-x-7' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
@@ -3936,7 +4338,7 @@ export default function SettingsPage() {
                                                     <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Chromium Browser</p>
                                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                                         {browserControlConfig.installed
-                                                            ? '✅ Installed — Browser Control is ready to use.'
+                                                            ? '✅ Installed - Browser Control is ready to use.'
                                                             : 'Required one-time download (~150MB). Only downloaded once.'}
                                                     </p>
                                                 </div>
@@ -3971,7 +4373,7 @@ export default function SettingsPage() {
                                                     <button type="button"
                                                         onClick={() => setBrowserControlConfig(p => ({ ...p, autoApproveNavigation: !p.autoApproveNavigation }))}
                                                         className={`relative inline-flex h-6 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${browserControlConfig.autoApproveNavigation ? 'bg-lime-500' : 'bg-gray-600'}`}
-                                                        aria-label="Toggle auto-approve navigation"
+                                                        aria-label={t('settings.toggles.autoApproveNav')}
                                                     >
                                                         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${browserControlConfig.autoApproveNavigation ? 'translate-x-6' : 'translate-x-0'}`} />
                                                     </button>
@@ -4026,7 +4428,7 @@ export default function SettingsPage() {
 
                                         <div className="p-3 rounded-xl text-xs flex items-start gap-2" style={{ background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', color: 'var(--text-muted)' }}>
                                             <span className="text-amber-400 mt-0.5 shrink-0">🔒</span>
-                                            <span><strong className="text-amber-400">Privacy:</strong> The <em>Desktop Screenshot</em> tool allows Skales to see your full screen when asked (e.g. "What&apos;s on my screen?"). Screenshots are never stored permanently — they are processed by your configured Vision Provider and then deleted. No image data is sent to Anthropic or any other party.</span>
+                                            <span><strong className="text-amber-400">Privacy:</strong> The <em>Desktop Screenshot</em> tool allows Skales to see your full screen when asked (e.g. "What&apos;s on my screen?"). Screenshots are never stored permanently - they are processed by your configured Vision Provider and then deleted. No image data is sent to Anthropic or any other party.</span>
                                         </div>
                                     </div>
                                 )}
@@ -4057,7 +4459,7 @@ export default function SettingsPage() {
                                     background: 'linear-gradient(135deg, #c4b5fd, #818cf8)',
                                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
                                 }}>
-                                    Lio AI — Code Builder
+                                    Lio AI - Code Builder
                                 </h2>
                                 <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#7c3aed' }}>Architect · Reviewer · Builder</p>
                             </div>
@@ -4198,8 +4600,8 @@ export default function SettingsPage() {
                                     </p>
                                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                                         {fileSystemAccess === 'workspace'
-                                            ? 'Workspace Only — Skales works exclusively in its own sandbox folder. Safe & isolated.'
-                                            : 'Full Disk Access — Skales can access all local files & folders (system folders remain locked).'}
+                                            ? 'Workspace Only - Skales works exclusively in its own sandbox folder. Safe & isolated.'
+                                            : 'Full Disk Access - Skales can access all local files & folders (system folders remain locked).'}
                                     </p>
                                 </div>
                                 <button
@@ -4208,7 +4610,7 @@ export default function SettingsPage() {
                                     className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${fileSystemAccess === 'full' ? 'bg-amber-500' : 'bg-gray-600'}`}
                                     aria-checked={fileSystemAccess === 'full'}
                                     role="switch"
-                                    aria-label="Toggle file system access level"
+                                    aria-label={t('settings.toggles.fileSystemAccess')}
                                 >
                                     <span
                                         className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${fileSystemAccess === 'full' ? 'translate-x-7' : 'translate-x-0'}`}
@@ -4240,7 +4642,7 @@ export default function SettingsPage() {
                             <div className="flex gap-2 items-center">
                                 <input
                                     type="password"
-                                    placeholder={vtSaved ? '••••••• (saved — enter new key to replace)' : 'Paste your VirusTotal API key'}
+                                    placeholder={vtSaved ? '••••••• (saved - enter new key to replace)' : 'Paste your VirusTotal API key'}
                                     value={vtApiKey}
                                     onChange={e => { setVtApiKey(e.target.value); setVtSaved(false); setVtTestResult(null); setVtError(null); }}
                                     className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none"
@@ -4350,7 +4752,7 @@ export default function SettingsPage() {
                                                         await saveBlacklists(updated);
                                                     }}
                                                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${blacklists.domainBlacklistEnabled ? 'bg-lime-500' : 'bg-gray-600'}`}
-                                                    aria-label="Toggle website blacklist"
+                                                    aria-label={t('settings.toggles.websiteBlacklist')}
                                                 >
                                                     <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${blacklists.domainBlacklistEnabled ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
                                                 </button>
@@ -4367,7 +4769,7 @@ export default function SettingsPage() {
                                                             setNewDomain('');
                                                         }
                                                     }}
-                                                    placeholder="Add domain (e.g. example.com)"
+                                                    placeholder={t('settings.blacklist.addDomain')}
                                                     className="flex-1 px-3 py-1.5 rounded-lg text-xs"
                                                     style={{ background: 'var(--surface-light)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                 />
@@ -4408,7 +4810,7 @@ export default function SettingsPage() {
                                                         await saveBlacklists(updated);
                                                     }}
                                                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${blacklists.buzzwordFilterEnabled ? 'bg-lime-500' : 'bg-gray-600'}`}
-                                                    aria-label="Toggle search safety filter"
+                                                    aria-label={t('settings.toggles.searchSafety')}
                                                 >
                                                     <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${blacklists.buzzwordFilterEnabled ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
                                                 </button>
@@ -4425,7 +4827,7 @@ export default function SettingsPage() {
                                                             setNewBuzzword('');
                                                         }
                                                     }}
-                                                    placeholder="Add term (e.g. hack into)"
+                                                    placeholder={t('settings.blacklist.addTerm')}
                                                     className="flex-1 px-3 py-1.5 rounded-lg text-xs"
                                                     style={{ background: 'var(--surface-light)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                                 />
@@ -4490,7 +4892,7 @@ export default function SettingsPage() {
                             Export / Import
                         </h2>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-                            Back up your Skales configuration, memories, and integrations — or restore from a previous backup.
+                            Back up your Skales configuration, memories, and integrations - or restore from a previous backup.
                         </p>
 
                         {/* Info box */}
@@ -4498,8 +4900,8 @@ export default function SettingsPage() {
                             <Info size={15} className="text-blue-400 mt-0.5 shrink-0" />
                             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                                 <p className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>What's included in the export?</p>
-                                <p>All settings, memories, identity, API keys and integration configurations — packed as ZIP. <strong style={{ color: 'var(--text-primary)' }}>The Workspace folder is excluded</strong> (it can get very large — typically 90 MB+).</p>
-                                <p className="mt-1.5 flex items-center gap-1.5 text-amber-400"><AlertTriangle size={11} /> Workspace files (created files, downloads) are <strong>not</strong> included — back those up separately if needed.</p>
+                                <p>All settings, memories, identity, API keys and integration configurations - packed as ZIP. <strong style={{ color: 'var(--text-primary)' }}>The Workspace folder is excluded</strong> (it can get very large - typically 90 MB+).</p>
+                                <p className="mt-1.5 flex items-center gap-1.5 text-amber-400"><AlertTriangle size={11} /> Workspace files (created files, downloads) are <strong>not</strong> included - back those up separately if needed.</p>
                             </div>
                         </div>
 
@@ -4618,6 +5020,84 @@ export default function SettingsPage() {
                         </div>
                     </section>
 
+                    {/* ─── Privacy ─── */}
+                    <section className="rounded-2xl border p-6"
+                        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2"
+                            style={{ color: 'var(--text-primary)' }}>
+                            <Shield size={20} className="text-blue-400" />
+                            {t('settings.privacy')}
+                        </h2>
+                        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                            {t('settings.privacyDesc')}
+                        </p>
+                        <div className="flex items-center justify-between py-2">
+                            <div>
+                                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                                    {t('telemetry.settingsLabel')}
+                                </p>
+                                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                    {t('telemetry.description')}
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const next = !telemetryEnabled;
+                                    setTelemetryEnabled(next);
+                                    await saveAllSettings({ telemetry_enabled: next } as any);
+                                }}
+                                className="shrink-0 ml-4 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                                style={{
+                                    background: telemetryEnabled ? 'rgba(96,165,250,0.15)' : 'var(--surface-raised)',
+                                    color: telemetryEnabled ? '#60a5fa' : 'var(--text-muted)',
+                                    border: telemetryEnabled ? '1px solid rgba(96,165,250,0.4)' : '1px solid var(--border)',
+                                }}
+                            >
+                                {telemetryEnabled ? t('settings.enabled') : t('settings.disabled')}
+                            </button>
+                        </div>
+                    </section>
+
+                    {/* ─── Skales+ ─── */}
+                    <section className="rounded-2xl p-6"
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(167,139,250,0.05) 100%)',
+                            border: '1px solid rgba(167,139,250,0.3)',
+                        }}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                    style={{ background: 'rgba(167,139,250,0.15)' }}>
+                                    <Crown size={18} style={{ color: '#a78bfa' }} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>
+                                            {t('skalesPlus.title')}
+                                        </h2>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                            style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
+                                            {t('skalesPlus.comingSoon')}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                        {t('skalesPlus.settingsDesc')}
+                                    </p>
+                                </div>
+                            </div>
+                            <Link href="/skales-plus"
+                                className="shrink-0 ml-4 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                                style={{
+                                    background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+                                    color: '#fff',
+                                    boxShadow: '0 4px 14px rgba(124,58,237,0.3)',
+                                }}>
+                                <Sparkles size={14} />
+                                {t('skalesPlus.settingsLink')}
+                            </Link>
+                        </div>
+                    </section>
+
                     {/* ─── Danger Zone ─── */}
                     <section className="rounded-2xl border p-6"
                         style={{ background: 'var(--surface)', borderColor: 'rgba(239,68,68,0.3)' }}>
@@ -4643,7 +5123,7 @@ export default function SettingsPage() {
                                                 const { shutdownServer } = await import('@/actions/system');
                                                 await shutdownServer();
                                                 alert('Killswitch activated. Server is shutting down.');
-                                            } catch { alert('Killswitch sent — server shutting down.'); }
+                                            } catch { alert('Killswitch sent - server shutting down.'); }
                                         }
                                     }}
                                     className="ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
@@ -4665,7 +5145,7 @@ export default function SettingsPage() {
                                                 const { shutdownServer } = await import('@/actions/system');
                                                 await shutdownServer();
                                                 alert('Server is shutting down...');
-                                            } catch { alert('Stop signal sent — server shutting down.'); }
+                                            } catch { alert('Stop signal sent - server shutting down.'); }
                                         }
                                     }}
                                     className="ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
@@ -4737,7 +5217,7 @@ export default function SettingsPage() {
 
                 </div>
 
-                {/* Save Bar — clean floating button, no container */}
+                {/* Save Bar - clean floating button, no container */}
                 <div className="fixed bottom-6 left-0 right-0 flex flex-col items-center gap-2 z-50 pointer-events-none"
                     style={{ paddingLeft: '260px' }}>
                     {statusMessage && (

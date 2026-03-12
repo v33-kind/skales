@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/lib/i18n';
 
 const PROVIDER_MODELS: Record<string, { value: string; label: string }[]> = {
     openrouter: [
@@ -64,6 +65,7 @@ export default function AgentsPage() {
     const [saving, setSaving] = useState(false);
 
     const router = useRouter();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadData();
@@ -133,7 +135,7 @@ export default function AgentsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this agent?')) return;
+        if (!confirm(t('agents.deleteConfirm'))) return;
         try {
             await deleteAgent(id);
             loadData();
@@ -164,10 +166,10 @@ export default function AgentsPage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={Users} size={28} />
-                        Agents
+                        {t('agents.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Specialized AI assistants for different tasks
+                        {t('agents.subtitle')}
                     </p>
                 </div>
                 <button
@@ -175,7 +177,7 @@ export default function AgentsPage() {
                     className="px-4 py-2 rounded-xl bg-lime-500 hover:bg-lime-400 text-black font-bold flex items-center gap-2 shadow-lg shadow-lime-500/20 transition-all"
                 >
                     <Icon icon={Plus} size={18} />
-                    Create Agent
+                    {t('agents.createAgent')}
                 </button>
             </div>
 
@@ -190,10 +192,10 @@ export default function AgentsPage() {
                             <div className="text-3xl">🦎</div>
                             <div>
                                 <div className="flex items-center gap-1.5">
-                                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Skales</h3>
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-lime-500/15 text-lime-500 font-bold uppercase">Default</span>
+                                    <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t('agents.skales.name')}</h3>
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-lime-500/15 text-lime-500 font-bold uppercase">{t('agents.skales.default')}</span>
                                 </div>
-                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Always available</p>
+                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('agents.skales.alwaysAvailable')}</p>
                             </div>
                         </div>
                         {/* Info Tooltip */}
@@ -208,17 +210,17 @@ export default function AgentsPage() {
                             {showTooltip && (
                                 <div className="absolute right-0 top-8 z-50 w-64 p-3 rounded-xl text-xs shadow-xl animate-fadeIn"
                                     style={{ background: 'var(--surface-light)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                                    <p className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>🦎 About Skales</p>
+                                    <p className="font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{t('agents.skales.about')}</p>
                                     <p>Skales is the main AI agent. It uses the <strong>active model</strong> configured in your Settings. You cannot edit or delete it.</p>
                                 </div>
                             )}
                         </div>
                     </div>
                     <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
-                        Your primary AI buddy. Uses the active model from Settings.
+                        {t('agents.skales.desc')}
                     </p>
                     <div className="flex flex-wrap gap-1 mb-3">
-                        {['chat', 'tasks', 'tools', 'memory'].map(cap => (
+                        {[t('agents.capabilities.chat'), t('agents.capabilities.tasks'), t('agents.capabilities.tools'), t('agents.capabilities.memory')].map(cap => (
                             <span key={cap} className="px-2 py-0.5 rounded-full text-[10px] font-medium"
                                 style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}>
                                 {cap}
@@ -232,13 +234,13 @@ export default function AgentsPage() {
                             style={{ background: 'var(--surface-light)', color: 'var(--text-primary)' }}
                         >
                             <Icon icon={Play} size={12} className="inline mr-1" />
-                            Run
+                            {t('agents.run')}
                         </button>
                         <button
                             disabled
                             className="px-3 py-2 rounded-lg text-xs opacity-40 cursor-not-allowed"
                             style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}
-                            title="Skales cannot be edited"
+                            title={t('agents.skales.cannotEdit')}
                         >
                             <Icon icon={Lock} size={12} />
                         </button>
@@ -259,7 +261,7 @@ export default function AgentsPage() {
                                     <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{agent.name}</h3>
                                     {agent.lastUsed && (
                                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                            Last used {new Date(agent.lastUsed).toLocaleDateString()}
+                                            {t('agents.card.lastUsed', { date: new Date(agent.lastUsed).toLocaleDateString() })}
                                         </p>
                                     )}
                                 </div>
@@ -299,7 +301,7 @@ export default function AgentsPage() {
                                         onClick={() => openEditModal(agent)}
                                         className="px-3 py-2 rounded-lg text-xs transition-all hover:bg-blue-500/10 hover:text-blue-400"
                                         style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}
-                                        title="Edit Agent"
+                                        title={t('agents.editAgent')}
                                     >
                                         <Icon icon={Edit} size={12} />
                                     </button>
@@ -307,7 +309,7 @@ export default function AgentsPage() {
                                         onClick={() => handleDelete(agent.id)}
                                         className="px-3 py-2 rounded-lg text-xs transition-all hover:bg-red-500 hover:text-white"
                                         style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}
-                                        title="Delete Agent"
+                                        title={t('agents.deleteAgent')}
                                     >
                                         <Icon icon={Trash2} size={12} />
                                     </button>
@@ -325,12 +327,12 @@ export default function AgentsPage() {
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
                         onClick={e => e.stopPropagation()}>
                         <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                            {editingAgent ? `Edit: ${editingAgent.name}` : 'Create Custom Agent'}
+                            {editingAgent ? t('agents.modal.edit', { name: editingAgent.name }) : t('agents.modal.create')}
                         </h2>
                         <div className="space-y-4">
                             <div className="grid grid-cols-4 gap-4">
                                 <div className="col-span-3">
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Name</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.name')}</label>
                                     <input
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -340,7 +342,7 @@ export default function AgentsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Emoji</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.emoji')}</label>
                                     <input
                                         value={formData.emoji}
                                         onChange={e => setFormData({ ...formData, emoji: e.target.value })}
@@ -351,7 +353,7 @@ export default function AgentsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Description</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.description')}</label>
                                 <input
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -361,7 +363,7 @@ export default function AgentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>System Prompt</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.systemPrompt')}</label>
                                 <textarea
                                     value={formData.systemPrompt}
                                     onChange={e => setFormData({ ...formData, systemPrompt: e.target.value })}
@@ -372,7 +374,7 @@ export default function AgentsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Capabilities (comma-separated)</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.capabilities')}</label>
                                 <input
                                     value={formData.capabilities}
                                     onChange={e => setFormData({ ...formData, capabilities: e.target.value })}
@@ -383,23 +385,23 @@ export default function AgentsPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Provider</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.provider')}</label>
                                     <select
                                         value={formData.provider}
                                         onChange={e => setFormData({ ...formData, provider: e.target.value, model: '' })}
                                         className="w-full px-3 py-2 rounded-lg border text-sm"
                                         style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                     >
-                                        <option value="">Default (Active in Settings)</option>
-                                        <option value="openrouter">OpenRouter</option>
-                                        <option value="openai">OpenAI</option>
-                                        <option value="anthropic">Anthropic</option>
-                                        <option value="google">Google</option>
-                                        <option value="ollama">Ollama (Local)</option>
+                                        <option value="">{t('agents.providers.default')}</option>
+                                        <option value="openrouter">{t('agents.providers.openrouter')}</option>
+                                        <option value="openai">{t('agents.providers.openai')}</option>
+                                        <option value="anthropic">{t('agents.providers.anthropic')}</option>
+                                        <option value="google">{t('agents.providers.google')}</option>
+                                        <option value="ollama">{t('agents.providers.ollama')}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Model</label>
+                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('agents.form.model')}</label>
                                     {formData.provider && PROVIDER_MODELS[formData.provider] ? (
                                         <select
                                             value={formData.model}
@@ -407,7 +409,7 @@ export default function AgentsPage() {
                                             className="w-full px-3 py-2 rounded-lg border text-sm"
                                             style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                                         >
-                                            <option value="">Default Model</option>
+                                            <option value="">{t('agents.defaultModel')}</option>
                                             {PROVIDER_MODELS[formData.provider].map(m => (
                                                 <option key={m.value} value={m.value}>{m.label}</option>
                                             ))}
@@ -430,7 +432,7 @@ export default function AgentsPage() {
                                 className="flex-1 px-4 py-2 rounded-xl font-medium transition-all hover:bg-[var(--surface-light)]"
                                 style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                             >
-                                Cancel
+                                {t('agents.cancel')}
                             </button>
                             <button
                                 onClick={handleSave}
@@ -438,7 +440,7 @@ export default function AgentsPage() {
                                 className="flex-1 px-4 py-2 rounded-xl font-bold bg-lime-500 hover:bg-lime-400 text-black transition-all shadow-lg shadow-lime-500/20 disabled:opacity-30 flex items-center justify-center gap-2"
                             >
                                 {saving && <Icon icon={Loader2} size={16} className="animate-spin" />}
-                                {editingAgent ? 'Save Changes' : 'Create Agent'}
+                                {editingAgent ? t('agents.saveChanges') : t('agents.createAgentBtn')}
                             </button>
                         </div>
                     </div>

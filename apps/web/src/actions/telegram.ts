@@ -63,7 +63,7 @@ export async function saveTelegramConfig(token: string): Promise<{ success: bool
 }
 
 export async function loadTelegramConfig(): Promise<TelegramConfig | null> {
-    noStore(); // Never cache — config file can change at any time
+    noStore(); // Never cache - config file can change at any time
     ensureDirs();
     if (!fs.existsSync(TELEGRAM_FILE)) return null;
     try {
@@ -114,7 +114,7 @@ export async function testTelegramBot(token: string): Promise<{
             const body = await res.json().catch(() => ({}));
             return {
                 success: false,
-                error: body?.description || `HTTP ${res.status} — invalid token?`,
+                error: body?.description || `HTTP ${res.status} - invalid token?`,
             };
         }
 
@@ -141,7 +141,7 @@ export async function testTelegramBot(token: string): Promise<{
         };
     } catch (e: any) {
         const msg = e?.name === 'AbortError'
-            ? 'Timeout — Telegram unreachable'
+            ? 'Timeout - Telegram unreachable'
             : e?.message || 'Unknown error';
         return { success: false, error: msg };
     }
@@ -322,7 +322,7 @@ export async function sendDocument(
 // ─── Inbox (Telegram ↔ Dashboard Bridge) ─────────────────────
 
 export async function getTelegramInbox(since?: number): Promise<TelegramInboxMessage[]> {
-    noStore(); // Never cache — inbox updates in real time
+    noStore(); // Never cache - inbox updates in real time
     ensureDirs();
     if (!fs.existsSync(TELEGRAM_INBOX)) return [];
     try {
@@ -354,7 +354,7 @@ export async function getTelegramBotInfo(): Promise<{
     pairedUserName?: string;
     token?: string;
 } | null> {
-    noStore(); // Never cache — bot info reflects live config state
+    noStore(); // Never cache - bot info reflects live config state
     const config = await loadTelegramConfig();
     if (!config) return null;
 
@@ -409,7 +409,13 @@ export async function startTelegramBot(): Promise<{ success: boolean; error?: st
             detached: true,
             stdio: 'ignore',
             cwd: webDir,
-            env: { ...process.env, SKALES_DATA_DIR: DATA_DIR },
+            env: {
+                ...process.env,
+                SKALES_DATA_DIR: DATA_DIR,
+                // Pass the actual bound port so telegram-bot.js never hardcodes 3000.
+                // process.env.PORT is set by electron/main.js before spawning Next.js.
+                SKALES_PORT: process.env.PORT || '3000',
+            },
             // windowsHide prevents the CMD flash on Windows
             windowsHide: true,
         });
@@ -425,7 +431,7 @@ export async function startTelegramBot(): Promise<{ success: boolean; error?: st
 }
 
 export async function getTelegramBotRunning(): Promise<boolean> {
-    noStore(); // Never cache — process liveness check must be real-time
+    noStore(); // Never cache - process liveness check must be real-time
     try {
         if (!fs.existsSync(LOCK_FILE)) return false;
         const pid = parseInt(fs.readFileSync(LOCK_FILE, 'utf-8').trim(), 10);

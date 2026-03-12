@@ -2,6 +2,7 @@
 
 import { Clock, Plus, Play, Pause, Calendar, Trash2, Sunrise, Moon, Coffee, BarChart3, Lock } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/lib/i18n';
 import { listCronJobs, createCronJob, deleteCronJob, toggleCronJob, type CronJob } from '@/actions/tasks';
 
 const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
@@ -33,6 +34,7 @@ function cronToReadable(cron: string): string {
 }
 
 export default function SchedulePage() {
+    const { t } = useTranslation();
     const [jobs, setJobs] = useState<CronJob[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
@@ -134,10 +136,10 @@ export default function SchedulePage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={Clock} size={24} className="text-blue-500" />
-                        Schedule
+                        {t('schedule.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                        Automated cron jobs and scheduled tasks ({jobs.length} active)
+                        {t('schedule.subtitle')} ({jobs.length})
                     </p>
                 </div>
                 <button
@@ -145,18 +147,18 @@ export default function SchedulePage() {
                     className="px-4 py-2.5 bg-lime-500 hover:bg-lime-400 text-black font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-lime-500/20"
                 >
                     <Icon icon={Plus} size={16} />
-                    New Schedule
+                    {t('schedule.newSchedule')}
                 </button>
             </div>
 
             {/* Create Modal */}
             {showCreate && (
                 <div className="max-w-4xl mb-6 rounded-2xl border p-6 animate-fadeIn" style={{ background: 'var(--surface)', borderColor: 'rgba(132,204,22,0.4)' }}>
-                    <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>New Scheduled Job</h3>
+                    <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{t('schedule.form.title')}</h3>
 
                     {/* Schedule Type Selector */}
                     <div className="mb-4">
-                        <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-muted)' }}>Frequency</label>
+                        <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-muted)' }}>{t('schedule.form.frequency')}</label>
                         <div className="flex flex-wrap gap-2">
                             {CRON_PRESETS.map(preset => (
                                 <button
@@ -183,7 +185,7 @@ export default function SchedulePage() {
                     {/* Time picker (only for non-manual) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Name</label>
+                            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('schedule.form.name')}</label>
                             <input value={newJob.name} onChange={e => setNewJob(p => ({ ...p, name: e.target.value }))}
                                 placeholder="Morning Briefing"
                                 className="w-full px-3 py-2 rounded-lg border text-sm"
@@ -191,7 +193,7 @@ export default function SchedulePage() {
                         </div>
                         {scheduleType !== 'manual' ? (
                             <div>
-                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Time</label>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('schedule.form.time')}</label>
                                 <input
                                     type="time"
                                     value={scheduleTime}
@@ -201,13 +203,13 @@ export default function SchedulePage() {
                             </div>
                         ) : (
                             <div>
-                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Cron Expression</label>
+                                <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('schedule.form.cronExpression')}</label>
                                 <input value={newJob.schedule} onChange={e => setNewJob(p => ({ ...p, schedule: e.target.value }))}
                                     placeholder="0 7 * * *"
                                     className="w-full px-3 py-2 rounded-lg border text-sm font-mono"
                                     style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                                 <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
-                                    Format: min hour day month weekday — e.g. "0 9 * * 1-5" = weekdays 9 AM
+                                    Format: min hour day month weekday - e.g. "0 9 * * 1-5" = weekdays 9 AM
                                 </p>
                             </div>
                         )}
@@ -218,13 +220,13 @@ export default function SchedulePage() {
                         <div className="mb-4 px-3 py-2 rounded-lg text-xs flex items-center gap-2"
                             style={{ background: 'var(--background)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                             <Icon icon={Calendar} size={12} />
-                            <span>Runs: <strong style={{ color: 'var(--text-secondary)' }}>{cronToReadable(newJob.schedule)}</strong></span>
+                            <span>{t('schedule.form.runs')} <strong style={{ color: 'var(--text-secondary)' }}>{cronToReadable(newJob.schedule)}</strong></span>
                             <code className="ml-auto font-mono text-[10px]">{newJob.schedule}</code>
                         </div>
                     )}
 
                     <div className="mb-4">
-                        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>Task Description</label>
+                        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('schedule.form.taskDesc')}</label>
                         <textarea value={newJob.task} onChange={e => setNewJob(p => ({ ...p, task: e.target.value }))}
                             placeholder="What should Skales do when this job runs?"
                             rows={3}
@@ -235,11 +237,11 @@ export default function SchedulePage() {
                         <button onClick={handleCreate}
                             disabled={!newJob.name || !newJob.schedule || !newJob.task}
                             className="px-4 py-2 bg-lime-500 hover:bg-lime-400 text-black font-bold rounded-xl text-sm disabled:opacity-30">
-                            Create Job
+                            {t('schedule.form.create')}
                         </button>
                         <button onClick={() => setShowCreate(false)} className="px-4 py-2 rounded-xl text-sm"
                             style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                            Cancel
+                            {t('schedule.form.cancel')}
                         </button>
                     </div>
                 </div>
@@ -248,7 +250,7 @@ export default function SchedulePage() {
             {/* Quick Presets (show when no jobs) */}
             {jobs.length === 0 && !loading && (
                 <div className="max-w-4xl mb-6">
-                    <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Quick Start Templates</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>{t('schedule.templates')}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {PRESETS.map(preset => (
                             <button key={preset.name}
@@ -266,11 +268,11 @@ export default function SchedulePage() {
             {/* Job List */}
             <div className="max-w-4xl space-y-3 stagger-children">
                 {loading ? (
-                    <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Loading schedules...</p>
+                    <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>{t('schedule.loading')}</p>
                 ) : jobs.length === 0 ? (
                     <div className="p-8 rounded-2xl border border-dashed text-center" style={{ borderColor: 'var(--border)' }}>
                         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                            No scheduled jobs yet. Create one above or use a template!
+                            {t('schedule.empty')}
                         </p>
                     </div>
                 ) : jobs.map(job => {
@@ -309,11 +311,11 @@ export default function SchedulePage() {
                                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${job.enabled ? 'bg-lime-500 text-black' : ''}`}
                                 style={!job.enabled ? { color: 'var(--text-muted)', border: '1px solid var(--border)' } : undefined}
                             >
-                                {job.enabled ? <><Icon icon={Pause} size={12} /> Active</> : <><Icon icon={Play} size={12} /> Activate</>}
+                                {job.enabled ? <><Icon icon={Pause} size={12} /> {t('schedule.active')}</> : <><Icon icon={Play} size={12} /> {t('schedule.activate')}</>}
                             </button>
                             {isSystemJob(job) ? (
                                 <div
-                                    title="Managed by Memory settings — disable it there"
+                                    title={t('schedule.managedByMemory')}
                                     className="p-2 rounded-lg cursor-not-allowed"
                                     style={{ color: 'var(--text-muted)', opacity: 0.4 }}
                                 >
@@ -332,7 +334,7 @@ export default function SchedulePage() {
             <div className="mt-8 p-6 rounded-2xl border border-dashed text-center max-w-4xl"
                 style={{ borderColor: 'var(--border)' }}>
                 <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                    Tip: Use cron expressions — "0 7 * * *" = Every day at 7 AM, "0 9 * * 1-5" = Weekdays at 9 AM
+                    {t('schedule.cronTip')}
                 </p>
             </div>
             </div>{/* max-w-5xl mx-auto */}

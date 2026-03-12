@@ -132,7 +132,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                             lineHeight: 1.6,
                         }}
                     >
-                        Skales hit an unexpected error — this can happen when the app
+                        Skales hit an unexpected error - this can happen when the app
                         wakes up after being suspended in the background. Your chat
                         history is safe.
                     </p>

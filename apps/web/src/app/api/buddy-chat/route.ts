@@ -1,13 +1,16 @@
 /**
  * POST /api/buddy-chat
  *
- * REST wrapper around processMessage() for the Desktop Buddy window.
- * Unlike /api/chat (which doesn't exist as a route — it's a server action),
- * this is a genuine Next.js API route that the Electron buddy window can fetch.
+ * REST wrapper for the Desktop Buddy window that supports full tool execution.
+ * The buddy can now DO things (write files, search web, send emails, etc.),
+ * not just answer text questions.
  *
  * Request body:  { message: string }
- * Response:      { content: string }       on success
- *                { error:   string }       on failure (HTTP 4xx/5xx)
+ * Response:
+ *   { content: string }                       — plain text response
+ *   { type: 'approval_needed', tools: [...] } — tool calls needing user approval
+ *   { type: 'tool_result', content: string }  — auto-executed tool result
+ *   { error: string }                         — failure (HTTP 4xx/5xx)
  *
  * Side effects:
  *   • Appends user + assistant messages to the currently active chat session
@@ -18,35 +21,43 @@ import { NextResponse }                  from 'next/server';
 import { unstable_noStore as noStore }   from 'next/cache';
 
 import {
-    processMessage,
     getActiveSessionId,
     loadSession,
+    saveSession,
 } from '@/actions/chat';
+import {
+    agentDecide,
+    agentExecute,
+} from '@/actions/orchestrator';
+import { serverT } from '@/lib/server-i18n';
 
 export const dynamic    = 'force-dynamic';
 export const revalidate = 0;
 
-// ─── Buddy widget mode instruction ───────────────────────────────────────────
-// Capabilities are injected by processMessage() via capabilities.json, but the
-// buddy route does NOT run agentExecute — it only returns LLM text.
-//
-// CRITICAL HONESTY RULE: The LLM must never pretend to execute tools here.
-// Any tool call would be silently dropped. The user must be directed to the
-// main chat for any action that requires file operations, screenshots, etc.
-const BUDDY_WIDGET_SUFFIX =
-    '## Desktop Buddy widget mode — IMPORTANT CONSTRAINTS\n' +
-    'You are responding inside a small overlay widget (≈190px wide).\n' +
-    'Keep ALL answers to 1-3 sentences maximum.\n\n' +
-    '### Tool execution is NOT available in this widget.\n' +
-    'This widget cannot run file operations, create documents, take screenshots, ' +
-    'send emails, execute commands, or call ANY tools. If the user asks you to ' +
-    'do something that requires a tool (write a file, create a doc, take a ' +
-    'screenshot, send email, etc.), you MUST respond HONESTLY:\n' +
-    '"I can only do that in the main chat — Open Chat for the full answer."\n' +
-    'NEVER claim to have created, saved, sent, or executed anything. ' +
-    'NEVER fabricate a result. If it needs a tool, redirect to the main chat.\n\n' +
-    'For questions, answers, and conversation: respond normally in 1-3 sentences.\n' +
-    'If the topic needs more detail, end with "Open Chat for the full answer."';
+// ─── Buddy system prompt ──────────────────────────────────────────────────────
+// Passed as options.systemPrompt to agentDecide so the full tool-routing
+// context (CORE_TOOLS, DATA_DIR paths, skill guidance) is ALSO built.
+// Before v6.0.1 this was injected as a system message, which caused
+// agentDecide to skip its own comprehensive prompt — leading to wrong-tool
+// selection (e.g. web_search instead of write_file) and wrong DATA_DIR paths.
+const BUDDY_SYSTEM_PROMPT =
+    '## Desktop Buddy — Skales\n' +
+    'You are Skales, a proactive desktop AI assistant living in a compact overlay widget.\n' +
+    'Keep ALL answers to 1-3 sentences maximum unless a tool result requires more.\n\n' +
+    '### Buddy-specific rules:\n' +
+    '- You have full access to all tools: file operations, shell commands, email, browser, calendar, and more.\n' +
+    '- Execute tasks directly when asked. Do NOT just describe what you would do.\n' +
+    '- Some actions require user approval — the widget shows approve/decline buttons.\n' +
+    '- For tool results longer than 200 characters: summarise in 1-2 sentences and\n' +
+    '  mention the user can "Open Chat for details".\n' +
+    '- For questions and conversation: respond in 1-3 sentences.\n' +
+    '- Be helpful, proactive, and get things done.\n\n' +
+    '### Proactive Behaviour (Buddy):\n' +
+    '- After completing a task, suggest 1 logical next step.\n' +
+    '- If a tool fails, try an alternative before giving up.\n' +
+    '- If you spot issues in files or configs while working, flag them briefly.\n' +
+    '- If the user seems stuck or vague, make your best guess and act — then confirm.\n' +
+    '- Never say "I can\'t" without checking your tools and capabilities first.';
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
@@ -65,14 +76,10 @@ export async function POST(req: Request) {
     }
 
     try {
-        // ── Get active session so buddy messages appear in the main chat UI ───
+        // ── Get active session for history context ────────────────────────────
         const sessionId = (await getActiveSessionId()) ?? undefined;
 
-        // Load a short context window from the active session (last 10 plain messages).
-        // CRITICAL: strip ALL tool-role messages and assistant messages that issued
-        // tool_calls — they require tool_call_id + a paired tool result to be valid.
-        // Sending orphaned tool messages causes API 400 "Message has tool role, but
-        // there was no previous assistant message with a tool call".
+        // Load short context window (last 10 plain messages, strip orphan tool msgs)
         let history: { role: string; content: string }[] = [];
         if (sessionId) {
             const session = await loadSession(sessionId);
@@ -91,30 +98,111 @@ export async function POST(req: Request) {
             }
         }
 
-        // ── Call the AI via the same processMessage pipeline ──────────────────
-        // processMessage already injects capabilities from capabilities.json.
-        // The buddy suffix only adds the widget brevity instruction.
-        const result = await processMessage(message, history as any, {
-            sessionId,
-            systemPromptSuffix: BUDDY_WIDGET_SUFFIX,
-            msgSource: 'buddy', // Tag messages so the chat polling can identify them
+        // ── Build messages for agentDecide ────────────────────────────────────
+        // NOTE: No system message in this array! The buddy system prompt is
+        // passed via options.systemPrompt so agentDecide builds its FULL
+        // tool-routing context on top of it (CORE_TOOLS, DATA_DIR, skills).
+        const messages = [
+            ...history,
+            { role: 'user', content: message },
+        ];
+
+        // ── Ask the LLM (with tools) ──────────────────────────────────────────
+        const decision = await agentDecide(messages, {
+            systemPrompt: BUDDY_SYSTEM_PROMPT,
         });
 
-        if (!result.success) {
-            console.error('[Skales Buddy] processMessage failed:', result.error);
+        if (decision.decision === 'error') {
             return NextResponse.json(
-                { error: result.error ?? 'AI provider error' },
+                { error: decision.error ?? serverT('system.errors.generic') },
                 { status: 502 }
             );
         }
 
-        const content = ('response' in result ? result.response : undefined) ?? '';
+        // ── Tool call path ────────────────────────────────────────────────────
+        if (decision.decision === 'tool' && decision.toolCalls && decision.toolCalls.length > 0) {
+            // Run agentExecute WITHOUT confirmedIds first to classify each call
+            const initialResults = await agentExecute(decision.toolCalls);
+
+            // Split into: needs approval vs. auto-executed
+            const needsApproval = decision.toolCalls.filter((_, i) =>
+                initialResults[i]?.requiresConfirmation === true
+            );
+            const autoResults = initialResults.filter(r => !r.requiresConfirmation);
+
+            if (needsApproval.length > 0) {
+                // Store pending tool calls in session for approval route to pick up
+                if (sessionId) {
+                    const session = await loadSession(sessionId);
+                    if (session) {
+                        (session as any).buddyPendingToolCalls = needsApproval;
+                        await saveSession(session);
+                    }
+                }
+
+                // Build approval message describing each pending action
+                const toolDescriptions = needsApproval.map(tc => {
+                    const result = initialResults.find(r => r.toolName === tc.function.name);
+                    return result?.confirmationMessage || tc.function.name;
+                });
+
+                return NextResponse.json({
+                    type: 'approval_needed',
+                    tools: toolDescriptions,
+                    toolCallIds: needsApproval.map(tc => tc.id),
+                    sessionId,
+                });
+            }
+
+            // All auto-executed — build a summary response
+            const summaryParts = autoResults.map(r => {
+                const msg = r.displayMessage || (r.success ? 'Done.' : 'Failed.');
+                return msg.length > 150 ? msg.slice(0, 147) + '...' : msg;
+            });
+
+            const summary = summaryParts.join(' ');
+            const wasLong = summary.length > 200;
+
+            // Save to session
+            if (sessionId) {
+                const session = await loadSession(sessionId);
+                if (session) {
+                    session.messages.push(
+                        { role: 'user', content: message, timestamp: Date.now(), source: 'buddy' },
+                        { role: 'assistant', content: summary, timestamp: Date.now(), source: 'buddy' }
+                    );
+                    await saveSession(session);
+                }
+            }
+
+            return NextResponse.json({
+                type: 'tool_result',
+                content: summary,
+                wasLong,
+            });
+        }
+
+        // ── Plain text response ───────────────────────────────────────────────
+        const content = (decision.response ?? '').trim() || 'No response.';
+
+        // Save to session
+        if (sessionId) {
+            const session = await loadSession(sessionId);
+            if (session) {
+                session.messages.push(
+                    { role: 'user', content: message, timestamp: Date.now(), source: 'buddy' },
+                    { role: 'assistant', content, timestamp: Date.now(), source: 'buddy' }
+                );
+                await saveSession(session);
+            }
+        }
+
         return NextResponse.json({ content });
 
     } catch (err: any) {
         console.error('[Skales Buddy] /api/buddy-chat error:', err?.message ?? err);
         return NextResponse.json(
-            { error: err?.message ?? 'Internal server error' },
+            { error: err?.message ?? serverT('system.errors.generic') },
             { status: 500 }
         );
     }

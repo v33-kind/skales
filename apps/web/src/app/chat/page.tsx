@@ -25,6 +25,7 @@ import { extractPdfText, savePdfToWorkspace } from '@/actions/pdf-extract';
 import { analyzeTaskComplexity } from '@/actions/orchestrator';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from '@/lib/i18n';
 
 
 const Icon = ({ icon: I, ...props }: { icon: any;[key: string]: any }) => {
@@ -47,23 +48,19 @@ interface DisplayMessage {
     model?: string;
     source?: 'browser' | 'telegram' | 'buddy';
     telegramUser?: string;
-    timestamp?: number;      // ms since epoch — used for chronological sorting
+    timestamp?: number;      // ms since epoch - used for chronological sorting
     memoriesRecalled?: number; // > 0 → show pulsing recall indicator briefly
 }
 
-const SLASH_COMMANDS = [
-    { cmd: '/clear', desc: 'Clear chat history' },
-    { cmd: '/persona', desc: 'Switch persona (e.g. /persona coder)' },
-    { cmd: '/model', desc: 'Change model (e.g. /model gpt-4o)' },
-    { cmd: '/help', desc: 'Show available commands' },
-    { cmd: '/new', desc: 'Start a new session' },
-    { cmd: '/sessions', desc: 'List recent sessions' },
-    { cmd: '/tools', desc: 'Show available tools' },
-    { cmd: '/workspace', desc: 'Show workspace info' },
-    { cmd: '/tasks', desc: 'Show current tasks' },
-    { cmd: '/stop', desc: 'Stop current message generation' },
-    { cmd: '/killswitch', desc: 'Emergency stop — halt all background tasks' },
-];
+const SLASH_COMMAND_KEYS = [
+    'clear', 'persona', 'model', 'help', 'new', 'sessions',
+    'tools', 'workspace', 'tasks', 'stop', 'killswitch',
+] as const;
+const getSlashCommands = (t: (key: string) => string) =>
+    SLASH_COMMAND_KEYS.map(key => ({
+        cmd: `/${key}`,
+        desc: t(`chat.slashCommands.${key}`),
+    }));
 
 const TOOL_ICONS: Record<string, any> = {
     'create_folder': FolderPlus,
@@ -501,8 +498,9 @@ const MessageListArea = memo(function MessageListArea({
     onCopy: (text: string, idx: number) => void;
     scrollRef: React.RefObject<HTMLDivElement>;
 }) {
+    const { t } = useTranslation();
     return (
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4" role="log" aria-live="polite" aria-label="Chat messages">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4" role="log" aria-live="polite" aria-label={t('chat.messages')}>
             {messages.map((msg, idx) => {
                 if (msg.role === 'tool') return null;
                 // Safely extract text — content can be a string or a multimodal array (e.g. image via Telegram)
@@ -557,7 +555,7 @@ const MessageListArea = memo(function MessageListArea({
                             </div>
                         )}
 
-                        <div className={`flex flex-col gap-0.5 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                        <div className={`flex flex-col gap-0.5 min-w-0 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                             <div className={`relative max-w-xs sm:max-w-sm md:max-w-[80%] rounded-2xl p-3 sm:p-4 text-[14px] leading-relaxed ${msg.role === 'user'
                                 ? 'bg-lime-500 text-black rounded-br-sm font-medium'
                                 : msg.role === 'system'
@@ -567,6 +565,7 @@ const MessageListArea = memo(function MessageListArea({
                                 style={{
                                     overflowWrap: 'break-word',
                                     wordBreak: 'break-word',
+                                    overflow: 'hidden',
                                     minWidth: '80px',
                                     ...(msg.role !== 'user' ? {
                                         background: 'var(--surface)',
@@ -610,7 +609,7 @@ const MessageListArea = memo(function MessageListArea({
                                                 </summary>
                                                 <div className="mt-2 pl-3 border-l-2 border-lime-500/10 text-xs opacity-90">
                                                     {hasText && (
-                                                        <div className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words overflow-hidden mb-3">
+                                                        <div className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words overflow-x-auto mb-3">
                                                             <Markdown content={_contentStr} />
                                                         </div>
                                                     )}
@@ -680,7 +679,7 @@ const MessageListArea = memo(function MessageListArea({
                                     );
                                 })() : (
                                     hasText && (
-                                        <div className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words overflow-hidden">
+                                        <div className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words overflow-x-auto">
                                             <Markdown content={_contentStr} />
                                         </div>
                                     )
@@ -720,7 +719,7 @@ const MessageListArea = memo(function MessageListArea({
                                         );
                                     }
                                 })()}
-                                {/* Link OG preview — show for assistant messages with exactly 1 plain URL */}
+                                {/* Link OG preview - show for assistant messages with exactly 1 plain URL */}
                                 {msg.role === 'assistant' && hasText && !hasToolResults && (() => {
                                     const plainUrls = extractPlainUrls(_contentStr);
                                     if (plainUrls.length === 1) {
@@ -754,7 +753,7 @@ const MessageListArea = memo(function MessageListArea({
                                             <span
                                                 className="animate-memory-flash text-[11px] flex items-center gap-0.5 select-none"
                                                 style={{ color: 'var(--text-muted)' }}
-                                                title="Recalling..."
+                                                title={t('chat.recalling')}
                                             >
                                                 🧠
                                             </span>
@@ -778,7 +777,7 @@ const MessageListArea = memo(function MessageListArea({
                                 </span>
                             )}
                         </div>
-                        {/* User avatar emoji — right side, aligned to top of bubble */}
+                        {/* User avatar emoji - right side, aligned to top of bubble */}
                         {msg.role === 'user' && (
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-1 text-base select-none"
                                 style={{ background: 'rgba(132,204,22,0.12)', border: '1px solid rgba(132,204,22,0.25)' }}>
@@ -808,6 +807,7 @@ const MessageListArea = memo(function MessageListArea({
 });
 
 export default function ChatPage() {
+    const { t } = useTranslation();
     const searchParams = useSearchParams();
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [input, setInput] = useState('');
@@ -836,6 +836,12 @@ export default function ChatPage() {
     const [genImageModel, setGenImageModel] = useState<'standard' | 'pro'>('standard');
     const [genLoading, setGenLoading] = useState(false);
     const [genOperationName, setGenOperationName] = useState<string | null>(null);
+    // Replicate provider state
+    const [genProvider, setGenProvider] = useState<'google' | 'replicate'>('google');
+    const [replicateImageModelId, setReplicateImageModelId] = useState('black-forest-labs/flux-schnell');
+    const [replicateVideoModelId, setReplicateVideoModelId] = useState('minimax/video-01');
+    const [replicateCustomModel, setReplicateCustomModel] = useState('');
+    const [replicateUseCustom, setReplicateUseCustom] = useState(false);
 
     // User profile avatar emoji (shown next to user bubbles)
     const [userEmoji, setUserEmoji] = useState<string>('👤');
@@ -919,20 +925,23 @@ export default function ChatPage() {
             const failed    = confirmedResults.filter(r => !r.success);
             let confirmSummary = '';
             if (succeeded.length > 0 && failed.length === 0) {
-                confirmSummary = `✅ Done — ${succeeded.map(r => r.toolName).join(', ')} completed successfully.`;
+                confirmSummary = `✅ Done - ${succeeded.map(r => r.toolName).join(', ')} completed successfully.`;
             } else if (succeeded.length > 0 && failed.length > 0) {
-                confirmSummary = `⚠️ Completed with issues — ${succeeded.length} succeeded, ${failed.length} failed.`;
+                confirmSummary = `⚠️ Completed with issues - ${succeeded.length} succeeded, ${failed.length} failed.`;
             } else {
                 confirmSummary = `❌ All actions failed. Check the results below for details.`;
             }
 
+            // NOTE: Do NOT attach toolCalls/toolResults to this message.
+            // When toolResults is set, the chat renderer wraps the entire content
+            // inside a collapsed <details> "Reasoning Process" block, making the
+            // confirmation text invisible. By omitting them, the summary renders
+            // as a normal visible assistant message.
             setMessages(prev => [
                 ...prev,
                 {
                     role: 'assistant',
                     content: confirmSummary,
-                    toolCalls: pendingCalls,
-                    toolResults: confirmedResults,
                     timestamp: Date.now(),
                 } as any,
             ]);
@@ -948,7 +957,7 @@ export default function ChatPage() {
         setPendingApproval(null);
         setMessages(prev => [
             ...prev,
-            { role: 'assistant', content: '🚫 Action cancelled — no changes were made.' },
+            { role: 'assistant', content: '🚫 Action cancelled - no changes were made.' },
         ]);
     };
 
@@ -1125,7 +1134,7 @@ export default function ChatPage() {
             // state mutation — it can throw on some browsers mid-suspension.
             let waited = 0;
             const poll = setInterval(() => {
-                if (document.hidden) return; // tab suspended — skip tick safely
+                if (document.hidden) return; // tab suspended - skip tick safely
                 waited += 300;
                 setMessages(prev => {
                     const newAssistant = prev.filter(
@@ -1540,7 +1549,7 @@ export default function ChatPage() {
                     );
                     return unique.length > 0 ? [...prev, ...unique] : prev;
                 });
-            } catch { /* session may not exist yet — ignore */ }
+            } catch { /* session may not exist yet - ignore */ }
             finally {
                 isBuddyPollingRef.current = false;
             }
@@ -1566,7 +1575,7 @@ export default function ChatPage() {
         }
         return {
             role: 'assistant',
-            content: "Hey! I'm Skales — your AI buddy. I can **actually do things** now! 🦎\n\nTry asking me to:\n• Create a folder\n• Write a file\n• List your tasks\n• Look up a website\n• Run a command\n\nOr just chat — I'm here either way! Type `/` for commands.",
+            content: "Hey! I'm Skales - your AI buddy. I can **actually do things** now! 🦎\n\nTry asking me to:\n• Create a folder\n• Write a file\n• List your tasks\n• Look up a website\n• Run a command\n\nOr just chat - I'm here either way! Type `/` for commands.",
         };
     }
 
@@ -1619,12 +1628,12 @@ export default function ChatPage() {
         setInput('');
 
         if (cmd === '/clear') {
-            setMessages([{ role: 'assistant', content: "Chat cleared! How can I help you? 🦎" }]);
+            setMessages([{ role: 'assistant', content: t('chat.chatCleared') }]);
             return;
         }
 
         if (cmd === '/help') {
-            const helpText = SLASH_COMMANDS.map(c => `**${c.cmd}** — ${c.desc}`).join('\n');
+            const helpText = getSlashCommands(t).map(c => `**${c.cmd}** - ${c.desc}`).join('\n');
             setMessages(prev => [...prev, { role: 'system', content: `Available commands:\n${helpText}` }]);
             return;
         }
@@ -1654,13 +1663,13 @@ export default function ChatPage() {
                 '  `send_telegram_notification` `send_gif_telegram` `search_gif` `send_whatsapp_message`',
                 '',
                 '**🖼️ Media**',
-                '  **Vision** — Paste images with Ctrl+V or the file button (GPT-4o, Claude 3+, Gemini)',
-                '  **Voice** — Voice messages via Telegram (STT/TTS)',
+                '  **Vision** - Paste images with Ctrl+V or the file button (GPT-4o, Claude 3+, Gemini)',
+                '  **Voice** - Voice messages via Telegram (STT/TTS)',
                 '',
                 '**🔧 System**',
                 '  `get_workspace_info` `get_system_info` `check_capabilities` `check_identity`',
             ].join('\n');
-            setMessages(prev => [...prev, { role: 'system', content: `**Available Tools:**\n${toolList}\n\nJust ask in plain language — I will automatically choose the right tool.` }]);
+            setMessages(prev => [...prev, { role: 'system', content: `**Available Tools:**\n${toolList}\n\nJust ask in plain language - I will automatically choose the right tool.` }]);
             return;
         }
 
@@ -1705,7 +1714,7 @@ export default function ChatPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reason: 'manual_chat', triggeredBy: 'chat_slash_command' }),
                 });
-                setMessages(prev => [...prev, { role: 'system', content: '🔴 **Killswitch activated** — all background tasks have been halted.' }]);
+                setMessages(prev => [...prev, { role: 'system', content: '🔴 **Killswitch activated** - all background tasks have been halted.' }]);
             } catch {
                 setMessages(prev => [...prev, { role: 'system', content: '⚠️ Killswitch call failed. Try the button in the Autopilot panel.' }]);
             }
@@ -1754,7 +1763,7 @@ export default function ChatPage() {
                     if (session.messages.length > 80) {
                         displayMsgs.unshift({
                             role: 'system',
-                            content: `📂 **Session loaded** — showing last 80 of ${session.messages.length} messages to keep things fast. Full history is saved.`,
+                            content: `📂 **Session loaded** - showing last 80 of ${session.messages.length} messages to keep things fast. Full history is saved.`,
                         });
                     }
                     setMessages(displayMsgs);
@@ -1788,7 +1797,7 @@ export default function ChatPage() {
                 // Without this reset, stale `loading` or `pendingApproval` state
                 // from the deleted session would keep the input permanently locked.
                 setSessionId(null);
-                setMessages([{ role: 'assistant', content: "Session deleted. Starting fresh! 🦎" }]);
+                setMessages([{ role: 'assistant', content: t('chat.sessionDeleted') }]);
                 setLoading(false);
                 setInput('');
                 setPastedImage(null);
@@ -1966,7 +1975,7 @@ export default function ChatPage() {
                     if (routing.shouldDispatch) {
                         // Inject a strong directive — the LLM will see this at the start of the context
                         // and call dispatch_subtasks as its very first action.
-                        const dispatchDirective = `\n\n⚡ AUTO-ROUTING ACTIVE: The system detected this as a multi-item parallel job (${routing.reason}).\nCRITICAL — Your VERY FIRST action MUST be to call dispatch_subtasks.\n- Do NOT process any items inline in chat.\n- Build one subtask per independent item.\n- First say: "🦁 Dispatching this as a Multi-Agent job so your chat stays free — check the Tasks tab for live progress!"\n- Then immediately call dispatch_subtasks with the full list of subtasks.`;
+                        const dispatchDirective = `\n\n⚡ AUTO-ROUTING ACTIVE: The system detected this as a multi-item parallel job (${routing.reason}).\nCRITICAL - Your VERY FIRST action MUST be to call dispatch_subtasks.\n- Do NOT process any items inline in chat.\n- Build one subtask per independent item.\n- First say: "🦁 Dispatching this as a Multi-Agent job so your chat stays free - check the Tasks tab for live progress!"\n- Then immediately call dispatch_subtasks with the full list of subtasks.`;
                         systemPromptOverride = (systemPromptOverride || '') + dispatchDirective;
                     }
                 } catch {
@@ -1984,7 +1993,7 @@ export default function ChatPage() {
                     ...prev.filter(m => m.role !== 'tool-status'),
                     {
                         role: 'tool-status',
-                        content: loopCount > 1 ? `Thinking... (step ${loopCount}/${MAX_LOOPS})` : 'Thinking...',
+                        content: loopCount > 1 ? `Thinking... (step ${loopCount}/${MAX_LOOPS})` : t('chat.thinking'),
                         toolsExecuting: ['thinking'],
                     }
                 ]);
@@ -2141,7 +2150,7 @@ export default function ChatPage() {
                             ...prev.filter(m => m.role !== 'tool-status'),
                         ]);
                         setLoading(false);
-                        return; // pause the agent loop — user must approve to continue
+                        return; // pause the agent loop - user must approve to continue
                     }
 
                     results = firstPassResults;
@@ -2247,7 +2256,7 @@ export default function ChatPage() {
                 if (loopCount >= MAX_LOOPS) {
                     cleaned.push({
                         role: 'assistant',
-                        content: `⚠️ Reached the step limit (${MAX_LOOPS} steps). Progress has been saved — ask me to continue and I'll pick up where I left off.`,
+                        content: `⚠️ Reached the step limit (${MAX_LOOPS} steps). Progress has been saved - ask me to continue and I'll pick up where I left off.`,
                     });
                 }
                 return cleaned;
@@ -2288,6 +2297,86 @@ export default function ChatPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loading]);
 
+    // ─── Replicate Model Catalogue ───────────────────────────────
+    const REPLICATE_IMAGE_MODELS = [
+        { id: 'black-forest-labs/flux-1.1-pro',       name: 'Flux 1.1 Pro',        description: 'High quality, fast' },
+        { id: 'black-forest-labs/flux-schnell',        name: 'Flux Schnell',         description: 'Fastest, good quality' },
+        { id: 'stability-ai/sdxl',                    name: 'Stable Diffusion XL',  description: 'Classic, versatile' },
+        { id: 'bytedance/sdxl-lightning-4step',       name: 'SDXL Lightning',       description: 'Ultra fast, 4 steps' },
+    ] as const;
+
+    const REPLICATE_VIDEO_MODELS = [
+        { id: 'minimax/video-01',        name: 'MiniMax Video',  description: 'Text to video' },
+        { id: 'tencent/hunyuan-video',   name: 'HunyuanVideo',   description: 'Open source video gen' },
+    ] as const;
+
+    // ─── Replicate Generation Handler ────────────────────────────
+    const handleGenerateReplicate = async () => {
+        if (!genPrompt.trim() || genLoading) return;
+        setGenLoading(true);
+        const prompt = genPrompt.trim();
+        const modelId = replicateUseCustom
+            ? replicateCustomModel.trim()
+            : (genMode === 'image' ? replicateImageModelId : replicateVideoModelId);
+
+        if (!modelId) {
+            setMessages(prev => [...prev, { role: 'assistant', content: '❌ Please select or enter a model.' }]);
+            setGenLoading(false);
+            return;
+        }
+
+        setMessages(prev => [...prev, {
+            role: 'user',
+            content: `${genMode === 'image' ? '🖼️' : '🎬'} Generate ${genMode} via Replicate (${modelId}): "${prompt}"`,
+        }]);
+        setMessages(prev => [...prev, {
+            role: 'tool-status',
+            content: `⚡ Generating with Replicate · ${modelId}…`,
+        }]);
+
+        try {
+            const res = await fetch('/api/replicate/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: modelId,
+                    input: { prompt },
+                    type: genMode,
+                }),
+            });
+            const data = await res.json();
+
+            setMessages(prev => prev.filter(m => m.role !== 'tool-status'));
+
+            if (!data.success || !data.outputUrl) {
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `❌ ${data.error || 'Generation failed'}`,
+                }]);
+            } else if (genMode === 'image') {
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `🖼️ **Generated Image** - "${prompt}"\n![Generated image](${data.outputUrl})\n\n*Model: ${modelId} · Powered by Replicate*`,
+                    imageUrl: data.outputUrl,
+                }]);
+            } else {
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `🎬 **Generated Video** - "${prompt}"\n\n📹 [Open Video](${data.outputUrl})\n\n*Model: ${modelId} · Powered by Replicate*`,
+                }]);
+            }
+        } catch (err: any) {
+            setMessages(prev => prev.filter(m => m.role !== 'tool-status'));
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `❌ Replicate generation failed: ${err.message}`,
+            }]);
+        }
+
+        setGenPrompt('');
+        setGenLoading(false);
+    };
+
     // ─── Generation Handler (Image / Video) ─────────────────────
     const handleGenerate = async () => {
         if (!genPrompt.trim() || genLoading) return;
@@ -2327,7 +2416,7 @@ export default function ChatPage() {
                     : '';
                 setMessages(prev => [...prev, {
                     role: 'assistant',
-                    content: `🖼️ **Generated Image** — "${prompt}"\n![Generated image](${dataUrl})\n\n*Style: ${genImageStyle} · Ratio: ${genImageRatio} · ${genImageModel === 'pro' ? 'Nano Banana Pro (Imagen 3)' : 'Nano Banana (Gemini Flash)'}*${savedNote}`,
+                    content: `🖼️ **Generated Image** - "${prompt}"\n![Generated image](${dataUrl})\n\n*Style: ${genImageStyle} · Ratio: ${genImageRatio} · ${genImageModel === 'pro' ? 'Nano Banana Pro (Imagen 3)' : 'Nano Banana (Gemini Flash)'}*${savedNote}`,
                     imageUrl: dataUrl,
                 }]);
             }
@@ -2378,7 +2467,7 @@ export default function ChatPage() {
                         if (pollResult.success && (pollResult.videoUri || pollResult.filename)) {
                             const videoContent = pollResult.filename
                                 ? `VIDEO_FILE:videos/${pollResult.filename}|${prompt}`
-                                : `🎬 **Generated Video** — "${prompt}"\n\n📹 [Open Video](${pollResult.videoUri})\n\n*Ratio: ${genVideoRatio} · Duration: ${genVideoDuration}s · Powered by Google Veo*`;
+                                : `🎬 **Generated Video** - "${prompt}"\n\n📹 [Open Video](${pollResult.videoUri})\n\n*Ratio: ${genVideoRatio} · Duration: ${genVideoDuration}s · Powered by Google Veo*`;
                             setMessages(prev => [...prev, {
                                 role: 'assistant',
                                 content: videoContent,
@@ -2397,7 +2486,7 @@ export default function ChatPage() {
                 }
             };
             setTimeout(poll, 8000);
-            return; // Don't set genLoading to false yet — poll handles it
+            return; // Don't set genLoading to false yet - poll handles it
         }
 
         setGenLoading(false);
@@ -2528,7 +2617,7 @@ export default function ChatPage() {
                     provider: selectedAgent !== 'skales' ? agents.find(a => a.id === selectedAgent)?.provider as any : undefined,
                     model: selectedAgent !== 'skales' ? agents.find(a => a.id === selectedAgent)?.model : undefined,
                     forceVision: true, // Auto-switch to vision-capable model if needed
-                    noTools: true,     // Don't offer tools — model must analyze the image directly
+                    noTools: true,     // Don't offer tools - model must analyze the image directly
                 });
 
                 // Better error message for vision issues
@@ -2538,9 +2627,9 @@ export default function ChatPage() {
                     errorContent = `🖼️ **Vision not available for the current model.**\n\nSwitch to a vision-capable model in **Settings → AI Provider**:\n- OpenRouter: \`openai/gpt-4o-mini\`\n- OpenAI: \`gpt-4o-mini\`\n- Anthropic: \`claude-3-5-haiku-20241022\`\n- Google: \`gemini-2.0-flash\``;
                 } else if (errLower.includes('model') && (errLower.includes('not found') || errLower.includes('pull') || errLower.includes('does not exist'))) {
                     // Ollama: model not installed
-                    errorContent = `🦙 **Vision model not installed in Ollama.**\n\nTo use vision locally, install a vision model:\n\`\`\`\nollama pull llava\n\`\`\`\nOr switch to **Google Gemini** (free) or **OpenAI** in Settings → AI Provider.\n\nℹ️ Google Gemini Flash supports vision for free — just add a Google API key in Settings.`;
+                    errorContent = `🦙 **Vision model not installed in Ollama.**\n\nTo use vision locally, install a vision model:\n\`\`\`\nollama pull llava\n\`\`\`\nOr switch to **Google Gemini** (free) or **OpenAI** in Settings → AI Provider.\n\nℹ️ Google Gemini Flash supports vision for free - just add a Google API key in Settings.`;
                 } else if (errLower.includes('api key') || errLower.includes('apikey') || errLower.includes('unauthorized') || errLower.includes('401')) {
-                    errorContent = `🔑 **No API key for vision provider.**\n\nVision requires a configured provider. Go to **Settings → AI Provider** and add:\n- Google API key (Gemini Flash — free tier available)\n- OpenAI API key (GPT-4o-mini)\n- Or install Ollama with \`ollama pull llava\``;
+                    errorContent = `🔑 **No API key for vision provider.**\n\nVision requires a configured provider. Go to **Settings → AI Provider** and add:\n- Google API key (Gemini Flash - free tier available)\n- OpenAI API key (GPT-4o-mini)\n- Or install Ollama with \`ollama pull llava\``;
                 }
 
                 const assistantMsg: DisplayMessage = {
@@ -2623,12 +2712,12 @@ export default function ChatPage() {
                     setAttachedFile({
                         name: file.name,
                         ext: 'pdf',
-                        content: `[PDF attached — text extraction unavailable. ${savedNote}. ${result.error || ''} Ask Skales to read it from Workspace or paste the text here.]`,
+                        content: `[PDF attached - text extraction unavailable. ${savedNote}. ${result.error || ''} Ask Skales to read it from Workspace or paste the text here.]`,
                         sizeKb,
                     });
                     setFileError(saveResult.success
-                        ? `📎 ${file.name} — couldn't extract text, but PDF was saved to Workspace. Ask Skales to read it!`
-                        : `📎 ${file.name} — ${result.error || 'Could not extract text from PDF.'}`);
+                        ? `📎 ${file.name} - couldn't extract text, but PDF was saved to Workspace. Ask Skales to read it!`
+                        : `📎 ${file.name} - ${result.error || 'Could not extract text from PDF.'}`);
                     setTimeout(() => setFileError(null), 8000);
                 }
             };
@@ -2658,7 +2747,7 @@ export default function ChatPage() {
                 const sizeKb = (file.size / 1024).toFixed(1);
                 // Limit to ~8000 chars to keep context manageable
                 const truncated = content.length > 8000
-                    ? content.slice(0, 8000) + '\n... [truncated — file is ' + sizeKb + ' KB]'
+                    ? content.slice(0, 8000) + '\n... [truncated - file is ' + sizeKb + ' KB]'
                     : content;
                 const ext = file.name.split('.').pop() || 'txt';
                 // Store as a proper attachment chip — NOT dumped into the input field
@@ -2674,7 +2763,7 @@ export default function ChatPage() {
         // Show an inline error chip near the input — NOT a fake Skales bubble
         const sizeKb = (file.size / 1024).toFixed(1);
         const ext = file.name.split('.').pop()?.toLowerCase() || '?';
-        setFileError(`📎 ${file.name} (${sizeKb} KB) — .${ext} files cannot be read directly. Save the file to the Workspace and ask Skales: "Read the file ${file.name}"`);
+        setFileError(`📎 ${file.name} (${sizeKb} KB) - .${ext} files cannot be read directly. Save the file to the Workspace and ask Skales: "Read the file ${file.name}"`);
         // Auto-dismiss after 6 seconds
         setTimeout(() => setFileError(null), 6000);
         e.target.value = '';
@@ -2715,7 +2804,7 @@ export default function ChatPage() {
 
                 {/* Loading text + dots */}
                 <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Starting Skales</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t('chat.loadingText')}</p>
                     <div className="flex items-center gap-1.5">
                         {[0, 1, 2, 3].map(i => (
                             <span key={i} className="w-1.5 h-1.5 rounded-full"
@@ -2773,7 +2862,7 @@ export default function ChatPage() {
                                             <p className="text-xs font-bold" style={{ color: selectedAgent === 'skales' ? '#84cc16' : 'var(--text-primary)' }}>
                                                 Skales (Default)
                                             </p>
-                                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Main AI buddy</p>
+                                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{t('chat.defaultAgentDesc')}</p>
                                         </div>
                                         {selectedAgent === 'skales' && <Icon icon={Check} size={14} className="text-lime-500 ml-auto" />}
                                     </button>
@@ -2815,12 +2904,12 @@ export default function ChatPage() {
                         onClick={handleNewSession}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 hover:bg-[var(--surface-light)]"
                         style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-                        aria-label="New session"
+                        aria-label={t('chat.input.newSession')}
                     >
                         <Icon icon={Plus} size={14} />
                         <span className="hidden md:inline">New</span>
                     </button>
-                    {/* ── Voice Chat toggle — shown when voice_chat skill is active ── */}
+                    {/* ── Voice Chat toggle - shown when voice_chat skill is active ── */}
                     {activeSkills.includes('voice_chat') && (
                         <button
                             onClick={() => isVoiceChatMode ? exitVoiceChat() : setIsVoiceChatMode(true)}
@@ -2862,12 +2951,12 @@ export default function ChatPage() {
                             <button
                                 onClick={async () => { try { setSessions(await listSessions()); } catch { /* ignore */ } }}
                                 className="p-1 rounded-lg hover:bg-[var(--surface-light)]"
-                                title="Refresh sessions"
-                                aria-label="Refresh sessions"
+                                title={t('chat.refreshSessions')}
+                                aria-label={t('chat.refreshSessions')}
                             >
                                 <Icon icon={Loader2} size={13} style={{ color: 'var(--text-muted)' }} />
                             </button>
-                            <button onClick={() => setShowSessions(false)} className="p-1 rounded-lg hover:bg-[var(--surface-light)]" aria-label="Close sessions panel">
+                            <button onClick={() => setShowSessions(false)} className="p-1 rounded-lg hover:bg-[var(--surface-light)]" aria-label={t('chat.closeSessions')}>
                                 <Icon icon={X} size={14} style={{ color: 'var(--text-muted)' }} />
                             </button>
                         </div>
@@ -2889,7 +2978,7 @@ export default function ChatPage() {
                                         <button
                                             onClick={(e) => handleDeleteSession(e, s.id)}
                                             className="p-1.5 rounded-lg text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10"
-                                            title="Delete Session"
+                                            title={t('chat.deleteSession')}
                                         >
                                             <Icon icon={Trash2} size={12} />
                                         </button>
@@ -2929,7 +3018,7 @@ export default function ChatPage() {
                             Multi-Agent running{multiAgentJobName ? `: ${multiAgentJobName}` : ''}
                         </p>
                         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                            Agents working in parallel — check&nbsp;
+                            Agents working in parallel - check&nbsp;
                             <Link href="/tasks" className="text-purple-400 hover:underline font-medium">Tasks</Link>
                             &nbsp;for live status. Messages typed now are queued.
                         </p>
@@ -2985,7 +3074,7 @@ export default function ChatPage() {
                 </div>
             )}
 
-            {/* Chat Area — memoized: does NOT re-render on every keystroke */}
+            {/* Chat Area - memoized: does NOT re-render on every keystroke */}
             <MessageListArea
                 messages={messages}
                 copiedIdx={copiedIdx}
@@ -3002,13 +3091,13 @@ export default function ChatPage() {
                     className="mx-auto max-w-3xl w-full px-4 md:px-6 mb-2 animate-fadeIn"
                     role="alertdialog"
                     aria-live="assertive"
-                    aria-label={`Approval required — ${pendingApproval.pendingIds.length} action${pendingApproval.pendingIds.length > 1 ? 's' : ''} need your confirmation`}
+                    aria-label={t('chat.approvalTitle', { count: pendingApproval.pendingIds.length, s: pendingApproval.pendingIds.length > 1 ? 's' : '' })}
                 >
                     <div className="rounded-2xl border p-4 space-y-3"
                         style={{ background: 'var(--surface)', borderColor: 'rgba(251,191,36,0.5)', boxShadow: '0 0 12px rgba(251,191,36,0.12)' }}>
                         <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: '#fbbf24' }}>
                             <span aria-hidden="true">⚠️</span>
-                            <span>Approval required — {pendingApproval.pendingIds.length} action{pendingApproval.pendingIds.length > 1 ? 's' : ''} need your confirmation</span>
+                            <span>{t('chat.approvalTitle', { count: pendingApproval.pendingIds.length, s: pendingApproval.pendingIds.length > 1 ? 's' : '' })}</span>
                         </div>
                         <div className="space-y-2">
                             {pendingApproval.messages.map((msg, i) => (
@@ -3023,14 +3112,14 @@ export default function ChatPage() {
                                 onClick={handleApproveTools}
                                 className="flex-1 py-2 rounded-xl text-sm font-bold transition-all hover:brightness-110"
                                 style={{ background: '#84cc16', color: '#000' }}
-                                aria-label="Approve and run the requested actions">
+                                aria-label={t('chat.approval.approveAndRun')}>
                                 ✅ Approve &amp; Run
                             </button>
                             <button
                                 onClick={handleDenyTools}
                                 className="flex-1 py-2 rounded-xl text-sm font-bold transition-all hover:brightness-110"
                                 style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}
-                                aria-label="Cancel and deny the requested actions">
+                                aria-label={t('chat.approval.cancelAndDeny')}>
                                 ✋ Cancel
                             </button>
                         </div>
@@ -3043,7 +3132,7 @@ export default function ChatPage() {
                 <div className="mx-auto max-w-3xl w-full px-6 mb-2">
                     <div className="rounded-xl border shadow-lg p-2 animate-scaleIn"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                        {SLASH_COMMANDS.map(c => (
+                        {getSlashCommands(t).map(c => (
                             <button key={c.cmd}
                                 onClick={() => handleSlashCommand(c.cmd)}
                                 className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--surface-light)] flex items-center gap-3 transition-colors">
@@ -3055,7 +3144,7 @@ export default function ChatPage() {
                 </div>
             )}
 
-            {/* ── Voice Chat Mode UI — replaces normal input when active ── */}
+            {/* ── Voice Chat Mode UI - replaces normal input when active ── */}
             {isVoiceChatMode && (
                 <div className="border-t shrink-0 flex flex-col items-center justify-center py-6 gap-4"
                     style={{ borderColor: 'var(--border)', background: 'var(--surface)', minHeight: '200px' }}>
@@ -3074,7 +3163,7 @@ export default function ChatPage() {
                                 color:      voiceMode === 'push-to-talk' ? '#84cc16' : 'var(--text-muted)',
                                 border:     voiceMode === 'push-to-talk' ? '1px solid rgba(132,204,22,0.35)' : '1px solid transparent',
                             }}
-                            title="Stop mic → message sent immediately"
+                            title={t('chat.input.stopMicImmediate')}
                         >
                             <Icon icon={Zap} size={12} />
                             Push-to-Talk
@@ -3090,7 +3179,7 @@ export default function ChatPage() {
                                 color:      voiceMode === 'review' ? '#818cf8' : 'var(--text-muted)',
                                 border:     voiceMode === 'review' ? '1px solid rgba(99,102,241,0.35)' : '1px solid transparent',
                             }}
-                            title="Stop mic → review transcript → tap Send"
+                            title={t('chat.input.stopMicReview')}
                         >
                             <Icon icon={Send} size={12} />
                             Review & Send
@@ -3101,7 +3190,7 @@ export default function ChatPage() {
                     {voiceMode === 'review' && pendingVoiceText && (
                         <div className="w-full max-w-sm mx-4 rounded-xl p-3 flex flex-col gap-2"
                             style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)' }}>
-                            <p className="text-xs font-medium" style={{ color: '#818cf8' }}>📝 Transcription — confirm before sending:</p>
+                            <p className="text-xs font-medium" style={{ color: '#818cf8' }}>📝 Transcription - confirm before sending:</p>
                             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>{pendingVoiceText}</p>
                             <div className="flex gap-2 mt-1">
                                 <button
@@ -3140,7 +3229,7 @@ export default function ChatPage() {
                                     onClick={() => { setPendingVoiceText(null); setVoiceStatus('idle'); }}
                                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                                     style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                                    title="Discard and record again"
+                                    title={t('chat.status.discardRecording')}
                                 >
                                     Discard
                                 </button>
@@ -3200,7 +3289,7 @@ export default function ChatPage() {
                 </div>
             )}
 
-            {/* Input Area — pb-safe handles iPhone home indicator + keyboard avoid */}
+            {/* Input Area - pb-safe handles iPhone home indicator + keyboard avoid */}
             {!isVoiceChatMode && <div className="border-t shrink-0"
                 style={{
                     borderColor: 'var(--border)',
@@ -3210,27 +3299,45 @@ export default function ChatPage() {
                 }}>
                 <div className="p-3 md:p-4 max-w-3xl mx-auto relative">
 
-                    {/* ── Generation Panel (above input) — toggled by Sparkles button ── */}
+                    {/* ── Generation Panel (above input) - toggled by Sparkles button ── */}
                     {showGenToolbar && (activeSkills.includes('image_generation') || activeSkills.includes('video_generation')) && (
                         <div className="mb-2 rounded-xl border p-3 space-y-3"
                             style={{ background: 'var(--background)', borderColor: 'rgba(132,204,22,0.25)' }}>
-                            {/* Mode tabs (Image / Video) */}
-                            {activeSkills.includes('image_generation') && activeSkills.includes('video_generation') && (
-                                <div className="flex gap-1.5">
-                                    {(['image', 'video'] as const).map(m => (
-                                        <button key={m} onClick={() => setGenMode(m)}
-                                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+                            {/* Top row: Mode tabs + Provider selector */}
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                {/* Mode tabs (Image / Video) */}
+                                {activeSkills.includes('image_generation') && activeSkills.includes('video_generation') && (
+                                    <div className="flex gap-1.5">
+                                        {(['image', 'video'] as const).map(m => (
+                                            <button key={m} onClick={() => setGenMode(m)}
+                                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+                                                style={{
+                                                    background: genMode === m ? 'rgba(132,204,22,0.15)' : 'var(--surface-light)',
+                                                    border: `1px solid ${genMode === m ? 'rgba(132,204,22,0.4)' : 'var(--border)'}`,
+                                                    color: genMode === m ? '#84cc16' : 'var(--text-muted)',
+                                                }}>
+                                                <Icon icon={m === 'image' ? ImageIcon : Video} size={11} />
+                                                {m === 'image' ? 'Image' : 'Video'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {/* Provider selector */}
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{t('chat.imageGen.provider')}:</span>
+                                    {(['google', 'replicate'] as const).filter(p => p === 'google' || !!settings?.replicate_api_token).map(p => (
+                                        <button key={p} onClick={() => setGenProvider(p)}
+                                            className="px-2 py-0.5 rounded text-[11px] font-medium transition-all"
                                             style={{
-                                                background: genMode === m ? 'rgba(132,204,22,0.15)' : 'var(--surface-light)',
-                                                border: `1px solid ${genMode === m ? 'rgba(132,204,22,0.4)' : 'var(--border)'}`,
-                                                color: genMode === m ? '#84cc16' : 'var(--text-muted)',
+                                                background: genProvider === p ? 'rgba(132,204,22,0.2)' : 'var(--surface)',
+                                                border: `1px solid ${genProvider === p ? 'rgba(132,204,22,0.4)' : 'var(--border)'}`,
+                                                color: genProvider === p ? '#84cc16' : 'var(--text-muted)',
                                             }}>
-                                            <Icon icon={m === 'image' ? ImageIcon : Video} size={11} />
-                                            {m === 'image' ? 'Image' : 'Video'}
+                                            {p === 'google' ? '🇬 Google' : '⚡ Replicate'}
                                         </button>
                                     ))}
                                 </div>
-                            )}
+                            </div>
 
                             {/* Prompt input */}
                             <div className="flex items-center gap-2">
@@ -3247,10 +3354,10 @@ export default function ChatPage() {
                                 />
                             </div>
 
-                            {/* Image options */}
-                            {genMode === 'image' && (
+                            {/* Google-specific options (hidden when Replicate selected) */}
+                            {genProvider === 'google' && genMode === 'image' && (
                                 <div className="flex flex-wrap items-center gap-2 pb-1 border-b" style={{ borderColor: 'rgba(132,204,22,0.15)' }}>
-                                    <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>Model:</span>
+                                    <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{t('chat.imageModelLabel')}</span>
                                     {(['standard', 'pro'] as const).map(m => (
                                         <button key={m} onClick={() => setGenImageModel(m)}
                                             className="px-2 py-0.5 rounded text-[11px] font-medium transition-all"
@@ -3270,7 +3377,7 @@ export default function ChatPage() {
                                     )}
                                 </div>
                             )}
-                            {genMode === 'image' && (
+                            {genProvider === 'google' && genMode === 'image' && (
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>Style:</span>
                                     {(['auto', 'photorealistic', 'digital-art', 'illustration', 'sketch'] as const).map(s => (
@@ -3299,8 +3406,8 @@ export default function ChatPage() {
                                 </div>
                             )}
 
-                            {/* Video options */}
-                            {genMode === 'video' && (
+                            {/* Google Video options */}
+                            {genProvider === 'google' && genMode === 'video' && (
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>Ratio:</span>
                                     {(['16:9', '9:16'] as const).map(r => (
@@ -3330,12 +3437,80 @@ export default function ChatPage() {
                                 </div>
                             )}
 
+                            {/* Replicate model selector */}
+                            {genProvider === 'replicate' && (
+                                <div className="space-y-2 pb-1 border-b" style={{ borderColor: 'rgba(99,102,241,0.2)' }}>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        <span className="text-[11px] font-medium self-center" style={{ color: 'var(--text-muted)' }}>
+                                            {t('chat.imageGen.replicateModel')}:
+                                        </span>
+                                        {(genMode === 'image' ? REPLICATE_IMAGE_MODELS : REPLICATE_VIDEO_MODELS).map(m => (
+                                            <button key={m.id}
+                                                onClick={() => {
+                                                    if (genMode === 'image') setReplicateImageModelId(m.id);
+                                                    else setReplicateVideoModelId(m.id);
+                                                    setReplicateUseCustom(false);
+                                                }}
+                                                title={m.description}
+                                                className="px-2 py-0.5 rounded text-[11px] font-medium transition-all"
+                                                style={{
+                                                    background: !replicateUseCustom && (genMode === 'image' ? replicateImageModelId : replicateVideoModelId) === m.id
+                                                        ? 'rgba(99,102,241,0.2)' : 'var(--surface)',
+                                                    border: `1px solid ${!replicateUseCustom && (genMode === 'image' ? replicateImageModelId : replicateVideoModelId) === m.id
+                                                        ? 'rgba(99,102,241,0.5)' : 'var(--border)'}`,
+                                                    color: !replicateUseCustom && (genMode === 'image' ? replicateImageModelId : replicateVideoModelId) === m.id
+                                                        ? '#818cf8' : 'var(--text-muted)',
+                                                }}>
+                                                {m.name}
+                                            </button>
+                                        ))}
+                                        {/* Custom model toggle */}
+                                        <button
+                                            onClick={() => setReplicateUseCustom(!replicateUseCustom)}
+                                            className="px-2 py-0.5 rounded text-[11px] font-medium transition-all"
+                                            style={{
+                                                background: replicateUseCustom ? 'rgba(99,102,241,0.2)' : 'var(--surface)',
+                                                border: `1px solid ${replicateUseCustom ? 'rgba(99,102,241,0.5)' : 'var(--border)'}`,
+                                                color: replicateUseCustom ? '#818cf8' : 'var(--text-muted)',
+                                            }}>
+                                            {t('chat.imageGen.customModel')}
+                                        </button>
+                                    </div>
+                                    {/* Custom model input */}
+                                    {replicateUseCustom && (
+                                        <input
+                                            type="text"
+                                            value={replicateCustomModel}
+                                            onChange={e => setReplicateCustomModel(e.target.value)}
+                                            placeholder={t('chat.imageGen.customModelPlaceholder')}
+                                            className="w-full p-2 rounded-lg text-xs outline-none"
+                                            style={{
+                                                background: 'var(--surface)',
+                                                border: '1px solid rgba(99,102,241,0.3)',
+                                                color: 'var(--text-primary)',
+                                            }}
+                                        />
+                                    )}
+                                    {/* Selected model hint */}
+                                    {!replicateUseCustom && (
+                                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                                            {(genMode === 'image' ? REPLICATE_IMAGE_MODELS : REPLICATE_VIDEO_MODELS)
+                                                .find(m => m.id === (genMode === 'image' ? replicateImageModelId : replicateVideoModelId))?.description}
+                                            {' · replicate.com'}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Footer: generate button + branding */}
                             <div className="flex items-center justify-between">
                                 <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                                    {genMode === 'image'
-                                        ? (genImageModel === 'pro' ? 'Nano Banana Pro · Google Imagen 3' : 'Nano Banana · Gemini 2.0 Flash')
-                                        : 'Google Veo 2 · Long-running operation'}
+                                    {genProvider === 'google'
+                                        ? (genMode === 'image'
+                                            ? (genImageModel === 'pro' ? 'Nano Banana Pro · Google Imagen 3' : 'Nano Banana · Gemini 2.0 Flash')
+                                            : 'Google Veo 2 · Long-running operation')
+                                        : `Replicate · ${replicateUseCustom ? (replicateCustomModel || '-') : (genMode === 'image' ? replicateImageModelId : replicateVideoModelId)}`
+                                    }
                                     {genOperationName && (
                                         <span className="ml-2 text-lime-400 font-medium flex items-center gap-1 inline-flex">
                                             <Icon icon={Loader2} size={10} className="animate-spin" /> Generating video…
@@ -3343,12 +3518,12 @@ export default function ChatPage() {
                                     )}
                                 </span>
                                 <button
-                                    onClick={handleGenerate}
-                                    disabled={!genPrompt.trim() || genLoading}
+                                    onClick={genProvider === 'replicate' ? handleGenerateReplicate : handleGenerate}
+                                    disabled={!genPrompt.trim() || genLoading || (genProvider === 'replicate' && replicateUseCustom && !replicateCustomModel.trim())}
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40 hover:brightness-110"
-                                    style={{ background: '#84cc16', color: 'black' }}>
+                                    style={{ background: genProvider === 'replicate' ? '#6366f1' : '#84cc16', color: genProvider === 'replicate' ? 'white' : 'black' }}>
                                     {genLoading
-                                        ? <><Icon icon={Loader2} size={13} className="animate-spin" /> Generating…</>
+                                        ? <><Icon icon={Loader2} size={13} className="animate-spin" /> {t('chat.imageGen.generating')}</>
                                         : <><Icon icon={Sparkles} size={13} /> Generate</>
                                     }
                                 </button>
@@ -3389,7 +3564,7 @@ export default function ChatPage() {
                             <button
                                 onClick={() => setAttachedFile(null)}
                                 className="w-4 h-4 bg-red-500 hover:bg-red-400 rounded-full flex items-center justify-center text-white ml-1 flex-shrink-0"
-                                title="Remove attachment"
+                                title={t('chat.input.removeAttachment')}
                             >
                                 <Icon icon={X} size={8} />
                             </button>
@@ -3415,14 +3590,14 @@ export default function ChatPage() {
                             style={{ borderColor: 'var(--border)' }}>
                             <button onClick={() => fileRef.current?.click()}
                                 className="p-2 rounded-xl transition-all hover:bg-[var(--surface-light)]"
-                                style={{ color: 'var(--text-muted)' }} title="Attach file">
+                                style={{ color: 'var(--text-muted)' }} title={t('chat.attachFile')}>
                                 <Icon icon={Paperclip} size={18} />
                             </button>
                             {(activeSkills.includes('image_generation') || activeSkills.includes('video_generation')) && (
                                 <button onClick={() => setShowGenToolbar(p => !p)}
                                     className="p-2 rounded-xl transition-all flex-shrink-0"
                                     style={{ background: showGenToolbar ? '#84cc16' : 'transparent', color: showGenToolbar ? 'black' : 'var(--text-muted)' }}
-                                    title="Image / Video generation">
+                                    title={t('chat.imageVideoGeneration')}>
                                     <Icon icon={Sparkles} size={18} />
                                 </button>
                             )}
@@ -3430,7 +3605,7 @@ export default function ChatPage() {
                                 <button onClick={handleSummarize}
                                     className="p-2 rounded-xl transition-all flex-shrink-0"
                                     style={{ background: isSummarizeActive ? 'rgba(132,204,22,0.12)' : 'transparent', color: isSummarizeActive ? '#84cc16' : 'var(--text-muted)', border: isSummarizeActive ? '1px solid rgba(132,204,22,0.3)' : '1px solid transparent' }}
-                                    title="Summarize">
+                                    title={t('chat.summarize.button')}>
                                     <Icon icon={FileSearch} size={18} />
                                 </button>
                             )}
@@ -3438,7 +3613,7 @@ export default function ChatPage() {
                                 onClick={() => { if (showSlash) { setShowSlash(false); if (input === '/') setInput(''); } else { setInput('/'); setShowSlash(true); inputRef.current?.focus(); } }}
                                 className="p-2 rounded-xl transition-all flex-shrink-0"
                                 style={{ background: showSlash ? 'rgba(132,204,22,0.12)' : 'transparent', color: showSlash ? '#84cc16' : 'var(--text-muted)', border: showSlash ? '1px solid rgba(132,204,22,0.3)' : '1px solid transparent' }}
-                                title="Commands">
+                                title={t('chat.openSlashCommands')}>
                                 <Icon icon={Slash} size={18} />
                             </button>
                         </div>
@@ -3456,31 +3631,31 @@ export default function ChatPage() {
                                 spellCheck={false}
                                 className="flex-1 bg-transparent border-none outline-none resize-none text-sm py-2 px-1 placeholder-[var(--text-muted)]"
                                 style={{ color: 'var(--text-primary)', maxHeight: '120px' }}
-                                aria-label="Message input"
+                                aria-label={t('chat.input.messageInput')}
                                 aria-multiline="true"
                             />
-                            {/* Send / Stop / Queue — mobile */}
+                            {/* Send / Stop / Queue - mobile */}
                             {loading && !isMultiAgentRunning ? (
                                 <div className="flex items-center gap-1.5 shrink-0">
-                                    <button onClick={handleStop} className="p-2.5 bg-red-500 hover:bg-red-400 rounded-xl text-white font-bold" title="Stop" aria-label="Stop generating">
+                                    <button onClick={handleStop} className="p-2.5 bg-red-500 hover:bg-red-400 rounded-xl text-white font-bold" title={t('chat.input.stop')} aria-label={t('chat.input.stopGenerating')}>
                                         <div className="w-4 h-4 bg-white rounded-sm" />
                                     </button>
                                     <button onClick={handleSendWithImage} disabled={!input.trim() && !pastedImage && !attachedFile}
                                         className="p-2.5 bg-amber-500 hover:bg-amber-400 rounded-xl text-black font-bold disabled:opacity-30"
-                                        aria-label="Queue message">
+                                        aria-label={t('chat.queueMessage')}>
                                         <Icon icon={Clock} size={18} />
                                     </button>
                                 </div>
                             ) : isMultiAgentRunning ? (
                                 <button onClick={handleSendWithImage} disabled={!input.trim() && !pastedImage && !attachedFile}
                                     className="p-2.5 bg-purple-500 hover:bg-purple-400 rounded-xl text-white font-bold disabled:opacity-30 shrink-0"
-                                    aria-label="Queue message (Multi-Agent running)">
+                                    aria-label={t('chat.queueMultiAgent')}>
                                     <Icon icon={Clock} size={18} />
                                 </button>
                             ) : (
                                 <button onClick={handleSendWithImage} disabled={!input.trim() && !pastedImage && !attachedFile}
                                     className="p-2.5 bg-lime-500 hover:bg-lime-400 rounded-xl text-black font-bold disabled:opacity-30 shrink-0"
-                                    aria-label="Send message">
+                                    aria-label={t('chat.send')}>
                                     <Icon icon={Send} size={18} />
                                 </button>
                             )}
@@ -3492,13 +3667,13 @@ export default function ChatPage() {
                             onClick={() => fileRef.current?.click()}
                             className="p-2.5 rounded-xl transition-all hover:bg-[var(--surface-light)]"
                             style={{ color: 'var(--text-muted)' }}
-                            title="Attach file"
-                            aria-label="Attach file"
+                            title={t('chat.attachFile')}
+                            aria-label={t('chat.attachFile')}
                         >
                             <Icon icon={Paperclip} size={18} />
                         </button>
 
-                        {/* Sparkles — Generation Skills (Image / Video) */}
+                        {/* Sparkles - Generation Skills (Image / Video) */}
                         {(activeSkills.includes('image_generation') || activeSkills.includes('video_generation')) && (
                             <button
                                 onClick={() => setShowGenToolbar(p => !p)}
@@ -3507,15 +3682,15 @@ export default function ChatPage() {
                                     background: showGenToolbar ? '#84cc16' : 'transparent',
                                     color: showGenToolbar ? 'black' : 'var(--text-muted)',
                                 }}
-                                title="Image / Video generation"
-                                aria-label="Image / Video generation"
+                                title={t('chat.imageVideoGeneration')}
+                                aria-label={t('chat.imageVideoGeneration')}
                                 aria-pressed={showGenToolbar}
                             >
                                 <Icon icon={Sparkles} size={18} />
                             </button>
                         )}
 
-                        {/* Summarize — toggle on/off like slash command */}
+                        {/* Summarize - toggle on/off like slash command */}
                         {activeSkills.includes('summarize') && (
                             <button
                                 onClick={handleSummarize}
@@ -3525,8 +3700,8 @@ export default function ChatPage() {
                                     color: isSummarizeActive ? '#84cc16' : 'var(--text-muted)',
                                     border: isSummarizeActive ? '1px solid rgba(132,204,22,0.3)' : '1px solid transparent',
                                 }}
-                                title="Summarize — click to toggle summarize prefix"
-                                aria-label="Toggle summarize mode"
+                                title={t('chat.summarize.tooltip')}
+                                aria-label={t('chat.toggleSummarize')}
                                 aria-pressed={isSummarizeActive}
                             >
                                 <Icon icon={FileSearch} size={18} />
@@ -3546,18 +3721,18 @@ export default function ChatPage() {
                                     : attachedFile
                                         ? `Add a question about ${attachedFile.name} (optional)...`
                                         : isMultiAgentRunning
-                                            ? `Multi-Agent running — type to queue your message...`
+                                            ? `Multi-Agent running - type to queue your message...`
                                             : `Message ${getActiveAgentName()}... (try: create a folder called test)`
                             }
                             rows={1}
                             spellCheck={false}
                             className="flex-1 bg-transparent border-none outline-none resize-none text-sm py-2.5 px-1 placeholder-[var(--text-muted)]"
                             style={{ color: 'var(--text-primary)', maxHeight: '150px' }}
-                            aria-label="Message input"
+                            aria-label={t('chat.input.messageInput')}
                             aria-multiline="true"
                         />
 
-                        {/* Slash Commands Toggle — opens command menu above input */}
+                        {/* Slash Commands Toggle - opens command menu above input */}
                         <button
                             onClick={() => {
                                 if (showSlash) {
@@ -3575,8 +3750,8 @@ export default function ChatPage() {
                                 color: showSlash ? '#84cc16' : 'var(--text-muted)',
                                 border: showSlash ? '1px solid rgba(132,204,22,0.3)' : '1px solid transparent',
                             }}
-                            title="Commands"
-                            aria-label="Open slash commands"
+                            title={t('chat.openSlashCommands')}
+                            aria-label={t('chat.openSlashCommands')}
                             aria-expanded={showSlash}
                         >
                             <Icon icon={Slash} size={18} />
@@ -3585,16 +3760,16 @@ export default function ChatPage() {
                         {/* Stop / Queue / Send Button */}
                         {loading && !isMultiAgentRunning ? (
                             <div className="flex items-center gap-1.5">
-                                {/* Stop button — aborts current + clears queue */}
+                                {/* Stop button - aborts current + clears queue */}
                                 <button
                                     onClick={handleStop}
                                     className="p-2.5 bg-red-500 hover:bg-red-400 rounded-xl text-white font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/20"
-                                    title="Stop generating and clear queue"
-                                    aria-label="Stop generating and clear queue"
+                                    title={t('chat.stop')}
+                                    aria-label={t('chat.stop')}
                                 >
                                     <div className="w-4 h-4 bg-white rounded-sm mb-0.5 mx-0.5" />
                                 </button>
-                                {/* Queue button — visible when user has typed something to queue */}
+                                {/* Queue button - visible when user has typed something to queue */}
                                 <button
                                     onClick={handleSendWithImage}
                                     disabled={!input.trim() && !pastedImage && !attachedFile}
@@ -3610,8 +3785,8 @@ export default function ChatPage() {
                                 onClick={handleSendWithImage}
                                 disabled={!input.trim() && !pastedImage && !attachedFile}
                                 className="p-2.5 bg-purple-500 hover:bg-purple-400 rounded-xl text-white font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-lg shadow-purple-500/20"
-                                title="Queue message (Multi-Agent running)"
-                                aria-label="Queue message (Multi-Agent running)"
+                                title={t('chat.queueMultiAgent')}
+                                aria-label={t('chat.queueMultiAgent')}
                             >
                                 <Icon icon={Clock} size={18} />
                             </button>
@@ -3620,7 +3795,7 @@ export default function ChatPage() {
                                 onClick={handleSendWithImage}
                                 disabled={!input.trim() && !pastedImage && !attachedFile}
                                 className="p-2.5 bg-lime-500 hover:bg-lime-400 rounded-xl text-black font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-lg shadow-lime-500/20"
-                                aria-label="Send message"
+                                aria-label={t('chat.send')}
                             >
                                 <Icon icon={Send} size={18} />
                             </button>
@@ -3637,13 +3812,13 @@ export default function ChatPage() {
                                     <Icon icon={Clock} size={12} />
                                     <span className="text-[11px] font-medium">
                                         {messageQueue.length} message{messageQueue.length > 1 ? 's' : ''} queued
-                                        {loading ? ' — will send when ready' : ''}
+                                        {loading ? ' - will send when ready' : ''}
                                     </span>
                                 </div>
                                 <button
                                     onClick={() => setMessageQueue([])}
                                     className="text-[10px] text-amber-600/70 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-400 transition-colors flex items-center gap-1"
-                                    title="Clear all queued messages"
+                                    title={t('chat.queue.clearAll')}
                                 >
                                     <Icon icon={X} size={11} />
                                     <span>Clear all</span>
@@ -3663,7 +3838,7 @@ export default function ChatPage() {
                                         <button
                                             onClick={() => setMessageQueue(prev => prev.filter((_, i) => i !== idx))}
                                             className="flex-shrink-0 text-amber-600/60 hover:text-amber-700 dark:text-amber-400/50 dark:hover:text-amber-400 transition-colors"
-                                            title="Remove from queue"
+                                            title={t('chat.queue.removeFromQueue')}
                                         >
                                             <Icon icon={X} size={11} />
                                         </button>
@@ -3691,7 +3866,7 @@ export default function ChatPage() {
                         ) : (
                             <>
                                 Type <code className="px-1 py-0.5 rounded bg-[var(--surface-light)] text-lime-500 text-[9px]">/</code> for commands · Shift+Enter for new line ·
-                                <span className="text-lime-500 font-medium"> {getActiveAgentName()}</span> — I can act, not just talk
+                                <span className="text-lime-500 font-medium"> {getActiveAgentName()}</span> - I can act, not just talk
                             </>
                         )}
                     </p>

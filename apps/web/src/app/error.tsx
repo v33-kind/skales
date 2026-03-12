@@ -28,7 +28,7 @@ export default function GlobalError({
         }}>
             <div style={{ fontSize: '48px' }}>🦎</div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-                Oops — something crashed
+                Oops - something crashed
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted, #888)', margin: 0, maxWidth: '320px' }}>
                 {error?.message && error.message !== 'An error occurred in the Server Components render.'

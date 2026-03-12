@@ -19,6 +19,7 @@ function calculate_entropy_offset(_buf?: Buffer): number {
 }
 const _ENTROPY_CHECK = calculate_entropy_offset();
 import { DATA_DIR } from '@/lib/paths';
+import { APP_VERSION } from '@/lib/meta';
 import { createFolder, listFiles, readFile, writeFile, deleteFile, executeCommand, fetchWebPage, extractText, getWorkspaceInfo, getSystemInfo } from './computer-use';
 import { createTask, listTasks, deleteTask, executeTask, createCronJob, listCronJobs, deleteCronJob } from './tasks';
 import { loadSettings, type Provider, type ProviderConfig } from './chat';
@@ -26,7 +27,9 @@ import { addLog } from './logs';
 import { loadVTConfig, scanAttachment } from './virustotal';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { spawn } from 'child_process';
+import { serverT } from '@/lib/server-i18n';
 
 // ─── Ollama Auto-Start ───────────────────────────────────────
 // Pings Ollama, starts it if not running, waits up to 10s, checks model.
@@ -326,6 +329,9 @@ const TOOL_SAFETY: Record<string, SafetyLevel> = {
     'read_mentions': 'auto',
     'read_timeline': 'auto',
     'reply_to_tweet': 'confirm',
+    // Explicitly gate the hallucinated tool so the LLM gets a clean error
+    // instead of silently auto-executing with the default fallback.
+    'create_document': 'confirm',
 };
 
 // ─── Tool Registry ──────────────────────────────────────────
@@ -385,6 +391,22 @@ const CORE_TOOLS: ToolDefinition[] = [
                     content: { type: 'string', description: 'Content to write to the file' }
                 },
                 required: ['path', 'content']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'create_document',
+            description: 'Create a text document and save it to the workspace. Accepts the document name/title and its text content. The file is saved under workspace/ and requires user approval. Use this when the user asks to create, draft, or write a document, note, report, or article.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    filename: { type: 'string', description: 'Filename for the document, e.g. "report.md" or "notes.txt". Include the extension.' },
+                    content:  { type: 'string', description: 'Full text content of the document.' },
+                    title:    { type: 'string', description: 'Optional document title (used as filename if filename is omitted).' },
+                },
+                required: ['content']
             }
         }
     },
@@ -1711,7 +1733,7 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Too
                     : '  (none installed)';
 
                 const displayMsg = [
-                    `⚙️ **Skales System Status — v5.5.0**`,
+                    `⚙️ **Skales System Status — v${APP_VERSION}**`,
                     `• Provider: ${activeProvider} (${activeModel}) — API Key: ${hasApiKey ? '✓ configured' : '✗ missing'}`,
                     `• Memory: ${memStats.total} items`,
                     `• Background Jobs: ${jobs.length} active`,
@@ -2134,6 +2156,19 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                         : `❌ Failed to write file: ${result.error}`,
                 };
             }
+            case 'create_document': {
+                // The LLM sometimes calls this non-existent tool.
+                // Alias it to write_file so the action actually completes rather than
+                // silently failing. Maps the LLM's flexible arg names to write_file's
+                // expected signature and saves into the workspace directory.
+                const filename   = (args.filename || args.name || args.title || 'document.md') as string;
+                const docContent = (args.content  || args.text || args.body  || '')            as string;
+                // Use a workspace-relative path unless the LLM already gave an absolute one
+                const filePath   = filename.startsWith('/') || /^[A-Za-z]:[/\\]/.test(filename)
+                    ? filename
+                    : `workspace/${filename}`;
+                return executeTool('write_file', { path: filePath, content: docContent });
+            }
             case 'delete_file': {
                 const result = await deleteFile(args.path);
                 return {
@@ -2256,7 +2291,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                 if (domainCheck.blocked) {
                     return {
                         toolName: name, success: false, result: null,
-                        displayMessage: `🚫 Access to **${domainCheck.domain}** is blocked by the security blacklist. This domain is restricted for safety reasons.`,
+                        displayMessage: serverT('system.errors.blacklisted', { domain: domainCheck.domain ?? '' }),
                     };
                 }
 
@@ -2277,7 +2312,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                 if (domainCheck.blocked) {
                     return {
                         toolName: name, success: false, result: null,
-                        displayMessage: `🚫 Access to **${domainCheck.domain}** is blocked by the security blacklist. This domain is restricted for safety reasons.`,
+                        displayMessage: serverT('system.errors.blacklisted', { domain: domainCheck.domain ?? '' }),
                     };
                 }
 
@@ -2389,7 +2424,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                     toolName: name,
                     success: true,
                     result,
-                    displayMessage: `✅ Task created: **${args.title}** (Priority: ${args.priority})`,
+                    displayMessage: serverT('system.tools.taskCreated', { title: args.title }),
                 };
             }
             case 'list_tasks': {
@@ -2795,7 +2830,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                         success: res.success,
                         result: res,
                         displayMessage: res.success
-                            ? `✉️ Email sent to **${to}** — Subject: "${subject}"`
+                            ? serverT('system.tools.emailSent', { recipient: to })
                             : `❌ Failed to send email: ${res.error}`,
                     };
                 } catch (e: any) {
@@ -2988,10 +3023,79 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                 try {
                     const settings = await loadSettings();
                     const googleApiKey = settings.providers.google?.apiKey;
+                    const replicateToken = (settings as any).replicate_api_token as string | undefined;
+                    const imageGenProvider = (settings as any).imageGenProvider as string | undefined;
+
+                    // Use Replicate if: no Google key, OR user explicitly set Replicate as preferred provider
+                    const useReplicate = replicateToken?.trim() && (!googleApiKey || imageGenProvider === 'replicate');
+
+                    if (useReplicate) {
+                        // ── Replicate image generation ──
+                        const imgPrompt = args.prompt as string;
+                        const replicateModel = 'black-forest-labs/flux-schnell'; // fast, good quality default
+                        try {
+                            const createRes = await fetch('https://api.replicate.com/v1/predictions', {
+                                method: 'POST',
+                                headers: {
+                                    Authorization: `Bearer ${replicateToken!.trim()}`,
+                                    'Content-Type': 'application/json',
+                                    'Prefer': 'wait',
+                                },
+                                body: JSON.stringify({ model: replicateModel, input: { prompt: imgPrompt } }),
+                                signal: AbortSignal.timeout(60_000),
+                            });
+                            if (!createRes.ok) {
+                                const errText = await createRes.text().catch(() => '');
+                                let errMsg = `HTTP ${createRes.status}`;
+                                try { errMsg = JSON.parse(errText)?.detail || errMsg; } catch { /* ignore */ }
+                                return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate image generation failed: ${errMsg}` };
+                            }
+                            const createData = await createRes.json();
+                            let output = createData.output;
+                            let predId = createData.id as string;
+
+                            // Poll if not immediately done
+                            if (createData.status !== 'succeeded' && predId) {
+                                const deadline = Date.now() + 60_000;
+                                while (Date.now() < deadline) {
+                                    await new Promise(r => setTimeout(r, 2000));
+                                    const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${predId}`, {
+                                        headers: { Authorization: `Bearer ${replicateToken!.trim()}` },
+                                        signal: AbortSignal.timeout(15_000),
+                                    });
+                                    if (!pollRes.ok) continue;
+                                    const pollData = await pollRes.json();
+                                    if (pollData.status === 'succeeded') { output = pollData.output; break; }
+                                    if (pollData.status === 'failed' || pollData.status === 'canceled') {
+                                        return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate image generation failed: ${pollData.error || 'unknown'}` };
+                                    }
+                                }
+                            }
+
+                            const imgUrl: string = Array.isArray(output) ? output[0] : (typeof output === 'string' ? output : '');
+                            if (!imgUrl) return { toolName: name, success: false, result: null, displayMessage: '❌ Replicate returned no image URL.' };
+
+                            // Save to workspace/images/
+                            const imagesDir = path.join(DATA_DIR, 'workspace', 'images');
+                            if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+                            const imgFilename = `replicate_img_${Date.now()}.png`;
+                            const imgBuf = await fetch(imgUrl, { signal: AbortSignal.timeout(30_000) }).then(r => r.arrayBuffer());
+                            fs.writeFileSync(path.join(imagesDir, imgFilename), Buffer.from(imgBuf));
+
+                            return {
+                                toolName: name, success: true,
+                                result: { filename: imgFilename, provider: 'replicate', model: replicateModel },
+                                displayMessage: `IMG_FILE:images/${imgFilename}|${imgPrompt}|auto|1:1`,
+                            };
+                        } catch (e: any) {
+                            return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate image generation failed: ${e.message}` };
+                        }
+                    }
+
                     if (!googleApiKey) {
                         return {
                             toolName: name, success: false, result: null,
-                            displayMessage: `❌ **Image generation requires a Google AI API key.**\n\nAdd it in **Settings → AI Provider → Google**. The same key used for Gemini works for image generation.`,
+                            displayMessage: `❌ **Image generation requires a Google AI API key** (or a Replicate API token).\n\nAdd one in **Settings → AI Provider → Google** or **Settings → Integrations → Replicate**.`,
                         };
                     }
                     const imgPrompt = args.prompt as string;
@@ -3057,10 +3161,76 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                 try {
                     const settings = await loadSettings();
                     const googleApiKey = settings.providers.google?.apiKey;
+                    const replicateToken = (settings as any).replicate_api_token as string | undefined;
+                    const imageGenProvider = (settings as any).imageGenProvider as string | undefined;
+
+                    // Use Replicate if: no Google key, OR user explicitly set Replicate as preferred provider
+                    const useReplicate = replicateToken?.trim() && (!googleApiKey || imageGenProvider === 'replicate');
+
+                    if (useReplicate) {
+                        // ── Replicate video generation (MiniMax Video) ──
+                        const vidPrompt = args.prompt as string;
+                        const replicateModel = 'minimax/video-01';
+                        try {
+                            const createRes = await fetch('https://api.replicate.com/v1/predictions', {
+                                method: 'POST',
+                                headers: {
+                                    Authorization: `Bearer ${replicateToken!.trim()}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ model: replicateModel, input: { prompt: vidPrompt } }),
+                                signal: AbortSignal.timeout(30_000),
+                            });
+                            if (!createRes.ok) {
+                                const errText = await createRes.text().catch(() => '');
+                                let errMsg = `HTTP ${createRes.status}`;
+                                try { errMsg = JSON.parse(errText)?.detail || errMsg; } catch { /* ignore */ }
+                                return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate video generation failed: ${errMsg}` };
+                            }
+                            const createData = await createRes.json();
+                            const predId = createData.id as string;
+                            if (!predId) return { toolName: name, success: false, result: null, displayMessage: '❌ Replicate did not return a prediction ID.' };
+
+                            // Poll for up to 2 minutes
+                            const videosDir = path.join(DATA_DIR, 'workspace', 'videos');
+                            if (!fs.existsSync(videosDir)) fs.mkdirSync(videosDir, { recursive: true });
+                            const deadline = Date.now() + 120_000;
+                            while (Date.now() < deadline) {
+                                await new Promise(r => setTimeout(r, 2000));
+                                const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${predId}`, {
+                                    headers: { Authorization: `Bearer ${replicateToken!.trim()}` },
+                                    signal: AbortSignal.timeout(15_000),
+                                }).catch(() => null);
+                                if (!pollRes?.ok) continue;
+                                const pollData = await pollRes.json();
+                                if (pollData.status === 'succeeded') {
+                                    const output = pollData.output;
+                                    const vidUrl: string = Array.isArray(output) ? output[0] : (typeof output === 'string' ? output : '');
+                                    if (!vidUrl) return { toolName: name, success: false, result: null, displayMessage: '❌ Replicate returned no video URL.' };
+                                    // Save video
+                                    const vidFilename = `replicate_vid_${Date.now()}.mp4`;
+                                    const vidBuf = await fetch(vidUrl, { signal: AbortSignal.timeout(60_000) }).then(r => r.arrayBuffer());
+                                    fs.writeFileSync(path.join(videosDir, vidFilename), Buffer.from(vidBuf));
+                                    return {
+                                        toolName: name, success: true,
+                                        result: { filename: vidFilename, provider: 'replicate', model: replicateModel },
+                                        displayMessage: `VIDEO_FILE:videos/${vidFilename}|${vidPrompt}`,
+                                    };
+                                }
+                                if (pollData.status === 'failed' || pollData.status === 'canceled') {
+                                    return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate video generation failed: ${pollData.error || 'unknown'}` };
+                                }
+                            }
+                            return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate video timed out after 2 minutes.` };
+                        } catch (e: any) {
+                            return { toolName: name, success: false, result: null, displayMessage: `❌ Replicate video generation failed: ${e.message}` };
+                        }
+                    }
+
                     if (!googleApiKey) {
                         return {
                             toolName: name, success: false, result: null,
-                            displayMessage: `❌ **Video generation requires a Google AI API key.**\n\nAdd it in **Settings → AI Provider → Google**.`,
+                            displayMessage: `❌ **Video generation requires a Google AI API key** (or a Replicate API token).\n\nAdd one in **Settings → AI Provider → Google** or **Settings → Integrations → Replicate**.`,
                         };
                     }
                     const vidPrompt = args.prompt as string;
@@ -3310,7 +3480,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                     toolName: name, success: result.success,
                     result,
                     displayMessage: result.success
-                        ? `🐦 **Tweet posted!**\n\n> ${args.text}`
+                        ? serverT('system.tools.tweetPosted')
                         : `❌ Failed to post tweet: ${result.error}`,
                 };
             }
@@ -3351,7 +3521,7 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                     toolName: name, success: result.success,
                     result,
                     displayMessage: result.success
-                        ? `🐦 **Reply posted!**\n\n> ${args.text}`
+                        ? serverT('system.tools.tweetReplied')
                         : `❌ Failed to post reply: ${result.error}`,
                 };
             }
@@ -3403,7 +3573,9 @@ async function callProviderWithTools(
     messages: { role: string; content: string }[],
     tools: ToolDefinition[],
     signal?: AbortSignal,
-    callTimeoutMs?: number
+    callTimeoutMs?: number,
+    /** When false (custom endpoint), the tools array is omitted — for models that don't support function calling */
+    customToolCallingEnabled?: boolean
 ): Promise<{
     success: boolean;
     response?: string;
@@ -3429,9 +3601,14 @@ async function callProviderWithTools(
         }
     }
 
-    // OpenAI-compatible: OpenRouter, OpenAI, Ollama, Groq
-    const baseUrl = config.baseUrl
+    // OpenAI-compatible: OpenRouter, OpenAI, Ollama, Groq, custom
+    let baseUrl = config.baseUrl
         || (provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://openrouter.ai/api/v1');
+    // Normalise custom endpoint base URL — append /v1 if the user omitted it
+    if (provider === 'custom' && baseUrl) {
+        const trimmed = baseUrl.trim().replace(/\/$/, '');
+        baseUrl = trimmed.endsWith('/v1') ? trimmed : trimmed + '/v1';
+    }
     const model = config.model || (provider === 'groq' ? 'llama-3.3-70b-versatile' : 'openai/gpt-4o-mini');
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -3474,13 +3651,15 @@ async function callProviderWithTools(
         return m;
     });
 
+    // For the custom provider with tool calling disabled, omit the tools array so
+    // models that don't support function calling don't crash or return garbage.
+    const includeTools = provider !== 'custom' || customToolCallingEnabled !== false;
     const body: any = {
         model,
         messages: formattedMessages,
         max_tokens: 4096,
         temperature: 0.7,
-        tools,
-        tool_choice: 'auto',
+        ...(includeTools ? { tools, tool_choice: 'auto' } : {}),
     };
 
     try {
@@ -3500,8 +3679,8 @@ async function callProviderWithTools(
 
         if (!response.ok) {
             const errorBody = await response.text();
-            if (response.status === 401) return { success: false, error: 'Invalid API key. Check Settings.' };
-            if (response.status === 429) return { success: false, error: 'Rate limited. Wait a moment.' };
+            if (response.status === 401) return { success: false, error: serverT('system.errors.apiKey') };
+            if (response.status === 429) return { success: false, error: serverT('system.errors.rateLimited') };
             return { success: false, error: `API Error (${response.status}): ${errorBody.slice(0, 300)}` };
         }
 
@@ -4200,7 +4379,7 @@ export async function agentDecide(
         const toolInstructions = `
 ## Your Role, Capabilities & Self-Awareness
 
-Hey there! 👋 You are Skales v5.5.0, the autonomous, proactive "Developer Buddy". You're not just a boring bot — you are a smart, warm, and humorous active thinker filled with energy and good vibes! 🚀
+Hey there! 👋 You are Skales v${APP_VERSION}, the autonomous, proactive "Developer Buddy". You're not just a boring bot — you are a smart, warm, and humorous active thinker filled with energy and good vibes! 🚀
 You have access to tools that allow you to interact with the user's REAL computer.
 When the user asks you to DO something (create files, folders, execute commands, check tasks, open websites, fix bugs), strictly USE the appropriate tools. DO NOT just describe what you would do — actually grab your digital tools and DO IT! 🛠️✨
 
@@ -4241,6 +4420,18 @@ WHEN A TOOL FAILS OR AN ACTION IS UNAVAILABLE — you MUST offer a concrete work
 - PROACTIVELY offer to fix configs using read_file/write_file when safe. Be a hero! 🦸‍♂️
 - Example: "Oops, the JSON config shows 'false'. Should I flip that to 'true' for you? 🛠️"
 
+### Proactive Behaviour Rules — CRITICAL 🧠
+These rules define how you think and behave BETWEEN explicit user requests. You are not a passive Q&A bot — you are an autonomous assistant that ANTICIPATES needs.
+
+1. **SELF-AWARENESS**: You know your own capabilities, settings, and configuration. Before saying "I can't", check your tools, skills, and config files. Use check_capabilities, read_file on settings.json, or check_system_status to verify.
+2. **ERROR RECOVERY**: When a tool call fails, do NOT stop. Analyse the error, try an alternative approach, fix the root cause if possible, and only ask the user if you've exhausted all options. Chain: retry → alternative tool → config fix → workaround → ask user.
+3. **SKILL CREATION**: When the user asks for something repeatedly that no built-in tool covers, PROACTIVELY offer to create a custom skill for it. Say: "I notice you do this often — want me to create a skill so I can do it instantly next time?"
+4. **FOLLOW-UP SUGGESTIONS**: After completing ANY task, suggest 1-2 logical next steps. Examples: after writing a file → "Want me to run/test it?"; after sending an email → "Should I schedule a follow-up reminder?"; after creating a task → "Want me to set a deadline notification?"
+5. **CONTEXT AWARENESS**: Always consider the FULL conversation history. Reference previous tasks, user preferences, and known projects when making suggestions. If the user mentioned a project name 5 messages ago, use it.
+6. **PROBLEM DETECTION**: When reading files, configs, or command outputs, actively LOOK for issues the user may not have noticed — stale configs, missing env vars, syntax errors, deprecated APIs, security risks. Flag them: "⚠️ I noticed [issue] while working on your request. Want me to fix it?"
+7. **CAPABILITY PROMOTION**: When a user manually does something that Skales could automate (e.g. manually checking emails, copying files, running scripts), gently suggest: "Did you know I can do that automatically? Want me to set it up?"
+8. **NEVER BE PASSIVE**: If the user says "I don't know" or seems stuck, make a concrete suggestion. If they give a vague request, make your best interpretation and act on it — then ask "Is this what you meant?" Don't ping-pong clarification questions.
+
 ### Important System Concepts: "Agents" vs "Tasks" (Crucial Distinction)
 - **Menu "Agents"**: This is strictly for creating specialized, separate AI assistants (like a dedicated Code Assistant, Writer, etc.) with their own custom system prompts and models. It is NOT for multi-agent tasking.
 - **Menu "Tasks"**: This is where **Multi-Agent Tasking** happens. If the user wants you to do parallel work (e.g., "Research 5 competitors simultaneously"), you use the dispatch_subtasks tool. The progress and results of these sub-agents will appear in the "Tasks" tab.
@@ -4266,6 +4457,47 @@ WHEN A TOOL FAILS OR AN ACTION IS UNAVAILABLE — you MUST offer a concrete work
 - Short-term (.skales-data/memory/short-term/), Long-term (.skales-data/memory/long-term/), Identity/Soul (.skales-data/identity/).
 - If someone asks "Do you remember...?" → call check_identity + check_system_status or read the memory files.
 - NEVER say "I have no memory".
+
+**📂 File Operations (create_folder, list_files, read_file, write_file, delete_file, create_document)**
+- Full local file system access: create, list, read, write, and delete files and folders.
+- Use write_file / create_document for producing content. Use read_file to inspect any file on disk.
+- NEVER say "I cannot access files".
+
+**🌐 Web Tools (search_web, fetch_web_page, extract_web_text, download_file)**
+- Search the internet, fetch and extract content from any URL, download files.
+- When the user asks "search for…", "look up…", "find info about…" → use search_web.
+- When the user shares a URL → use fetch_web_page or extract_web_text.
+
+**📧 Email (list_emails, send_email, reply_email, delete_email, move_email, mark_email_read, empty_trash)**
+- Full email management via IMAP/SMTP. List inbox, send new emails, reply, delete, move, and mark read.
+- Requires email accounts configured in Settings → Email. If not configured, tell the user.
+
+**⏰ Scheduling (schedule_recurring_task, list_scheduled_tasks, delete_scheduled_task)**
+- Create cron-based recurring tasks that run autonomously in the background.
+- Use for reminders, periodic checks, automated reports, or any repeating action.
+
+**🐦 Twitter/X (post_tweet, read_mentions, read_timeline, reply_to_tweet)**
+- Post tweets, read mentions and timeline, reply to tweets. Requires Twitter skill enabled.
+
+**💬 WhatsApp (send_whatsapp_message, send_whatsapp_media)**
+- Send text messages and media files via WhatsApp. Requires WhatsApp integration configured.
+
+**🌤️ Weather (get_weather)**
+- Get current weather and forecast for any location. No configuration needed.
+
+**📍 Google Places (search_places, get_directions, geocode_address)**
+- Search for places, get directions, geocode addresses. Requires Google Maps API key in Settings.
+
+**🔒 Security (scan_file_virustotal)**
+- Scan any file against VirusTotal for malware detection. Requires VirusTotal API key.
+
+**🎬 GIF (search_gif, send_gif_telegram)**
+- Search for GIFs (Tenor/Giphy) and optionally send them via Telegram.
+
+**📖 Self-Knowledge (check_capabilities, check_identity, check_system_status, update_capabilities, enable_skill, disable_skill, fetch_skales_docs)**
+- Inspect your own config, capabilities, identity, and system status at any time.
+- Enable/disable skills programmatically. Fetch Skales documentation for self-help.
+- Use these BEFORE saying "I don't know" or "I can't".
 
 **🤖 Multi-Agent Tasking (dispatch_subtasks — sidebar: Tasks) — CRITICAL RULE**
 
@@ -4447,7 +4679,11 @@ If you find yourself executing the same tool repeatedly without progress:
     // noTools: true skips tools entirely (used for vision-only calls where tool routing breaks image analysis)
     const availableTools = options?.noTools ? [] : await getAvailableTools();
 
-    const result = await callProviderWithTools(effectiveProvider, providerConfig, finalMessages, availableTools, options?.signal, options?.callTimeoutMs);
+    const result = await callProviderWithTools(
+        effectiveProvider, providerConfig, finalMessages, availableTools,
+        options?.signal, options?.callTimeoutMs,
+        effectiveProvider === 'custom' ? (settings.customEndpointToolCalling ?? false) : undefined
+    );
     const apiResponse = result.response || '';
     if (!result.success) {
         return {
@@ -4531,43 +4767,135 @@ function cleanJsonString(str: string): string {
 function buildApprovalMessage(name: string, args: Record<string, any>): string {
     switch (name) {
         case 'send_email':
-            return `📧 Send email to **${args.to}**\nSubject: "${args.subject}"`;
+            return serverT('system.approval.sendEmail', { to: args.to, subject: args.subject });
         case 'reply_email':
-            return `📧 Reply to email UID ${args.uid} on account "${args.account || 'default'}"`;
+            return serverT('system.approval.replyEmail', { uid: args.uid, account: args.account || 'default' });
         case 'delete_email':
-            return `🗑️ Delete email UID ${args.uid} from account "${args.account || 'default'}"`;
+            return serverT('system.approval.deleteEmail', { uid: args.uid, account: args.account || 'default' });
         case 'empty_trash':
-            return `🗑️ Empty trash for account "${args.account || 'default'}"`;
+            return serverT('system.approval.emptyTrash', { account: args.account || 'default' });
         case 'delete_file':
-            return `🗑️ Delete file: \`${args.path || args.filename}\``;
+            return serverT('system.approval.deleteFile', { path: args.path || args.filename });
         case 'write_file':
-            return `💾 Write file: \`${args.path || args.filename}\``;
+            return serverT('system.approval.writeFile', { path: args.path || args.filename });
+        case 'create_document':
+            return serverT('system.approval.createDocument', { filename: args.filename || args.name || args.title || 'document.md' });
+
         case 'execute_command':
-            return `⚡ Execute shell command:\n\`\`\`\n${args.command}\n\`\`\``;
+            return serverT('system.approval.executeCommand', { command: args.command });
         case 'create_calendar_event':
-            return `📅 Create calendar event: "${args.summary || args.title}"\nWhen: ${args.start || '?'}`;
+            return serverT('system.approval.createCalendar', { title: args.summary || args.title, start: args.start || '?' });
         case 'update_calendar_event':
-            return `📅 Update calendar event ID: ${args.eventId}`;
+            return serverT('system.approval.updateCalendar', { eventId: args.eventId });
         case 'delete_calendar_event':
-            return `📅 Delete calendar event ID: ${args.eventId}`;
+            return serverT('system.approval.deleteCalendar', { eventId: args.eventId });
         case 'post_tweet':
-            return `🐦 Post tweet:\n"${(args.text || '').slice(0, 200)}"`;
+            return serverT('system.approval.postTweet', { text: (args.text || '').slice(0, 200) });
         case 'reply_to_tweet':
-            return `🐦 Reply to tweet ${args.tweetId}:\n"${(args.text || '').slice(0, 200)}"`;
+            return serverT('system.approval.replyTweet', { tweetId: args.tweetId, text: (args.text || '').slice(0, 200) });
         case 'delete_task':
-            return `🗑️ Delete task: "${args.taskId || args.id}"`;
+            return serverT('system.approval.deleteTask', { taskId: args.taskId || args.id });
         case 'delete_scheduled_task':
-            return `🗑️ Delete scheduled task: "${args.taskId || args.id}"`;
+            return serverT('system.approval.deleteScheduledTask', { taskId: args.taskId || args.id });
         case 'browser_open':
-            return `🌐 Open browser and navigate to:\n${args.url}`;
+            return serverT('system.approval.browserOpen', { url: args.url });
         case 'dispatch_subtasks':
-            return `🤖 Dispatch ${(args.tasks || []).length} parallel sub-agent task(s)`;
+            return serverT('system.approval.dispatchSubtasks', { count: (args.tasks || []).length });
         case 'execute_task':
         case 'schedule_recurring_task':
-            return `⚙️ Execute task: "${args.goal || args.task || JSON.stringify(args).slice(0, 80)}"`;
+            return serverT('system.approval.executeTask', { goal: args.goal || args.task || JSON.stringify(args).slice(0, 80) });
         default:
-            return `🔧 Run tool **${name}** with: ${JSON.stringify(args).slice(0, 150)}`;
+            return serverT('system.approval.runTool', { name, args: JSON.stringify(args).slice(0, 150) });
     }
+}
+
+// ─── Advanced Mode: context-aware safety classification ─────────────────────
+// In Advanced mode, we downgrade 'confirm' to 'auto' for operations that are
+// clearly safe based on their arguments. Safe mode is unaffected (stays strict).
+// Unrestricted mode is unaffected (already bypasses the gate entirely).
+
+function getAdvancedSafety(toolName: string, args: Record<string, any>): SafetyLevel {
+    const _home = os.homedir().replace(/\\/g, '/').toLowerCase();
+    const _dataDir = DATA_DIR.replace(/\\/g, '/').toLowerCase();
+    const _workspace = `${_dataDir}/workspace`;
+
+    if (toolName === 'write_file' || toolName === 'create_document') {
+        const rawPath = String(args.path || args.filename || '').replace(/\\/g, '/').toLowerCase();
+        // Inside Skales workspace → always safe
+        if (rawPath.startsWith(_workspace) || rawPath.startsWith(_dataDir)) return 'auto';
+        // Inside common user directories (Desktop, Documents, Downloads)
+        const userSafeDirs = ['desktop', 'documents', 'downloads', 'schreibtisch', 'dokumente'];
+        for (const dir of userSafeDirs) {
+            if (rawPath.startsWith(`${_home}/${dir}`)) return 'auto';
+        }
+        // Relative paths default to workspace → safe
+        if (!path.isAbsolute(args.path || args.filename || '')) return 'auto';
+        // Anywhere else (system dirs, Program Files, etc.) → still confirm
+        return 'confirm';
+    }
+
+    if (toolName === 'execute_command') {
+        const cmd = String(args.command || '').trim().toLowerCase();
+        // Always-dangerous patterns → confirm regardless
+        const dangerousPatterns = [
+            /\brm\s+-r/i, /\bdel\s+\/[sfq]/i, /\brmdir\s+\/s/i,
+            /\bformat\b/i, /\bshutdown\b/i, /\brestart\b/i, /\breboot\b/i,
+            /\breg\s+(add|delete)/i, /\bnet\s+user/i, /\bnet\s+localgroup/i,
+            /\bdiskpart/i, /\bchkdsk/i, /\bsfc\b/i, /\bbcdedit/i,
+            /\bchmod\s+[0-7]{3,4}\s+\//i, /\bchown\b/i,
+            /\bkill\s+-9/i, /\btaskkill\b/i, /\bstop-process\b/i,
+            /\bnew-service\b/i, /\bsc\s+(delete|stop|config)/i,
+            /\bpowershell\s+-enc/i, /\biex\b/i, /\binvoke-expression\b/i,
+            /\bcurl\b.*\|\s*(sh|bash)/i, /\bwget\b.*\|\s*(sh|bash)/i,
+        ];
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(cmd)) return 'confirm';
+        }
+        // Harmless read-only / informational commands → auto
+        const harmlessPatterns = [
+            /^(echo|type|cat|head|tail|less|more)\s/i,
+            /^(dir|ls|get-childitem|tree)\b/i,
+            /^(pwd|cd|pushd|popd|set-location)\b/i,
+            /^(whoami|hostname|ipconfig|ifconfig|uname)\b/i,
+            /^(get-process|tasklist|ps\s|top\b|htop)\b/i,
+            /^(get-date|date|time)\b/i,
+            /^(node|npm|npx|python|pip|git)\s/i,
+            /^(mkdir|md|new-item)\s/i,
+            /^(where|which|get-command)\s/i,
+            /^(ping|nslookup|tracert|traceroute|curl\s)/i,
+            /^(systeminfo|ver|lsb_release)\b/i,
+        ];
+        for (const pattern of harmlessPatterns) {
+            if (pattern.test(cmd)) return 'auto';
+        }
+        // Everything else in Advanced mode → auto (user chose Advanced for a reason)
+        return 'auto';
+    }
+
+    if (toolName === 'delete_file') {
+        const rawPath = String(args.path || args.filename || '').replace(/\\/g, '/').toLowerCase();
+        // Only auto-allow deletes inside workspace
+        if (rawPath.startsWith(_workspace)) return 'auto';
+        // Everything else → confirm (deletes are inherently risky)
+        return 'confirm';
+    }
+
+    if (toolName === 'browser_open') {
+        // In Advanced mode, opening URLs is safe — the browser is sandboxed
+        return 'auto';
+    }
+
+    if (toolName === 'create_calendar_event' || toolName === 'update_calendar_event') {
+        // Calendar modifications still need approval even in Advanced
+        return 'confirm';
+    }
+
+    // All other 'confirm' tools: auto in Advanced mode
+    // (send_email, post_tweet, etc. still get 'confirm' from TOOL_SAFETY — this
+    //  function is only called when TOOL_SAFETY is 'confirm', so the truly dangerous
+    //  ones like send_email/post_tweet are handled by keeping them in TOOL_SAFETY as 'confirm'
+    //  and NOT adding them to any 'auto' path above.)
+    return 'confirm';
 }
 
 export async function agentExecute(
@@ -4623,9 +4951,20 @@ export async function agentExecute(
         // Check if this tool requires user confirmation before execution.
         // Skip the gate if the tool call ID has already been confirmed,
         // or if the user has enabled Unrestricted Mode in settings.
-        const toolSafety = TOOL_SAFETY[call.function.name] || 'auto';
+        //
+        // In Advanced mode, the gate is CONTEXT-AWARE:
+        //   - write_file inside workspace or user dirs (Desktop/Documents/Downloads) → auto
+        //   - execute_command with harmless commands → auto
+        //   - Dangerous operations always require approval regardless of mode
+        const toolSafety = TOOL_SAFETY[call.function.name] || 'confirm';
         const isConfirmed = confirmedToolCallIds?.includes(call.id);
-        if (toolSafety === 'confirm' && !isConfirmed && _safetyMode !== 'unrestricted') {
+
+        let effectiveSafety = toolSafety;
+        if (toolSafety === 'confirm' && _safetyMode === 'advanced' && !isConfirmed) {
+            effectiveSafety = getAdvancedSafety(call.function.name, args);
+        }
+
+        if (effectiveSafety === 'confirm' && !isConfirmed && _safetyMode !== 'unrestricted') {
             const confirmMsg = buildApprovalMessage(call.function.name, args);
             results.push({
                 toolName: call.function.name,

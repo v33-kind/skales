@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { APP_VERSION } from '@/lib/meta';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -31,12 +32,14 @@ import {
     Shield, Camera, Heart, Briefcase, Database, Mail, Bell, Bookmark, Calculator,
     Calendar, Compass, Cpu, Film, Hash, Headphones, Key, Layers, Link as LinkIcon, Lock,
     Map, Monitor, Package, PenTool, Rocket, Server, Terminal, TrendingUp, Tv,
-    Video, Palette, Gamepad2, Lightbulb, Megaphone, Eye, Activity,
+    Video, Palette, Gamepad2, Lightbulb, Megaphone, Eye, Activity, Bug,
 } from 'lucide-react';
 import { isEmoji } from '@/lib/skill-icons';
 import { shutdownServer } from '@/actions/system';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/lib/i18n';
+import BugReportModal from '@/components/bug-report-modal';
 
 interface SidebarProps {
     connected?: boolean;
@@ -137,6 +140,27 @@ export default function Sidebar({
     const [mounted, setMounted] = useState(false);
     const [activeSkills, setActiveSkills] = useState<Set<string>>(new Set());
     const [customSkillItems, setCustomSkillItems] = useState<CustomSkillNavItem[]>([]);
+    const [bugReportOpen, setBugReportOpen] = useState(false);
+    const { t } = useTranslation();
+
+    // Translated nav labels (keyed by href)
+    const NAV_LABELS: Record<string, string> = {
+        '/':              t('nav.dashboard'),
+        '/chat':          t('nav.chat'),
+        '/autopilot':     t('nav.autopilot'),
+        '/agents':        t('nav.agents'),
+        '/memory':        t('nav.memory'),
+        '/schedule':      t('nav.schedule'),
+        '/tasks':         t('nav.tasks'),
+        '/group-chat':    t('nav.groupChat'),
+        '/code':          t('nav.code'),
+        '/network':       t('nav.network'),
+        '/skills':        t('nav.skills'),
+        '/custom-skills': t('nav.customSkills'),
+        '/settings':      t('nav.settings'),
+        '/logs':          t('nav.logs'),
+        '/update':        t('nav.update'),
+    };
 
     useEffect(() => setMounted(true), []);
 
@@ -188,10 +212,10 @@ export default function Sidebar({
     const dynamicSkillItems = SKILL_NAV_ITEMS.filter(item => activeSkills.has(item.skillId));
 
     const handleShutdown = async () => {
-        if (confirm('Are you sure you want to stop Skales? Close and reopen the app to restart.')) {
+        if (confirm(t('sidebar.shutdown.confirm'))) {
             try {
                 await shutdownServer();
-                alert('Skales has been stopped. Close and reopen the app to restart.');
+                alert(t('sidebar.shutdown.alert'));
                 window.close();
             } catch (e) {
                 console.error('Shutdown failed:', e);
@@ -262,7 +286,7 @@ export default function Sidebar({
     return (
         <aside
             className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
-            aria-label="Application sidebar"
+            aria-label={t('sidebar.ariaLabel')}
         >
 
             {/* ── Logo / Brand ─────────────────────────────── */}
@@ -279,7 +303,7 @@ export default function Sidebar({
                             onClick={onToggle}
                             className="p-1.5 rounded-lg hover:bg-[var(--sidebar-hover)] transition-colors flex justify-center"
                             style={{ color: 'var(--text-muted)' }}
-                            aria-label="Expand sidebar"
+                            aria-label={t('sidebar.expandSidebar')}
                         >
                             <Icon icon={ChevronRight} size={20} />
                         </button>
@@ -306,7 +330,7 @@ export default function Sidebar({
                             onClick={onToggle}
                             className="p-1.5 rounded-lg hover:bg-[var(--sidebar-hover)] transition-colors"
                             style={{ color: 'var(--text-muted)' }}
-                            aria-label="Collapse sidebar"
+                            aria-label={t('sidebar.collapseSidebar')}
                         >
                             <Icon icon={ChevronLeft} size={20} />
                         </button>
@@ -333,11 +357,11 @@ export default function Sidebar({
                             : <Icon icon={WifiOff} size={14} className="text-red-400" />}
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold" style={{ color: connected ? '#22c55e' : '#ef4444' }}>
-                                {connected ? 'Connected' : 'Not Connected'}
+                                {connected ? t('sidebar.status.connected') : t('sidebar.status.notConnected')}
                             </p>
                             <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
                                 {activeProvider === 'ollama'
-                                    ? (connected ? 'Local AI' : 'Start Ollama?')
+                                    ? (connected ? t('sidebar.status.localAI') : t('sidebar.status.startOllama'))
                                     : activeProvider}
                             </p>
                         </div>
@@ -349,12 +373,12 @@ export default function Sidebar({
             <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5" aria-label="Main navigation">
 
                 {/* MENU */}
-                <SectionLabel label="Menu" />
+                <SectionLabel label={t('nav.sections.menu')} />
                 {MENU_ITEMS.map(item => (
                     <NavLink
                         key={item.href}
                         href={item.href}
-                        label={item.label}
+                        label={NAV_LABELS[item.href] || item.label}
                         icon={item.icon}
                         exact={item.href === '/'}
                         premium={(item as any).premium === true}
@@ -362,13 +386,13 @@ export default function Sidebar({
                 ))}
 
                 {/* SKILLS — core items always visible */}
-                <SectionLabel label="Skills" />
+                <SectionLabel label={t('nav.sections.skills')} />
                 {CORE_SKILL_ITEMS.map(item => (
-                    <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+                    <NavLink key={item.href} href={item.href} label={NAV_LABELS[item.href] || item.label} icon={item.icon} />
                 ))}
                 {/* Dynamic built-in skill items — only when the corresponding skill is enabled */}
                 {dynamicSkillItems.map(item => (
-                    <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+                    <NavLink key={item.href} href={item.href} label={NAV_LABELS[item.href] || item.label} icon={item.icon} />
                 ))}
                 {/* Dynamic custom skill items — only when custom skills have hasUI=true and are enabled */}
                 {customSkillItems.map(item => (
@@ -391,9 +415,9 @@ export default function Sidebar({
                 ))}
 
                 {/* SYSTEM */}
-                <SectionLabel label="System" />
+                <SectionLabel label={t('nav.sections.system')} />
                 {SYSTEM_ITEMS.map(item => (
-                    <NavLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+                    <NavLink key={item.href} href={item.href} label={NAV_LABELS[item.href] || item.label} icon={item.icon} />
                 ))}
                 {/* Docs — external link, stays inside System section */}
                 <a
@@ -405,13 +429,13 @@ export default function Sidebar({
                         color: 'var(--text-secondary)',
                         borderLeft: '3px solid transparent',
                     }}
-                    title={collapsed ? 'Docs' : undefined}
-                    aria-label="Documentation (opens in new tab)"
+                    title={collapsed ? t('nav.docs') : undefined}
+                    aria-label={t('sidebar.docsTitle')}
                 >
                     <Icon icon={BookOpen} size={collapsed ? 20 : 18} className="transition-transform group-hover:scale-110" />
                     {!collapsed && (
                         <>
-                            <span>Docs</span>
+                            <span>{t('nav.docs')}</span>
                             <Icon icon={Sparkles} size={12} className="ml-auto text-lime-500/50" />
                         </>
                     )}
@@ -428,25 +452,37 @@ export default function Sidebar({
                         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[var(--sidebar-hover)] w-full ${collapsed ? 'justify-center' : ''}`}
                         style={{ color: 'var(--text-muted)' }}
-                        title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
-                        aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                        title={collapsed ? (theme === 'dark' ? t('sidebar.theme.light') : t('sidebar.theme.dark')) : undefined}
+                        aria-label={theme === 'dark' ? t('sidebar.theme.switchToLight') : t('sidebar.theme.switchToDark')}
                     >
                         {theme === 'dark'
                             ? <Icon icon={Sun} size={collapsed ? 20 : 18} />
                             : <Icon icon={Moon} size={collapsed ? 20 : 18} />}
-                        {!collapsed && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+                        {!collapsed && <span>{theme === 'dark' ? t('sidebar.theme.light') : t('sidebar.theme.dark')}</span>}
                     </button>
                 )}
+
+                {/* Report Bug */}
+                <button
+                    onClick={() => setBugReportOpen(true)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-[var(--sidebar-hover)] w-full ${collapsed ? 'justify-center' : ''}`}
+                    style={{ color: 'var(--text-muted)' }}
+                    title={collapsed ? t('bugReport.sidebar') : undefined}
+                    aria-label={t('bugReport.sidebar')}
+                >
+                    <Icon icon={Bug} size={collapsed ? 20 : 18} />
+                    {!collapsed && <span>{t('bugReport.sidebar')}</span>}
+                </button>
 
                 {/* Stop Server */}
                 <button
                     onClick={handleShutdown}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-red-500/10 text-red-500 w-full ${collapsed ? 'justify-center' : ''}`}
-                    title={collapsed ? 'Stop Server' : undefined}
-                    aria-label="Stop Server"
+                    title={collapsed ? t('sidebar.stopServer') : undefined}
+                    aria-label={t('sidebar.stopServer')}
                 >
                     <Icon icon={Power} size={collapsed ? 20 : 18} />
-                    {!collapsed && <span>Stop Server</span>}
+                    {!collapsed && <span>{t('sidebar.stopServer')}</span>}
                 </button>
             </div>
 
@@ -454,10 +490,13 @@ export default function Sidebar({
             {!collapsed && (
                 <div className="px-5 py-3 border-t text-center" style={{ borderColor: 'var(--sidebar-border)' }}>
                     <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                        Skales v5.5.0
+                        {`Skales v${APP_VERSION}`}
                     </p>
                 </div>
             )}
+
+            {/* ── Bug Report Modal ─────────────────────────── */}
+            <BugReportModal open={bugReportOpen} onClose={() => setBugReportOpen(false)} />
         </aside>
     );
 }
