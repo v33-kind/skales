@@ -101,11 +101,11 @@ If you find this useful, a ⭐ helps others discover it
 
 ## 📦 Installation
 
-| Platform | Download |
-|---|---|
-| **Windows** | [Download for Windows](https://skales.app) |
-| **macOS (Apple Silicon)** | [Download for macOS (M1–M4)](https://skales.app) |
-| **macOS (Intel)** | [Download for macOS (Intel)](https://skales.app) |
+| Platform | Download | Guide |
+|---|---|---|
+| **Windows** | [Download for Windows](https://skales.app) | [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md) |
+| **macOS (Apple Silicon)** | [Download for macOS (M1–M4)](https://skales.app) | [INSTALL-MAC.md](INSTALL-MAC.md) |
+| **macOS (Intel)** | [Download for macOS (Intel)](https://skales.app) | [INSTALL-MAC.md](INSTALL-MAC.md) |
 
 1. Download for your platform from **[skales.app](https://skales.app)**
 2. Run the installer (EXE or DMG)
@@ -113,6 +113,14 @@ If you find this useful, a ⭐ helps others discover it
 4. Follow the setup wizard - add your API key and start chatting
 
 **No Terminal. No Node.js. No Docker. No npm.**
+
+> **macOS users:** After dragging Skales to Applications, run this once in Terminal to clear the Gatekeeper quarantine flag:
+> ```
+> sudo xattr -rd com.apple.quarantine /Applications/Skales.app
+> ```
+> See [INSTALL-MAC.md](INSTALL-MAC.md) for full details.
+
+> **Windows users:** If Windows SmartScreen shows a warning, click **More info** then **Run anyway**. See [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md) for details.
 
 ---
 
@@ -167,13 +175,13 @@ Output is in `dist/`.
 
 ---
 
-### What's New in v6.1.0 — "The Awakening"
+### What's New in v6.1.0 - "The Awakening"
 
 Autopilot is now a true autonomous agent. It generates recurring schedules from your goals,
 delivers daily stand-up reports via Telegram, pauses for approval instead of silently skipping,
 and lets you watch it think in real-time via the new Live Execution View.
 
-Meet **💧 Bubbles** — the new mascot skin. A playful blue blob that morphs into shapes.
+Meet **💧 Bubbles** - the new mascot skin. A playful blue blob that morphs into shapes.
 
 Plus: Feedback system, 13 bug fixes, GDPR telemetry fix, and a redesigned admin dashboard.
 

@@ -680,21 +680,24 @@
                     <ol class="step-list">
                         <li>Download <code>Skales-Setup-6.2.0.exe</code> from skales.app</li>
                         <li>Double-click the installer</li>
-                        <li>Windows may show <em>"Windows protected your PC"</em> - this appears because Skales is not code-signed yet (code signing costs $200–400/year). Click <strong>More info → Run anyway</strong>. This is safe.</li>
+                        <li>Windows SmartScreen may show <em>"Windows protected your PC"</em> - this appears because Skales is not yet signed with an EV certificate. Click <strong>More info</strong> then <strong>Run anyway</strong>. This is safe.</li>
                         <li>Skales installs and creates a Desktop shortcut</li>
                         <li>Launch Skales from the Desktop icon</li>
                     </ol>
+                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;">Full guide: <a href="https://github.com/skalesapp/skales/blob/main/INSTALL-WINDOWS.md" style="color: var(--accent-lime);">INSTALL-WINDOWS.md</a></p>
                 </div>
                 <div class="card">
                     <h3>🍏 macOS (Apple Silicon M1–M4)</h3>
                     <ol class="step-list">
                         <li>Download <code>Skales-6.2.0-arm64.dmg</code> from skales.app</li>
                         <li>Open the DMG and drag Skales into Applications</li>
-                        <li>First launch: macOS will say <em>"Skales can't be opened because it is from an unidentified developer"</em></li>
-                        <li>Fix: Right-click Skales in Applications → click <strong>Open</strong> → click <strong>Open</strong> in the dialog. This is only needed once.</li>
-                        <li>Why? Apple requires a $99/year Developer certificate for signed apps. As a solo indie developer, Skales doesn't have this yet.</li>
+                        <li>macOS will say <em>"Skales is damaged and can't be opened"</em> or <em>"unidentified developer"</em> - this is the Gatekeeper quarantine flag</li>
+                        <li>Open <strong>Terminal</strong> and run: <code>sudo xattr -rd com.apple.quarantine /Applications/Skales.app</code></li>
+                        <li>Launch Skales normally from Applications. This one-time command is only needed after first install.</li>
+                        <li>Why? Apple notarization costs $99/year. As an indie developer, Skales is not yet notarized. This is planned for a future release.</li>
                     </ol>
-                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;"><strong>Intel Mac:</strong> Download <code>Skales-5.0.0.dmg</code> instead - same steps.</p>
+                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;"><strong>Intel Mac:</strong> Download <code>Skales-6.2.0.dmg</code> instead - same steps.</p>
+                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;">Full guide: <a href="https://github.com/skalesapp/skales/blob/main/INSTALL-MAC.md" style="color: var(--accent-lime);">INSTALL-MAC.md</a></p>
                 </div>
             </div>
 
