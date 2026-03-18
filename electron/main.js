@@ -369,6 +369,24 @@ function createWindow() {
     return { action: 'deny' };
   });
 
+  // ── Context menu: enable copy/paste/cut/selectAll in editable fields ────────
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const { Menu, MenuItem } = require('electron');
+    const menu = new Menu();
+    if (params.selectionText) {
+      menu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+    }
+    if (params.isEditable) {
+      menu.append(new MenuItem({ label: 'Cut', role: 'cut' }));
+      menu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
+      menu.append(new MenuItem({ type: 'separator' }));
+      menu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
+    }
+    if (menu.items.length > 0) {
+      menu.popup({ window: mainWindow });
+    }
+  });
+
   // Minimize to tray on close
   mainWindow.on('close', (event) => {
     if (!app.isQuitting) {

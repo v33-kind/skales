@@ -1,5 +1,5 @@
 # electron-builder.yml
-# Skales v6.1.0 — Production Build Configuration
+# Skales v7.0.0 — Production Build Configuration
 # Docs: https://www.electron.build/configuration/configuration
 
 appId: app.skales.desktop
@@ -67,6 +67,7 @@ publish:
 
 # ── Windows ───────────────────────────────────────────────────────────────────
 win:
+  artifactName: "Skales-Setup-${version}.${ext}"
   target:
     - target: nsis
       arch: [x64]
@@ -98,6 +99,7 @@ nsis:
 
 # ── macOS ─────────────────────────────────────────────────────────────────────
 mac:
+  artifactName: "Skales-${version}-${arch}.${ext}"
   target:
     - target: dmg
       arch: [x64, arm64]
@@ -121,8 +123,8 @@ mac:
   # These keys are merged into the generated Info.plist inside the .app bundle.
   extendInfo:
     NSHumanReadableCopyright: "Copyright © 2026 Skales. All rights reserved."
-    CFBundleShortVersionString: "6.2.0"
-    CFBundleVersion: "6.2.0"
+    CFBundleShortVersionString: "7.0.0"
+    CFBundleVersion: "7.0.0"
     # Required for Login Items (auto-launch) via SMLoginItemSetEnabled / LSUIElement
     LSUIElement: false
     # Declare usage descriptions required by macOS privacy prompts
@@ -131,6 +133,27 @@ mac:
     # Disable App Transport Security for local-only HTTP server on localhost
     NSAppTransportSecurity:
       NSAllowsLocalNetworking: true
+
+# ── Linux ──────────────────────────────────────────────────────────────────────
+linux:
+  artifactName: "Skales-${version}-${arch}.${ext}"
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Utility
+  icon: electron/icons
+  desktop:
+    Name: Skales
+    Comment: AI Desktop Agent
+    Categories: Utility;Development;
+  extraResources:
+    - from: apps/web/node_modules
+      to: apps/web/node_modules
+      filter:
+        - "**/*"
+        - "!.cache/**"
 
 dmg:
   contents:

@@ -1,18 +1,20 @@
 <div align="center">
+
 If you find this useful, a ⭐ helps others discover it
    
 # 🦎 Skales
 
-### Your Local AI Agent - Desktop App for Windows & macOS
+### Your Local AI Agent - Desktop App for Windows, macOS & Linux
 
-[![Skales Demo](https://img.youtube.com/vi/8fXGsQGyxCU/maxresdefault.jpg)](https://youtube.com/watch?v=8fXGsQGyxCU)
+[![Skales Demo](https://img.youtube.com/vi/8fXGsQGyxCU/maxresdefault.jpg?=v7)](https://youtube.com/watch?v=8fXGsQGyxCU)
+
 **No Terminal. No Docker. No Node.js. No npm.**
 
-**Download. Install. Done**
+**Download. Install. Done.**
 
-[![Version](https://img.shields.io/badge/version-6.2.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
+[![Version](https://img.shields.io/badge/version-7.0.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
 [![License](https://img.shields.io/badge/license-BSL_1.1-1DB954?style=for-the-badge&labelColor=0D1117)](./LICENSE)
-[![Platform](https://img.shields.io/badge/Windows_+_macOS-1DB954?style=for-the-badge&labelColor=0D1117&logo=windows&logoColor=white)](https://skales.app)
+[![Platform](https://img.shields.io/badge/Windows_+_macOS_+_Linux-1DB954?style=for-the-badge&labelColor=0D1117&logo=windows&logoColor=white)](https://skales.app)
 [![GitHub](https://img.shields.io/badge/GitHub-skalesapp%2Fskales-1DB954?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)](https://github.com/skalesapp/skales)
 
 [**Download**](https://skales.app) · [**Documentation**](https://docs.skales.app) · [**Changelog**](./CHANGELOG.md)
@@ -25,11 +27,43 @@ If you find this useful, a ⭐ helps others discover it
 
 | | Others | Skales |
 |---|---|---|
-| **Setup** | Docker, Terminal, CLI | Download EXE/DMG, double-click |
-| **RAM** | 1.5–3GB+ | ~300MB |
-| **OS** | Linux / Docker required | Windows + macOS native |
+| **Setup** | Docker, Terminal, CLI | Download EXE/DMG/AppImage, double-click |
+| **RAM** | 1.5-3GB+ | ~300MB |
+| **OS** | Linux / Docker required | Windows + macOS + Linux native |
 | **Time to first agent** | Hours to days | 30 seconds |
-| **Updates** | Manual rebuild | One-click installer |
+| **Updates** | Manual rebuild | One-click auto-updater |
+
+---
+
+## 🆕 What's New in v7.0.0 - "The Foundation"
+
+**📅 Planner AI** - AI-powered daily scheduling. 8-step wizard learns your work patterns, generates time-blocked plans from your calendar events, and pushes them back. Day and week views.
+
+**📅 Calendar Abstraction** - Google Calendar, Apple Calendar (CalDAV/iCloud), and Outlook (Microsoft Graph API). All three work simultaneously.
+
+**🚀 FTP/SFTP Deploy** - Upload Lio AI projects to any FTP/SFTP server. Central profile management in Settings, per-project deploy config, incremental upload.
+
+**🧠 Proactive Desktop Buddy** - Your buddy observes calendar, email, tasks, and idle time. Meeting in 5 minutes? Buddy reminds you. End of day? Buddy summarizes what you accomplished. Rule-based, no LLM calls, respects quiet hours.
+
+**🦫 Capy Skin** - Meet the third Desktop Buddy: a needle-felted capybara. Three skins, three aesthetics: Skales (3D gecko), Bubbles (Pixar blob), Capy (wool yarn capybara).
+
+**🌍 7 Languages** - English, Deutsch, Espanol, Francais, Russian, Chinese (Simplified), Japanese. Full UI translation including onboarding.
+
+**🐧 Linux Beta** - AppImage and .deb builds for x64 Linux. Community-tested on Ubuntu.
+
+**🔄 Model Auto-Fetch** - Real-time model lists from OpenAI, Google, OpenRouter, Ollama APIs. No more hardcoded model IDs.
+
+**📨 Email Attachments** - Send files via the send_email tool. Sandbox-validated paths.
+
+**📋 Morning Briefing** - Daily digest of calendar events, pending tasks, unread emails.
+
+**📁 File Sandbox** - Three modes: Unrestricted, Workspace Only, Custom Folders.
+
+**🎨 Redesigned Onboarding** - 7-step wizard with Cloud/Local/Custom provider cards, Ollama auto-detect, model auto-fetch, buddy picker, safety mode selection.
+
+**⚙️ Settings Restructured** - 7 tabs (All, General, AI Providers, Integrations, Notifications, Security, Advanced). Right-click context menu for copy/paste.
+
+**💰 Skales+ Tiers** - Free Forever / Personal ($9/mo) / Business ($29/mo). All features free during beta.
 
 ---
 
@@ -37,9 +71,11 @@ If you find this useful, a ⭐ helps others discover it
 
 **🖥️ Native Desktop App** - Runs as a proper desktop application. System tray, auto-start, graceful shutdown. No browser needed.
 
-**Multi-Provider Hub** - 13+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Replicate (BYOK), Custom OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM), and local Ollama.
+**Multi-Provider Hub** - 13+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Minimax, Replicate (BYOK), Custom OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM, KoboldCpp), and local Ollama.
 
-**🦁 Lio AI - Code Builder** - Multi-AI code builder. Architect designs, Reviewer improves, Builder executes. Live preview. Build entire projects from plain language.
+**🦁 Lio AI - Code Builder** - Multi-AI code builder. Architect designs, Reviewer improves, Builder executes. Live preview. Build entire projects from plain language. Deploy to FTP/SFTP with one click.
+
+**📅 Planner AI** - AI-powered daily scheduling. Wizard learns your patterns. Generates plans. Day and week views. Push to Google/Apple/Outlook calendars.
 
 **🌐 Browser Control** - Headless Chromium automation via Playwright. Navigate, click, fill forms, scrape, screenshot any website.
 
@@ -47,9 +83,9 @@ If you find this useful, a ⭐ helps others discover it
 
 **💬 Telegram & WhatsApp** - Chat with Skales on the go. Full remote control via Telegram with admin menus.
 
-**📧 Gmail Integration** - Read, compose, reply, search, manage emails. IMAP/SMTP with safety gates.
+**📧 Email Integration** - Read, compose, reply, search, manage emails with attachments. IMAP/SMTP with safety gates. Multi-account support with per-mailbox whitelists.
 
-**📅 Google Calendar** - Read/write access via OAuth. Schedule events, get reminders.
+**📅 Calendar Integration** - Google Calendar (OAuth), Apple Calendar (CalDAV), Outlook (Microsoft Graph API). Read/write access, event reminders.
 
 **𝕏 Twitter/X Integration** - Post tweets, read timeline, reply to mentions. OAuth 1.0a.
 
@@ -63,37 +99,37 @@ If you find this useful, a ⭐ helps others discover it
 
 **🛑 Killswitch** - Emergency stop via dashboard, Telegram, or automatic trigger.
 
-**🌍 Multilingual** - Full UI in English, Deutsch (German), Espanol (Spanish), and Francais (French). Language picker on first launch.
+**🌍 Multilingual** - Full UI in 7 languages: English, Deutsch, Espanol, Francais, Russian, Chinese, Japanese. Language picker on first launch.
 
-**🎨 Image & Video Generation** - Google Imagen 3, Veo 2, Replicate SDXL, FLUX, and 50+ more models via your own Replicate API key.
+**🎨 Image & Video Generation** - Google Imagen 3, Veo 3, Replicate SDXL, FLUX, and 50+ more models via your own Replicate API key.
 
-**🔌 Custom AI Endpoint** - Connect any OpenAI-compatible local server (llama.cpp, LM Studio, vLLM, koboldcpp). Tool-calling toggle for local models.
+**🔌 Custom AI Endpoint** - Connect any OpenAI-compatible local server (llama.cpp, LM Studio, vLLM, KoboldCpp). Tool-calling toggle. Configurable Vision + TTS URLs. Uncapped timeout.
 
 **👑 Skales+** - Coming soon. Free tier stays free forever. Join the waitlist from Settings.
 
 **🔍 Live Web Search** - Real-time, cited search results via Tavily.
 
-**🗣️ Voice (TTS/STT)** - Speak to Skales and hear replies.
+**🗣️ Voice Chat** - Full duplex voice interface. Speak to Skales and hear replies via ElevenLabs TTS or browser speech synthesis. Whisper (Groq / OpenAI) for transcription.
 
-**🔒 Security** - Sandboxed file access, command blacklist, domain blocklist, VirusTotal scanning.
+**🔒 Security** - Sandboxed file access (3 modes), command blacklist, domain blocklist, VirusTotal scanning.
 
-**⭐ Autopilot** - Fully autonomous background agent. Conducts a Deep-Dive Interview, generates a Master Plan, executes tasks while you sleep. OODA self-correction loop rewrites tasks on new context. Human-in-the-loop approval gates for sensitive actions.
+**⭐ Autopilot** - Fully autonomous background agent. Deep-Dive Interview, Master Plan, OODA self-correction loop. Human-in-the-loop approval gates.
 
-**🎙️ Voice Chat** - Full duplex voice interface. Speak to Skales and hear replies via ElevenLabs TTS or browser speech synthesis. Whisper (Groq / OpenAI) for transcription.
+**🧠 Skill AI - Custom Skills** - Upload .skill.zip packages to add new capabilities. AI-generated skill scaffolding. Hot-reload without restart.
 
-**🧠 Skill AI - Custom Skill Ecosystem** - Upload .skill.zip packages to add completely new capabilities. AI-generated skill scaffolding. Hot-reload without restart. Isolated sandboxed execution.
+**📄 Document Generation** - Create Excel (.xlsx), Word (.docx), and PDF files from natural language.
 
-**📄 Document Generation** - Create Excel (.xlsx), Word (.docx), and PDF files from natural language. Output files saved to the workspace and linked in chat.
+**🗺️ Google Places** - Search nearby places, geocode addresses, get directions, fetch business details.
 
-**🗺️ Google Places** - Search nearby places, geocode addresses, get directions, fetch business details and photos via Google Places REST API.
+**📺 DLNA Media Casting** - Discover and cast media to smart TVs, speakers, and Chromecast on your network.
 
-**🌐 Network Scanner** - Discover all devices on your LAN. Detects other Skales instances on the same network.
+**🌐 Network Scanner** - Discover all devices on your LAN. Detects other Skales instances.
 
-**📺 Media Casting** - Cast any media URL to DLNA/UPnP renderers on your network (smart TVs, speakers, Chromecast).
+**🚀 FTP/SFTP Deploy** - Central server profile management. Deploy Lio AI projects with one click. Incremental upload.
 
-**🦎 Desktop Buddy** - A transparent, frameless Electron window that sits in the corner of your desktop. Animated mascot with a Finite State Machine (Intro → Idle → Action). Click to open a glassmorphism Spotlight input. Ask Skales anything - or ask it to do something. The buddy can execute tools (write files, send emails, browse, manage calendar) with Approve/Decline buttons directly in the speech bubble. No need to open the main window. Customizable skins: drop a folder in `public/mascot/`, and it appears in Settings. Enable in **Settings → Desktop App → 🦎 Desktop Buddy**.
+**🦎 Desktop Buddy** - Animated mascot on your desktop. 3 skins: Skales (gecko), Bubbles (blob), Capy (capybara). Proactive intelligence: meeting reminders, email alerts, end-of-day summaries. Click to open spotlight input. Approve/Decline tools directly in the speech bubble.
 
-**🤝 Agent-to-Agent Protocol** - `/api/agent-sync` endpoint for multi-Skales collaboration. Supports `ping`, `handshake`, `delegate`, and `status` operations so multiple Skales instances can coordinate on the same local network.
+**🤝 Agent-to-Agent Protocol** - `/api/agent-sync` endpoint for multi-Skales collaboration on the same network.
 
 **💾 Export / Import Backup** - One-click ZIP backup of all settings, memories, and integrations.
 
@@ -104,11 +140,12 @@ If you find this useful, a ⭐ helps others discover it
 | Platform | Download | Guide |
 |---|---|---|
 | **Windows** | [Download for Windows](https://skales.app) | [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md) |
-| **macOS (Apple Silicon)** | [Download for macOS (M1–M4)](https://skales.app) | [INSTALL-MAC.md](INSTALL-MAC.md) |
+| **macOS (Apple Silicon)** | [Download for macOS (M1-M4)](https://skales.app) | [INSTALL-MAC.md](INSTALL-MAC.md) |
 | **macOS (Intel)** | [Download for macOS (Intel)](https://skales.app) | [INSTALL-MAC.md](INSTALL-MAC.md) |
+| **Linux (Beta)** | [Download AppImage](https://skales.app) | See below |
 
 1. Download for your platform from **[skales.app](https://skales.app)**
-2. Run the installer (EXE or DMG)
+2. Run the installer (EXE, DMG, or AppImage)
 3. Skales opens as a desktop app
 4. Follow the setup wizard - add your API key and start chatting
 
@@ -122,6 +159,8 @@ If you find this useful, a ⭐ helps others discover it
 
 > **Windows users:** If Windows SmartScreen shows a warning, click **More info** then **Run anyway**. See [INSTALL-WINDOWS.md](INSTALL-WINDOWS.md) for details.
 
+> **Linux users (Beta):** Download the AppImage, make it executable (`chmod +x Skales-*.AppImage`), and run. Or install the .deb package. Desktop Buddy behavior may vary across different desktop environments. Feedback welcome!
+
 ---
 
 ## 🏗️ Architecture
@@ -129,13 +168,13 @@ If you find this useful, a ⭐ helps others discover it
 | Layer | Technology |
 |---|---|
 | **Desktop Shell** | Electron (main process, tray, auto-updater) |
-| **Frontend** | Next.js 15 (App Router, standalone output) |
+| **Frontend** | Next.js 14 (App Router, standalone output) |
 | **Styling** | Tailwind CSS |
 | **Language** | TypeScript |
 | **Bots** | Node.js (Telegram, WhatsApp, Discord) |
 | **Storage** | `~/.skales-data` (SQLite + JSON) |
 | **Updates** | electron-updater (auto, silent) |
-| **Build** | electron-builder (NSIS installer / DMG) |
+| **Build** | electron-builder (NSIS / DMG / AppImage / deb) |
 
 ---
 
@@ -146,77 +185,28 @@ If you find this useful, a ⭐ helps others discover it
 ### Prerequisites
 - Node.js 20+
 - npm 10+
-- macOS (for `.dmg` builds) or Windows (for `.exe` builds)
+- Windows (for `.exe`), macOS (for `.dmg`), or macOS/Linux (for `.AppImage` / `.deb`)
 
 ### Steps
 
 ```bash
-# 1. Install root dependencies
-npm install
-
-# 2. Build the Next.js frontend
-cd apps/web
+# 1. Install dependencies
 npm install --legacy-peer-deps
-npm run build
+cd apps/web && npm install --legacy-peer-deps && cd ../..
 
-# Copy standalone assets (required)
-cp -r .next/static       .next/standalone/.next/static
-cp -r public/*           .next/standalone/public/
-cp -r public/mascot/     .next/standalone/public/mascot/
+# 2. Bundle bots
+npm run bundle:bots
 
-cd ../..
+# 3. Build the Next.js frontend
+cd apps/web && npm run build && cd ../..
 
-# 3. Build the Electron app
-npm run build:mac   # macOS DMG
-npm run build:win   # Windows EXE (run on Windows)
+# 4. Build the Electron app
+npm run build:win     # Windows EXE
+npm run build:mac     # macOS DMG (Apple Silicon + Intel)
+npm run build:linux   # Linux AppImage + deb
 ```
 
 Output is in `dist/`.
-
----
-
-### What's New in v6.1.0 - "The Awakening"
-
-Autopilot is now a true autonomous agent. It generates recurring schedules from your goals,
-delivers daily stand-up reports via Telegram, pauses for approval instead of silently skipping,
-and lets you watch it think in real-time via the new Live Execution View.
-
-Meet **💧 Bubbles** - the new mascot skin. A playful blue blob that morphs into shapes.
-
-Plus: Feedback system, 13 bug fixes, GDPR telemetry fix, and a redesigned admin dashboard.
-
-## What's New in v6.0.2
-
-- **Telegram Approval Overhaul** - Text-based approval replaces unreliable inline keyboards. Unrestricted mode now correctly bypasses approval. Agent no longer hallucinates tool execution when blocked
-- **GDPR Telemetry Fix** - Zero network requests when telemetry opt-in is disabled. Defense-in-depth check at API route level
-- **Orphaned Tool Results** - Sanitization removes stale tool_result blocks before API calls, preventing 400 errors
-- **Replicate Image Save** - Generated images now properly download and save to workspace
-- **Bubbles Mascot** - New mascot skin: a blue liquid blob. Select in Settings → Desktop Buddy
-- **Telegram Reset** - New "Reset All" button purges all Telegram data for a fresh start
-
-## What's New in v6.0.1
-
-- **Agent Execution Mandate** - Agent now acts immediately instead of explaining what it could do. Platform-aware commands: PowerShell on Windows, bash on macOS
-- **Safety Mode Simplified** - Two levels only: Safe (all actions require approval) and Unrestricted (full autonomy)
-- **Approval Loop Fix** - After approval, the agent continues the ReAct loop until the task is complete
-- **Telegram Fixes** - Real messages instead of raw translation keys, Approve/Decline buttons fixed, markdown cleaned before sending
-- **Replicate API Fix** - Official models now use the correct endpoint
-- **Enhanced Telemetry** - Tool usage, provider, language, feature usage tracked (opt-in, with deduplication)
-
-## What's New in v6.0
-
-
-- **4 Languages** - Full UI in English, Deutsch, Espanol, and Francais. Language picker on first launch, switcher always in Settings
-- **Replicate (BYOK)** - 50+ image and video models with one API key. SDXL, FLUX, Stable Video Diffusion, and more
-- **Custom AI Endpoint** - Connect llama.cpp, LM Studio, vLLM, koboldcpp, or any OpenAI-compatible server. Includes tool-calling toggle for local models
-- **Buddy Tool Execution** - The Desktop Buddy can now DO things, not just answer questions. Write files, send emails, browse, manage calendar - all from the buddy overlay. Approve/Decline buttons appear inside the speech bubble for actions that need confirmation
-- **Dynamic Buddy Skins** - Full skin system. Create a folder in `public/mascot/<name>/`, add your .webm clips, restart Skales. The skin selector appears automatically in Settings when more than one skin is installed
-- **Anonymous Telemetry (opt-in)** - Off by default. Prompted during onboarding. Only collects: app version, OS type, start/crash events. No conversations, no API keys, no personal data
-- **In-app Bug Reporting** - Report Bug button in the sidebar. Reports sent to the developer with optional system info. Local fallback if offline
-- **Buddy Flicker Fix** - Eliminated 300-500ms blank flash between animations using direct DOM opacity sync with requestVideoFrameCallback
-- **Skales+ Teaser** - Tier comparison page with waitlist. All features stay free and unlocked during beta
-- **Approval System** - Tool safety default changed to 'confirm'. create_document tool added. Telegram inline buttons fixed
-- **Build Automation** - post-nextjs-build.js automates standalone asset copy and mascot folder verification
 
 ---
 
@@ -231,6 +221,10 @@ Contributions are welcome for bug fixes and non-commercial improvements.
 
 Please read the [BSL-1.1 license](./LICENSE) before contributing. All contributions are subject to the same license terms.
 
+### Contributors
+
+- **[@btafoya](https://github.com/btafoya)** - Linux support, first community contributor and Linux beta tester
+
 ---
 
 ## 🛡️ Privacy by Design
@@ -238,9 +232,9 @@ Please read the [BSL-1.1 license](./LICENSE) before contributing. All contributi
 - **BYOK (Bring Your Own Key):** API requests go directly from your machine to the provider. No middleman.
 - **Local-First Storage:** All data stays on your machine in `~/.skales-data`.
 - **Offline Capable:** With Ollama, Skales works entirely offline.
-- **Sandboxed Autonomy:** File operations run in a workspace sandbox.
+- **Sandboxed Autonomy:** File operations run in a configurable sandbox (Unrestricted / Workspace Only / Custom Folders).
 
-> ⚠️ Skales can browse the web, execute commands, and manage files on your behalf. Always review what you ask it to do.
+> Skales can browse the web, execute commands, and manage files on your behalf. Always review what you ask it to do.
 
 ---
 
@@ -248,9 +242,9 @@ Please read the [BSL-1.1 license](./LICENSE) before contributing. All contributi
 
 Skales started in early 2025 as a bloated Laravel SaaS project. I scrapped it all and rebuilt it as a native desktop app - the result is a local-first AI companion that feels like a real product, not a developer tool.
 
-I'm **Mario Simic** - 10+ years in Marketing & Design. I know how software should look and feel. I got tired of agents that require Terminal setups and Docker containers. So I built something better.
+I'm **Mario Simic** - 10+ years in Marketing & Design. I got tired of agents that require Terminal setups and Docker containers. So I built something better.
 
-### 🏆 Credits
+### Credits
 
 - **Claude & Google Gemini** - For powering the development workflow.
 - **OpenRouter** - The best hub for accessing the world's greatest LLMs.
@@ -265,15 +259,16 @@ I'm **Mario Simic** - 10+ years in Marketing & Design. I know how software shoul
 
 See [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md) for details.
 
-**Local AI Agent (Source Available) - v6.2.0 is the latest release under BSL-1.1.**
+**Local AI Agent (Source Available) - v7.0.0 "The Foundation" is the latest release under BSL-1.1.**
 
 ---
 
 <div align="center">
 
-**[skales.app](https://skales.app)** · [**GitHub**](https://github.com/skalesapp/skales) ·Built with ❤️ by **Mario Simic**
+**[skales.app](https://skales.app)** · [**GitHub**](https://github.com/skalesapp/skales)
 
+Built with ❤️ by **Mario Simic**
 
-*Not just an agent. Your desktop companion.* 🦎
+*Not just an agent. Your desktop companion.* 🦎💧🦫
 
 </div>

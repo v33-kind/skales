@@ -27,7 +27,8 @@
       "menu": "Menu",
       "skills": "Skills",
       "system": "Système"
-    }
+    },
+    "planner": "Planificateur"
   },
   "sidebar": {
     "ariaLabel": "Barre latérale de l'app",
@@ -237,6 +238,20 @@
       "visitApp": "Visiter skales.app (ouvre dans un nouvel onglet)",
       "screenQuestion": "Qu'y a-t-il sur mon écran ?"
     },
+    "ollama": {
+      "detected": "Ollama détecté",
+      "modelsAvailable": "{{count}} modèles disponibles",
+      "useOllama": "Utiliser Ollama",
+      "detect": "Détecter Ollama",
+      "detecting": "Vérification...",
+      "fetchModels": "Récupérer les modèles",
+      "fetching": "Chargement des modèles...",
+      "notRunning": "Ollama n'est pas en cours d'exécution",
+      "connectionFailed": "Impossible de se connecter à Ollama",
+      "helpText": "Vérifie qu'Ollama est en cours d'exécution. Essaie : ollama serve",
+      "macOSHelp": "brew services restart ollama",
+      "windowsHelp": "Vérifie l'icône Ollama dans la barre des tâches"
+    },
     "customEndpoint": {
       "title": "Personnalisé (compatible OpenAI)",
       "description": "Connecte-toi à n'importe quel endpoint compatible OpenAI - llama.cpp, LM Studio, vLLM, koboldcpp, text-generation-webui, et plus encore.",
@@ -253,7 +268,14 @@
       "testFailed": "Connexion échouée. Vérifie l'URL de l'endpoint.",
       "fetchModelsError": "Impossible de récupérer les modèles depuis l'endpoint",
       "noBaseUrl": "Entre d'abord une URL d'endpoint",
-      "noModel": "Entre ou sélectionne un nom de modèle"
+      "noModel": "Entre ou sélectionne un nom de modèle",
+      "visionSupport": "Prise en charge vision",
+      "visionHelp": "Activer si ce point de terminaison accepte des images dans les messages.",
+      "ttsUrl": "URL du point de terminaison TTS",
+      "ttsEnabled": "Facultatif. Pointe vers un point de terminaison /audio/speech compatible OpenAI pour la synthèse vocale.",
+      "timeout": "Délai d'attente de la requête",
+      "seconds": "secondes (min 5)",
+      "timeoutHint": "Pas de limite supérieure. Des valeurs plus élevées sont utiles pour les modèles lents ou les grandes réponses. Par défaut: 30s."
     },
     "buddySkin": "Skin du compagnon",
     "buddySkinDesc": "Choisis ton compagnon de bureau",
@@ -262,7 +284,128 @@
     "privacy": "Confidentialité",
     "privacyDesc": "Contrôle comment tes données sont utilisées",
     "enabled": "Activé",
-    "disabled": "Désactivé"
+    "disabled": "Désactivé",
+    "tabs": {
+      "general": "General",
+      "providers": "Fournisseurs IA",
+      "integrations": "Integrations",
+      "buddy": "Notifications",
+      "security": "Securite",
+      "advanced": "Avance",
+      "all": "Tous les parametres"
+    },
+    "sections": {
+      "aiProviders": "Fournisseurs IA",
+      "integrations": "Integrations",
+      "securityPrivacy": "Securite et confidentialite",
+      "restartNow": "Redemarrer maintenant"
+    },
+    "skinRestartRequired": "Skin modifie. Redemarrer pour appliquer.",
+    "restart": "Redemarrer",
+    "later": "Plus tard",
+    "subtitle": "Configurez vos fournisseurs IA, persona et integrations.",
+    "appearance": "Apparence",
+    "light": "Clair",
+    "dark": "Sombre",
+    "systemTheme": "Systeme",
+    "soulIdentity": "Ame / Identite systeme",
+    "friendMode": {
+      "title": "Mode ami",
+      "desc": "Skales prend contact de maniere proactive pour construire une relation avec vous.",
+      "frequency": "Quelle frequence ?",
+      "rarely": "Rarement",
+      "sometimes": "Parfois",
+      "often": "Souvent",
+      "onceDay": "~une fois/jour",
+      "fewDay": "~quelques/jour",
+      "hourly": "~toutes les heures",
+      "quietHours": "Heures calmes (pas de messages)",
+      "from": "De",
+      "until": "Jusqu'a",
+      "quietExample": "ex. 22 a 7 = pas de messages 22h-7h",
+      "whereReach": "Ou Skales doit-il contacter ?",
+      "dashboardChat": "Chat du tableau de bord",
+      "dashboardChatDesc": "Les messages apparaissent dans le chat lorsque le tableau de bord est ouvert",
+      "telegramDesc": "Skales vous envoie des messages directement sur Telegram",
+      "telegramFirst": "(connectez Telegram en premier)",
+      "whatsappSoon": "Bientot disponible",
+      "whatsappSoonDesc": "L'integration WhatsApp est prevue pour une prochaine version",
+      "helpText": "Le mode ami aide Skales a construire une memoire a long terme sur vous."
+    },
+    "buddyIntelligence": {
+      "title": "Intelligence du compagnon",
+      "toggleLabel": "Activer/desactiver l'intelligence du compagnon",
+      "desc": "Notifications proactives basees sur des regles : rappels de reunions, alertes de taches, resumes d'e-mails et plus encore."
+    },
+    "agentTasks": {
+      "title": "Agent et taches",
+      "timeout": "Delai d'attente des taches",
+      "timeoutDesc": "Duree maximale d'execution d'une tache d'agent. Par defaut : 5 minutes.",
+      "min": "1 min",
+      "default": "5 min (defaut)",
+      "max": "15 min",
+      "autonomousMode": "Mode autonome",
+      "autonomousModeDesc": "Lorsqu'il est active, Skales traite automatiquement les taches en attente.",
+      "safetyNote": "Le mode securite est actif - les taches systeme necessitent une approbation manuelle.",
+      "checkpointNote": "Lorsqu'une tache atteint 80% de son delai, Skales sauvegarde automatiquement un point de controle."
+    },
+    "export": {
+      "title": "Export et import",
+      "desc": "Sauvegardez votre configuration Skales complete.",
+      "backupBtn": "Exporter la sauvegarde",
+      "importBtn": "Importer la sauvegarde",
+      "exporting": "Export en cours...",
+      "importing": "Import en cours...",
+      "chooseFile": "Choisir le fichier de sauvegarde (.zip)"
+    },
+    "ftpSection": {
+      "hide": "Masquer",
+      "configure": "Configurer"
+    },
+    "calendar": {
+      "googleCalendar": "Google Agenda",
+      "configure": "Configurer",
+      "hide": "Masquer",
+      "disconnect": "Deconnecter"
+    },
+    "email": {
+      "sectionTitle": "E-mail (SMTP/IMAP)",
+      "addAccount": "Ajouter un compte",
+      "permissions": {
+        "readWrite": "Lire et ecrire",
+        "readOnly": "Lecture seule",
+        "writeOnly": "Ecriture seule"
+      }
+    },
+    "ftp": {
+      "title": "Profils FTP / SFTP",
+      "description": "Gérez vos profils de serveur FTP/SFTP de manière centralisée. Ces profils sont disponibles pour Lio AI et l’agent IA.",
+      "hide": "Masquer",
+      "configure": "Configurer",
+      "alias": "Nom du profil",
+      "aliasPlaceholder": "ex. Serveur de production",
+      "protocol": "Protocole",
+      "host": "Hôte / Serveur",
+      "port": "Port",
+      "username": "Identifiant",
+      "password": "Mot de passe",
+      "remotePath": "Chemin distant",
+      "testConnection": "Tester la connexion",
+      "testing": "Test en cours...",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "saved": "Profil enregistré avec succès",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer ce profil FTP ?",
+      "addProfile": "Ajouter un profil FTP",
+      "unnamed": "Profil sans nom",
+      "sftpWarning": "SFTP n’est pas pris en charge dans cette version. Le paquet ssh2 n’est pas installé. Utilisez FTP à la place.",
+      "infoBox": "Les profils FTP sont stockés localement et partagés entre Lio AI et les outils de l’agent IA. Les mots de passe sont stockés en toute sécurité sur votre machine."
+    },
+    "browser": {
+      "installFailed": "L'installation a échoué. Vérifiez que npm/npx est disponible.",
+      "manualInstallHint": "Essayez manuellement : npx playwright install chromium"
+    }
   },
   "onboarding": {
     "greeting": {
@@ -382,8 +525,54 @@
       "connectionOk": "Connexion réussie !",
       "connectionFail": "Connexion échouée - vérifie ta key",
       "stepTitle": "Aide à améliorer Skales",
-      "stepDesc": "Partage des données d'utilisation anonymes. Aucune donnée personnelle."
-    }
+      "stepDesc": "Partage des données d'utilisation anonymes. Aucune donnée personnelle.",
+      "summaryBuddy": "Compagnon",
+      "summarySafety": "Sécurité",
+      "summaryNote": "Skales mémorise cela pour vous offrir une aide meilleure et plus personnalisée. Modifiable à tout moment dans les Paramètres."
+    },
+    "chooseProvider": "Choisissez votre fournisseur IA",
+    "chooseProviderDesc": "Skales a besoin d'un modèle IA pour fonctionner. Choisissez l'option qui vous convient le mieux.",
+    "cloudLabel": "☁️ IA cloud",
+    "cloudDesc": "Utilisez une API hébergée d'OpenRouter, OpenAI, Anthropic et plus encore. Meilleures performances.",
+    "localLabel": "🦙 IA locale (Ollama)",
+    "localDesc": "Exécutez des modèles 100 % hors ligne sur votre machine. Aucune clé API requise.",
+    "customLabel": "🔧 Point de terminaison personnalisé",
+    "customDesc": "Connectez-vous à n'importe quel point de terminaison API compatible OpenAI.",
+    "selectCloudProvider": "Sélectionner le fournisseur :",
+    "apiKeyFor": "Clé API pour {{provider}} :",
+    "apiKeyOptional": "(facultatif  -  à ajouter plus tard dans les Paramètres)",
+    "detectOllama": "Détecter Ollama",
+    "detectingOllama": "Détection en cours...",
+    "ollamaDetected": "Ollama détecté !",
+    "ollamaNotFound": "Ollama introuvable. Est-il en cours d'exécution ?",
+    "ollamaSelectModel": "Sélectionner un modèle :",
+    "ollamaNoModels": "Aucun modèle téléchargé. Exécutez : ollama pull llama3",
+    "customEndpointUrl": "URL du point de terminaison :",
+    "customEndpointKey": "Clé API (facultatif) :",
+    "customEndpointPlaceholder": "https://api.example.com/v1",
+    "chooseBuddy": "Choisissez votre compagnon",
+    "chooseBuddyDesc": "Choisissez votre compagnon IA. Vous pouvez le modifier à tout moment dans les Paramètres.",
+    "skalesDesc": "Le gecko original. Rapide et affûté.",
+    "bubblesDesc": "Un compagnon bleu sympathique.",
+    "chooseSafety": "Mode de sécurité",
+    "chooseSafetyDesc": "Quelle liberté accordez-vous à Skales ? Choisissez Sécurisé pour une expérience équilibrée.",
+    "safeLabel": "🛡️ Mode sécurisé",
+    "safeDesc": "Protection équilibrée. Les actions destructrices nécessitent une confirmation. Recommandé.",
+    "advancedLabel": "⚡ Mode avancé",
+    "advancedDesc": "Moins de restrictions. Pour les utilisateurs expérimentés qui connaissent les risques.",
+    "unrestrictedLabel": "🔓 Sans restriction",
+    "unrestrictedDesc": "Aucun filtre de sécurité. À utiliser avec une extrême prudence.",
+    "placeholders": {
+      "name": "ex. Alex",
+      "occupation": "ex. Developpeur, Designer, Etudiant",
+      "goals": "ex. Creer une app, Apprendre l IA, Automatiser des taches",
+      "interests": "ex. Technologie, Musique, Cuisine"
+    },
+    "selectModel": "Choisir un modele",
+    "loadingModels": "Chargement des modeles...",
+    "selectModelHint": "Choisissez un modele avec au moins 32k de contexte pour de meilleurs resultats",
+    "noModelsFound": "Impossible de recuperer les modeles. Vous pouvez modifier cela plus tard dans les Parametres.",
+    "capyDesc": "Le compagnon IA le plus décontracté. Calme et confortable."
   },
   "memory": {
     "title": "Souvenirs et identité",
@@ -526,12 +715,13 @@
     "aiProvider": "Fournisseur IA",
     "lioAI": {
       "title": "Lio AI",
-      "desc": "Ton agent de code personnel - crée des apps complètes, corrige des bugs et écrit des scripts pour toi.",
+      "desc": "Votre agent de code personnel, propulse par Skales.",
       "enabled": "● Activé",
       "enable": "Activer Lio AI",
       "requires": "⚡ Requis : N'importe quel fournisseur LLM configuré",
       "credits": "💰 Utilise tes crédits API existants",
-      "open": "🦁 Ouvrir Lio AI"
+      "open": "🦁 Ouvrir Lio AI",
+      "detail": "Lio planifie, construit et livre - pendant que vous regardez. Deux IA collaborent sur l'architecture, puis un constructeur dedie cree votre projet etape par etape."
     },
     "form": {
       "createNew": "Créer un nouveau skill",
@@ -640,7 +830,8 @@
     "status": {
       "working": "Skill AI travaille…",
       "repairing": "Skill AI répare…"
-    }
+    },
+    "requires": "Necessite :"
   },
   "buddy": {
     "openChat": "Ouvrir le chat",
@@ -653,7 +844,8 @@
     "cancelled": "Annulé",
     "resultSummary": "Fait ! {{summary}}",
     "openChatDetails": "Ouvrir le Chat pour les détails",
-    "approvalNeeded": "Cette action nécessite ton accord :"
+    "approvalNeeded": "Cette action nécessite ton accord :",
+    "sandboxRestricted": "Accès aux fichiers restreint. Modifiez les paramètres du bac à sable dans Paramètres → Sécurité ou utilisez un autre chemin."
   },
   "tasks": {
     "title": "Tâches",
@@ -890,8 +1082,29 @@
       "titleOptional": "Titre (optionnel)",
       "cast": "Diffuser",
       "pause": "Pause",
-      "stop": "Arrêter"
-    }
+      "stop": "Arrêter",
+      "discoverDesc": "Recherche les lecteurs DLNA/UPnP sur votre reseau local (smart TVs, enceintes, lecteurs multimedia).",
+      "ssdpPhase": "SSDP multicast (5 s)...",
+      "unicastPhase": "Scan unicast des ports (peut prendre ~30 s)...",
+      "discoveryFailed": "Echec de la decouverte",
+      "noRenderersFound": "Aucun lecteur DLNA/UPnP trouve. Si votre TV est sur une autre bande Wi-Fi, le scan unicast devrait le trouver.",
+      "noRendererSelected": "Aucun lecteur selectionne",
+      "enterMediaUrl": "Entrez une URL de media a diffuser.",
+      "defaultTitle": "Skales Cast",
+      "actionFailed": "{{action}} echoue",
+      "actionSent": "{{action}} envoye a \"{{device}}\".",
+      "clickDiscoverHint": "Cliquez sur Decouvrir les appareils pour trouver des lecteurs DLNA/UPnP sur votre reseau.",
+      "presentationMode": "Mode Presentation (Bientot disponible)"
+    },
+    "scanFailed": "Echec du scan",
+    "scanTimeout": "Delai du scan depasse (10 s). Votre reseau est peut-etre lent.",
+    "hostScanFailed": "Echec du scan de l'hote",
+    "localIp": "IP locale",
+    "subnet": "Sous-reseau",
+    "gateway": "Passerelle",
+    "ports": "ports",
+    "open": "Ouvrir",
+    "selectScanHint": "Selectionnez un mode de scan et cliquez sur Lancer le scan."
   },
   "schedule": {
     "title": "Planification",
@@ -968,6 +1181,32 @@
     "input": {
       "placeholder": "Posez une question ou proposez un sujet de discussion...",
       "inProgress": "Discussion en cours..."
+    },
+    "page": {
+      "title": "Chat de groupe",
+      "participants": "participants",
+      "configure": "Configurer",
+      "notSaved": "Les discussions ne sont pas sauvegardées. Exportez en Markdown pour conserver une copie.",
+      "emptyTitle": "Démarrer une discussion de groupe",
+      "emptySubtitle": "Posez une question et {{count}} personas IA vont en débattre pendant {{rounds}} tours.",
+      "topicLabel": "Sujet",
+      "progress": "Tour {{round}}/{{total}} · {{name}} réfléchit...",
+      "roundLabel": "Tour",
+      "summaryLabel": "Résumé de la discussion",
+      "newDiscussion": "Nouvelle discussion",
+      "exportMd": "Exporter .md",
+      "stop": "Arrêter",
+      "discuss": "Discuter",
+      "inputHint": "Entrée pour démarrer · Maj+Entrée pour nouvelle ligne · {{participants}} participants × {{rounds}} tours = {{total}} appels API",
+      "responseError": "Impossible d'obtenir une réponse.",
+      "genericError": "Une erreur s'est produite.",
+      "serverError": "Erreur serveur",
+      "connectionError": "Erreur de connexion",
+      "discussionStopped": "La discussion a été arrêtée.",
+      "exportTitle": "Discussion de chat de groupe",
+      "exportTopic": "Sujet",
+      "exportDate": "Date",
+      "exportParticipants": "Participants"
     }
   },
   "update": {
@@ -1017,6 +1256,11 @@
     "security": "Sécurité :",
     "updateSettings": "Paramètres de mise à jour →"
   },
+  "updates": {
+    "autoUpdates": "Les mises à jour sont gérées automatiquement",
+    "autoUpdatesDescription": "Skales vérifie automatiquement les mises à jour en arrière-plan. Tu seras notifié lorsqu'une nouvelle version sera prête à installer.",
+    "checkNow": "Vérifier maintenant"
+  },
   "calendar": {
     "title": "Calendrier",
     "updated": "Mis à jour {{time}}",
@@ -1035,7 +1279,25 @@
     "allDay": "Toute la journée",
     "openInGoogle": "Ouvrir dans Google Calendar",
     "noEvents": "Aucun événement",
-    "nothingScheduled": "Rien de planifié dans les {{range}} prochains"
+    "nothingScheduled": "Rien de planifié dans les {{range}} prochains",
+    "apple": "Calendrier Apple",
+    "outlook": "Calendrier Outlook",
+    "multiProvider": "Événements de tous les calendriers connectés",
+    "provider": {
+      "google": "Google",
+      "apple": "Apple",
+      "outlook": "Outlook"
+    },
+    "connectionSuccess": "Connexion reussie",
+    "connectionFailed": "Connexion echouee",
+    "eventsToday": "evenements aujourd'hui",
+    "connected": "Connecte",
+    "appPasswordHelp": "Necessite un mot de passe specifique a l'application depuis appleid.apple.com. Votre mot de passe Apple ID principal ne fonctionnera pas ici.",
+    "caldavUrl": "URL CalDAV",
+    "appleId": "Apple ID (email)",
+    "appPassword": "Mot de passe specifique a l'app",
+    "connect": "Connecter",
+    "testConnection": "Tester la connexion"
   },
   "code": {
     "error": "Quelque chose s'est mal passé",
@@ -1043,7 +1305,63 @@
     "preview": "Aperçu",
     "previewEmpty": "L'aperçu apparaît une fois que index.html est construit",
     "projectComplete": "Projet terminé !",
-    "noHtmlPreview": "Aucun aperçu HTML disponible"
+    "noHtmlPreview": "Aucun aperçu HTML disponible",
+    "title": "Que voulez-vous construire ?",
+    "subtitle": "Decrivez votre idee - Lio planifie, construit et livre.",
+    "placeholder": "Decrivez votre projet... ex. Un jeu Snake avec des couleurs neon",
+    "quickIdeas": "Idees rapides",
+    "recentProjects": "Projets recents",
+    "resume": "Reprendre ?",
+    "view": "Voir",
+    "ideas": {
+      "snake": "Jeu Snake",
+      "portfolio": "Portfolio",
+      "dashboard": "Tableau de bord",
+      "productPage": "Page produit",
+      "blog": "Blog",
+      "apiServer": "Serveur API"
+    },
+    "planning": {
+      "title": "Lio AI - Planification :",
+      "cancel": "Annuler",
+      "architect": "Architecte",
+      "reviewer": "Reviseur",
+      "finalPlan": "Plan final",
+      "tech": "Tech",
+      "files": "Fichiers",
+      "steps": "Etapes",
+      "time": "Temps",
+      "cost": "Cout",
+      "complexity": "Complexite",
+      "letsBuild": "Construire !",
+      "modify": "Modifier",
+      "modifyPlaceholder": "Decrire les modifications du plan...",
+      "replan": "Replanifier"
+    },
+    "building": {
+      "header": "Construction :",
+      "progress": "{{percent}}% - Etape {{current}}/{{total}}",
+      "chatLabel": "Chat avec Lio",
+      "chatPlaceholder": "Rends-le bleu... Mode sombre...",
+      "live": "En direct"
+    },
+    "complete": {
+      "builtIn": "Construit en {{time}}",
+      "buildComplete": "Construction terminee",
+      "filesLabel": "fichiers",
+      "openFolder": "Ouvrir le dossier",
+      "downloadZip": "Telecharger ZIP",
+      "deploy": "Deployer",
+      "deployNow": "Deployer maintenant",
+      "edit": "Modifier",
+      "incremental": "(incrementiel)",
+      "requestChanges": "Demander des modifications",
+      "requestChangesDesc": "Decrivez ce a corriger ou ajouter - Lio mettra a jour les fichiers du projet.",
+      "iteratePlaceholder": "Mode sombre... Formulaire de connexion... Barre de recherche...",
+      "apply": "Appliquer",
+      "newProject": "Nouveau projet"
+    },
+    "ftpHint": "{{count}} profil(s) FTP configuré(s). Option de déploiement disponible après le build."
   },
   "system": {
     "approval": {
@@ -1187,13 +1505,13 @@
     "personal": {
       "name": "Skales+ Personnel",
       "subtitle": "Pour les utilisateurs avancés et les professionnels",
-      "price": "Bientôt disponible",
+      "price": "9 $",
       "button": "Rejoindre la liste d'attente"
     },
     "business": {
       "name": "Skales+ Business",
       "subtitle": "Pour les équipes et les agences",
-      "price": "Bientôt disponible",
+      "price": "29 $",
       "button": "Rejoindre la liste d'attente"
     },
     "features": {
@@ -1215,7 +1533,15 @@
       "auditLog": "Export du journal d'audit",
       "priorityRouting": "Routage API prioritaire",
       "invoicing": "Gestion des factures",
-      "whiteLabel": "Option marque blanche"
+      "whiteLabel": "Option marque blanche",
+      "sevenLanguages": "7 langues",
+      "customSkins": "Skins de compagnon personnalisés",
+      "extendedMemory": "Mémoire étendue et recherche de contexte",
+      "multiDevice": "Synchronisation multi-appareils",
+      "teamManagement": "Tableau de bord de gestion d'équipe",
+      "apiAccess": "Accès à l'API Skales",
+      "ftpDeploy": "Intégration déploiement FTP / SFTP",
+      "whiteLabelBuddy": "Compagnon marque blanche (branding personnalisé)"
     },
     "waitlist": {
       "emailPlaceholder": "ton@email.com",
@@ -1226,7 +1552,14 @@
     },
     "settingsLink": "Voir les plans",
     "settingsDesc": "Débloque des fonctionnalités avancées, une IA hébergée et un support prioritaire.",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "perMonth": "/ mois",
+    "currentPlan": "Plan actuel",
+    "joinWaitlist": "Rejoindre la liste d'attente",
+    "onWaitlist": "Vous êtes sur la liste d'attente !",
+    "waitlistNotify": "Nous vous préviendrons au lancement de Skales+.",
+    "popular": "Le plus populaire",
+    "betaNote": "Toutes les fonctionnalités sont disponibles pendant la bêta  -  rejoignez la liste d'attente pour bénéficier d'une remise de lancement."
   },
   "telemetry": {
     "title": "Aide à améliorer Skales",
@@ -1234,7 +1567,11 @@
     "optIn": "Oui, partager des statistiques anonymes",
     "optOut": "Non merci",
     "settingsLabel": "Partager des données d'utilisation anonymes",
-    "settingsSection": "Confidentialité"
+    "settingsSection": "Confidentialité",
+    "yesLabel": "Oui, partager des données d'utilisation anonymes",
+    "noLabel": "Non merci, rester privé",
+    "whatWeSend": "Ce que nous envoyons :",
+    "optInNote": "Uniquement les rapports de plantage et l'utilisation des fonctionnalités. Jamais l'historique de chat, les fichiers ni les clés API."
   },
   "bugReport": {
     "title": "Signaler un bug",
@@ -1264,7 +1601,14 @@
     "categoryOther": "Autre",
     "submitFeature": "Envoyer",
     "thankYouFeature": "Merci ! Nous allons examiner ta suggestion.",
-    "optInRequired": "Active la télémétrie dans les Réglages pour envoyer un avis."
+    "optInRequired": "Active la télémétrie dans les Réglages pour envoyer un avis.",
+    "enableTelemetry": "Activer la telemetrie maintenant",
+    "telemetryNote": "Envoie seulement : version de l app, OS, ID anonyme. Aucune conversation ou fichier.",
+    "telemetrySection": "Analyses anonymes",
+    "telemetrySectionDesc": "Partagez des donnees d'utilisation anonymes pour ameliorer Skales. Seuls la version de l'app, l'OS et un ID anonyme sont envoyes. Aucune conversation ni fichier.",
+    "telemetryOn": "Active",
+    "telemetryOff": "Desactive",
+    "telemetryHint": "Astuce : Activez la télémétrie, envoyez vos commentaires, puis désactivez-la si vous préférez."
   },
   "privacy": {
     "telemetryOff": "La telemetrie est desactivee. Skales n'envoie aucune donnee d'utilisation. Tout reste sur votre machine.",
@@ -1272,5 +1616,228 @@
     "telemetryToggle": "Telemetrie anonyme",
     "privacyFirst": "Confidentialite",
     "telemetryEnabled": "Telemetrie anonyme activee"
+  },
+  "email": {
+    "sendFrom": "Envoyer depuis :",
+    "availableAccounts": "Comptes disponibles :",
+    "noAccountFound": "Aucun compte trouvé pour l'adresse d'expéditeur demandée.",
+    "defaultAccount": "Compte par défaut"
+  },
+  "morningBriefing": {
+    "title": "Briefing Matinal",
+    "generate": "Générer le Briefing",
+    "generating": "Génération en cours...",
+    "deliveredTelegram": "Livré via Telegram",
+    "noTelegram": "Telegram non configuré",
+    "calendarSection": "Agenda d'aujourd'hui",
+    "tasksSection": "Vos tâches",
+    "emailSection": "E-mail",
+    "greeting": "Bonjour",
+    "noEvents": "Aucun événement aujourd'hui",
+    "inboxZero": "Boîte vide ! 🎉",
+    "unreadCount": "{{count}} message non lu",
+    "unreadCountPlural": "{{count}} messages non lus",
+    "error": "Impossible de générer le briefing matinal."
+  },
+  "fileAccess": {
+    "title": "Accès au Système de Fichiers",
+    "workspaceOnly": "Espace de Travail Uniquement",
+    "workspaceOnlyDesc": "Skales travaille exclusivement dans son propre dossier sandbox. Sécurisé et isolé.",
+    "unrestricted": "Sans Restriction",
+    "unrestrictedDesc": "Skales peut lire et écrire partout sur le disque local. Les dossiers système restent verrouillés.",
+    "unrestrictedWarning": "Accès complet actif. Skales peut lire et écrire des fichiers sur tout le disque. N'activez que si vous en avez vraiment besoin.",
+    "custom": "Dossiers Personnalisés",
+    "customDesc": "Skales ne peut accéder qu'aux dossiers spécifiques que vous indiquez ci-dessous.",
+    "allowedFolders": "Dossiers Autorisés",
+    "noFolders": "Aucun dossier ajouté. Skales n'utilisera que l'espace de travail.",
+    "addFolder": "Ajouter",
+    "addFolderPlaceholder": "/chemin/vers/dossier/autorisé"
+  },
+  "planner": {
+    "title": "Planificateur",
+    "subtitle": "Planning quotidien par IA",
+    "wizard": {
+      "title": "Configurer le Planificateur",
+      "subtitle": "Configurons votre planning quotidien idéal",
+      "dayStart": "À quelle heure commence votre journée ?",
+      "dayEnd": "À quelle heure se termine votre journée ?",
+      "workDays": "Quels jours travaillez-vous ?",
+      "regularTasks": "Quelles sont vos tâches quotidiennes ?",
+      "regularTasksPlaceholder": "ex. Tri des emails, Revue de code, Standup",
+      "fixedAppointments": "Des rendez-vous fixes quotidiens ?",
+      "fixedAppointmentsPlaceholder": "ex. Chercher les enfants à 16:00",
+      "focusHours": "Combien d'heures de concentration profonde ?",
+      "breakStyle": "Quel style de pause préférez-vous ?",
+      "breakPomodoro": "Pomodoro (25/5)",
+      "break90min": "Blocs de 90 min",
+      "breakFlexible": "Flexible",
+      "breakNone": "Sans pauses",
+      "preview": "Aperçu de vos préférences",
+      "next": "Suivant",
+      "back": "Retour",
+      "finish": "Commencer la planification",
+      "skip": "Passer pour le moment",
+      "allSet": "Tout est pret. Voici un apercu de votre plan",
+      "generateToday": "Generer le plan du jour",
+      "previewPlaceholder": "L'aperçu du planning apparaîtra ici.",
+      "generating": "Génération du plan…"
+    },
+    "dayView": {
+      "today": "Aujourd'hui",
+      "regenerate": "Régénérer le plan",
+      "pushToCalendar": "Envoyer au calendrier",
+      "noBlocks": "Aucun bloc planifié",
+      "generating": "Génération du plan...",
+      "pushed": "Plan envoyé au calendrier",
+      "pushFailed": "Échec de l'envoi du plan",
+      "rerunSetup": "Relancer la configuration",
+      "editPreferences": "Modifier les preferences",
+      "notSetUp": "Pas encore de plan. Configurez vos preferences pour commencer.",
+      "dayTab": "Jour",
+      "weekTab": "Semaine",
+      "mon": "Lundi",
+      "tue": "Mardi",
+      "wed": "Mercredi",
+      "thu": "Jeudi",
+      "fri": "Vendredi",
+      "sat": "Samedi",
+      "sun": "Dimanche",
+      "generateError": "Impossible de générer le planning. Vérifiez les paramètres du fournisseur d'IA."
+    },
+    "blockType": {
+      "focus": "Concentration",
+      "meeting": "Réunion",
+      "task": "Tâche",
+      "break": "Pause",
+      "fixed": "Fixe",
+      "free": "Libre"
+    },
+    "settings": {
+      "title": "Préférences du Planificateur",
+      "description": "Configurer vos préférences de planning",
+      "configured": "Configuré",
+      "save": "Enregistrer les préférences",
+      "openPlanner": "Ouvrir le Planificateur"
+    },
+    "editBlock": {
+      "title": "Modifier le bloc",
+      "delete": "Supprimer"
+    },
+    "deleteBlock": "Supprimer le bloc",
+    "blockDeleted": "Bloc supprimé",
+    "blockUpdated": "Bloc mis à jour",
+    "preferences": {
+      "title": "Préférences du Planificateur",
+      "dayStart": "Début de la journée",
+      "dayEnd": "Fin de la journée",
+      "workDays": "Jours de travail",
+      "focusHours": "Heures de concentration",
+      "breakStyle": "Style de pause",
+      "save": "Enregistrer",
+      "saved": "Préférences enregistrées avec succès"
+    },
+    "toast": {
+      "calendarPushSuccess": "blocs envoyés au calendrier",
+      "calendarPushError": "Erreur lors de l'envoi au calendrier",
+      "dismiss": "Fermer",
+      "errors": "erreurs"
+    },
+    "welcome": {
+      "title": "Planificateur IA",
+      "description": "Votre IA apprend vos habitudes de travail, lit votre calendrier et génère un planning quotidien personnalisé. L'assistant prend 2 minutes. Ou sautez-le pour saisir manuellement.",
+      "startWizard": "Démarrer l'assistant",
+      "skipToCalendar": "Aller au calendrier"
+    },
+    "noCalendarConfigured": "Aucun calendrier configuré. Configurez-en un dans Paramètres > Intégrations."
+  },
+  "ftp": {
+    "title": "Déploiement FTP",
+    "deploy": "Déployer",
+    "deploying": "Déploiement...",
+    "deployed": "Déployé avec succès",
+    "deployFailed": "Échec du déploiement",
+    "configure": "Configurer FTP",
+    "testConnection": "Tester la connexion",
+    "testSuccess": "Connexion réussie",
+    "testFailed": "Échec de la connexion",
+    "host": "Hôte FTP",
+    "port": "Port",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "remotePath": "Chemin distant",
+    "protocol": "Protocole",
+    "protocolFtp": "FTP",
+    "protocolSftp": "SFTP",
+    "sftpNotSupported": "SFTP non supporté dans cette version",
+    "saveConfig": "Enregistrer la configuration",
+    "lastDeployed": "Dernier déploiement {{time}}",
+    "loadFromProfile": "Charger depuis un profil..."
+  },
+  "buddyIntelligence": {
+    "title": "Intelligence du Buddy",
+    "description": "Notifications proactives basées sur des règles : rappels de réunions, alertes de tâches, résumés d'e-mails et plus  -  sans appels LLM.",
+    "enabled": "Activer l'Intelligence du Buddy",
+    "meetingReminder": "Rappels de réunions",
+    "meetingReminderDesc": "30 min avant les réunions",
+    "meetingPrep": "Préparation de réunion",
+    "meetingPrepDesc": "60 min avant (si description disponible)",
+    "taskComplete": "Tâches terminées",
+    "taskCompleteDesc": "Quand l'autopilote termine une tâche",
+    "taskBlocked": "Tâche bloquée",
+    "taskBlockedDesc": "Quand une tâche échoue après les tentatives",
+    "emailAlert": "Alertes e-mail",
+    "emailAlertDesc": "Quand les e-mails non lus s'accumulent",
+    "eodSummary": "Résumé de fin de journée",
+    "eodSummaryDesc": "Bilan de l'après-midi du travail accompli",
+    "idleCheckin": "Check-in d'inactivité",
+    "idleCheckinDesc": "Quand vous êtes absent 45+ min",
+    "morningGreeting": "Salut matinal",
+    "morningGreetingDesc": "Bonjour entre 7h et 9h",
+    "meetingIn": "Réunion dans {{minutes}} min",
+    "meetingPrepReady": "Préparation pour la prochaine réunion",
+    "blockedTasks": "{{count}} tâche(s) nécessitent attention",
+    "unreadEmails": "Vous avez {{count}} e-mails non lus",
+    "completedToday": "Super progrès ! {{count}} tâches terminées aujourd'hui",
+    "idleMessage": "Toujours là ? Vous avez {{count}} tâche(s) en attente",
+    "goodMorning": "Bonjour ! Prêt à attaquer la journée ?",
+    "fetchModels": "Récupérer les modèles disponibles",
+    "lastFetched": "Dernière récupération",
+    "modelsFound": "{{count}} modèles"
+  },
+  "settingsTabs": {
+    "general": "Général",
+    "providers": "Fournisseurs IA",
+    "integrations": "Intégrations",
+    "buddy": "Buddy",
+    "security": "Sécurité",
+    "advanced": "Avancé"
+  },
+  "disclaimer": {
+    "privacyTitle": "Confidentialite par conception - Architecture locale",
+    "privacyLocal": "Fonctionne 100% localement sur votre machine. Aucun serveur cloud Skales.",
+    "privacyTelemetry": "Pas de telemetrie par defaut. Vos donnees, historique de chat et fichiers ne transitent jamais par nos serveurs.",
+    "privacyBYOK": "Apportez vos propres cles (BYOK). Les cles API sont sauvegardees localement. Les modeles cloud communiquent directement avec leurs APIs.",
+    "privacyOffline": "Mode hors ligne : Selectionnez un modele Ollama et deconnectez-vous d internet pour un agent completement isole.",
+    "autonomyTitle": "Agent autonome - Comprenez les risques",
+    "autonomyExecute": "Skales peut executer des commandes terminal, lire et ecrire des fichiers, et naviguer sur le web.",
+    "autonomyCloud": "Avec les fournisseurs d IA cloud, Skales envoie le contexte necessaire au fournisseur que vous avez selectionne, pas a nous.",
+    "autonomySafeguards": "Skales dispose de protections integrees : dossiers systeme bloques, commandes destructives filtrees, actions critiques necessitant confirmation.",
+    "autonomyInjection": "Risque d injection de prompt : Du contenu malveillant pourrait tenter de detourner Skales. Ne l utilisez jamais avec des permissions elevees sur du contenu non fiable.",
+    "autonomyFileAccess": "Acces aux fichiers : Par defaut, Skales N est PAS limite a son dossier Workspace. Modifiable dans les Parametres."
+  },
+  "dashboard": {
+    "startupFailed": "Échec du démarrage",
+    "startupFailedHint": "Essayez de redémarrer Skales ou vérifiez les journaux de console.",
+    "goToSettings": "Aller aux paramètres",
+    "updateAvailable": "est disponible -",
+    "viewUpdate": "Voir la mise à jour",
+    "connections": {
+      "aiBrain": "Cerveau IA",
+      "localAI": "IA locale (Ollama)",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp",
+      "active": "Actif",
+      "off": "Désactivé"
+    }
   }
 }

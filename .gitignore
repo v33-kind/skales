@@ -187,3 +187,5 @@ temp/
 *.backup
 *.bak
  
+# Skills
+skills-lock.json

@@ -24,18 +24,20 @@ import en from '@/locales/en.json';
 // ─── Supported locales ────────────────────────────────────────────────────────
 
 export interface LocaleInfo {
-    code: string;  // BCP 47 language tag, e.g. 'en', 'de', 'es'
-    name: string;  // Human-readable name in its own language
+    code: string;   // BCP 47 language tag, e.g. 'en', 'de', 'es'
+    name: string;   // Human-readable name in its own language
+    flag?: string;  // Emoji flag (optional)
 }
 
 export const SUPPORTED_LOCALES: LocaleInfo[] = [
-    { code: 'en', name: 'English' },
-    { code: 'de', name: 'Deutsch' },
-    { code: 'es', name: 'Español' },
-    { code: 'fr', name: 'Français' },
-    // Add more here as translation files are created:
-    // { code: 'ja', name: '日本語' },
-    // { code: 'zh', name: '中文' },
+    { code: 'en', name: 'English',   flag: '🇬🇧' },
+    { code: 'de', name: 'Deutsch',   flag: '🇩🇪' },
+    { code: 'es', name: 'Español',   flag: '🇪🇸' },
+    { code: 'fr', name: 'Français',  flag: '🇫🇷' },
+    { code: 'ru', name: 'Русский',   flag: '🇷🇺' },
+    { code: 'zh', name: '中文',      flag: '🇨🇳' },
+    { code: 'ja', name: '日本語',    flag: '🇯🇵' },
+    // Add more here as translation files are created
 ];
 
 // ─── Catalogue (lazy-loaded translation maps) ─────────────────────────────────

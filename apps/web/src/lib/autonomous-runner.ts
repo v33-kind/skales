@@ -626,7 +626,17 @@ async function tick(): Promise<void> {
     // can be picked up in the same tick if the queue was empty.
     await tickCronJobs();
 
-    // ── Friend Mode proactive check-in ───────────────────────────
+    // ── Buddy Intelligence proactive check (rule-based, NO LLM calls) ────
+    // Runs BEFORE Friend Mode — cheap context checks that decide if a
+    // notification is warranted (meetings, tasks, email, idle, etc.)
+    try {
+        const { tickBuddyIntelligence } = await import('@/lib/buddy-intelligence');
+        await tickBuddyIntelligence();
+    } catch (e: any) {
+        console.warn('[AutonomousRunner] Buddy Intelligence tick error:', e?.message);
+    }
+
+    // ── Friend Mode proactive check-in (LLM-generated message) ───────────
     // Runs silently in the background — no session writes, no tool noise.
     await tickFriendMode(settings).catch(e =>
         console.warn('[AutonomousRunner] Friend Mode tick error:', e?.message)
@@ -702,13 +712,26 @@ async function tick(): Promise<void> {
         });
         console.log(`[AutonomousRunner] ✅ "${task.title}" done.`);
 
-        // Notify the Desktop Buddy bubble so the user sees task completion even
-        // when Skales is minimised. Non-fatal if buddy-notify module unavailable.
+        // Notify via unified notification router (respects quiet hours + cooldowns).
+        // Falls back to direct pushBuddyNotification if router unavailable.
         try {
-            const { pushBuddyNotification } = await import('@/lib/buddy-notify');
+            const { routeNotification } = await import('@/lib/notification-router');
             const preview = result.length > 80 ? result.slice(0, 77) + '…' : result;
-            pushBuddyNotification(`✅ Done: "${task.title}"\n${preview}`);
-        } catch { /* non-fatal */ }
+            await routeNotification({
+                type: 'task-complete',
+                message: `Done: "${task.title}"\n${preview}`,
+                emoji: '✅',
+                priority: task.priority === 'high' ? 'high' : 'medium',
+                cooldownMinutes: 1, // task completions have minimal cooldown
+            });
+        } catch {
+            // Fallback: direct buddy push (old behavior)
+            try {
+                const { pushBuddyNotification } = await import('@/lib/buddy-notify');
+                const preview = result.length > 80 ? result.slice(0, 77) + '…' : result;
+                pushBuddyNotification(`✅ Done: "${task.title}"\n${preview}`);
+            } catch { /* non-fatal */ }
+        }
 
         // For cron-sourced tasks: send a single clean Telegram notification.
         // This replaces the old approach of having the LLM call send_telegram_notification
@@ -737,12 +760,25 @@ async function tick(): Promise<void> {
             log.error('task_blocked', `🚫 "${task.title}" BLOCKED (${updated.retryCount}/${updated.maxRetries} retries).`, {
                 taskId: task.id, taskTitle: task.title, detail: { error: errorMsg },
             });
-            // Notify the Desktop Buddy bubble — blocked tasks need user attention.
+            // Notify via unified notification router — blocked tasks need user attention.
             try {
-                const { pushBuddyNotification } = await import('@/lib/buddy-notify');
+                const { routeNotification } = await import('@/lib/notification-router');
                 const errPreview = errorMsg.length > 80 ? errorMsg.slice(0, 77) + '…' : errorMsg;
-                pushBuddyNotification(`🚫 Blocked: "${task.title}"\n${errPreview}`);
-            } catch { /* non-fatal */ }
+                await routeNotification({
+                    type: 'task-blocked',
+                    message: `Blocked: "${task.title}"\n${errPreview}`,
+                    emoji: '🚫',
+                    priority: 'high', // blocked = needs attention, bypass quiet hours
+                    cooldownMinutes: 1,
+                    action: { label: 'View Tasks', route: '/tasks' },
+                });
+            } catch {
+                try {
+                    const { pushBuddyNotification } = await import('@/lib/buddy-notify');
+                    const errPreview = errorMsg.length > 80 ? errorMsg.slice(0, 77) + '…' : errorMsg;
+                    pushBuddyNotification(`🚫 Blocked: "${task.title}"\n${errPreview}`);
+                } catch { /* non-fatal */ }
+            }
         } else {
             log.warning('task_retrying', `⚠️ "${task.title}" failed — retry ${updated?.retryCount ?? '?'}/${updated?.maxRetries ?? 3}.`, {
                 taskId: task.id, taskTitle: task.title, detail: { error: errorMsg },

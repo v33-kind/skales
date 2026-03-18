@@ -220,6 +220,7 @@ export default function CustomSkillsPage() {
     const [togglingId,  setTogglingId]  = useState<string | null>(null);
     const [deletingId,  setDeletingId]  = useState<string | null>(null);
     const [exportingId, setExportingId] = useState<string | null>(null);
+    const [exportError, setExportError] = useState<string | null>(null);
 
     // ── Skill AI state ────────────────────────────────────────────
     const [aiName,            setAiName]            = useState('');
@@ -350,11 +351,12 @@ export default function CustomSkillsPage() {
     // ── Export skill as ZIP ───────────────────────────────────────
     const handleExport = async (id: string, name: string) => {
         setExportingId(id);
+        setExportError(null);
         try {
             const res = await fetch(`/api/custom-skills/export?skillId=${encodeURIComponent(id)}`);
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ error: 'Export failed' }));
-                alert(`Export failed: ${err.error ?? res.statusText}`);
+                setExportError(`Export failed: ${err.error ?? res.statusText}`);
                 return;
             }
             const blob   = await res.blob();
@@ -367,7 +369,7 @@ export default function CustomSkillsPage() {
             anchor.remove();
             URL.revokeObjectURL(url);
         } catch (e: any) {
-            alert(`Export error: ${e.message ?? 'Unknown error'}`);
+            setExportError(`Export error: ${e.message ?? 'Unknown error'}`);
         } finally {
             setExportingId(null);
         }
@@ -1403,6 +1405,27 @@ export default function CustomSkillsPage() {
                                 style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}>
                                 {savingEdit ? <Loader2 size={14} className="animate-spin" /> : <CheckCheck size={14} />}
                                 {t('skills.edit.saveButton')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Export Error Modal */}
+            {exportError && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">Export Failed</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            {exportError}
+                        </p>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setExportError(null)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Dismiss
                             </button>
                         </div>
                     </div>

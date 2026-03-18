@@ -22,12 +22,15 @@ import { unstable_noStore as noStore }   from 'next/cache';
 
 import {
     getActiveSessionId,
+    setActiveSessionId,
+    createSession,
     loadSession,
     saveSession,
 } from '@/actions/chat';
 import {
     agentDecide,
     agentExecute,
+    isPathAllowed,
 } from '@/actions/orchestrator';
 import { serverT } from '@/lib/server-i18n';
 
@@ -79,7 +82,14 @@ export async function POST(req: Request) {
 
     try {
         // ── Get active session for history context ────────────────────────────
-        const sessionId = (await getActiveSessionId()) ?? undefined;
+        // If no session exists, create one so buddy messages are always saved
+        // and visible in the main chat history.
+        let sessionId = (await getActiveSessionId()) ?? undefined;
+        if (!sessionId) {
+            const newSession = await createSession('Buddy Chat');
+            sessionId = newSession.id;
+            await setActiveSessionId(sessionId);
+        }
 
         // Load short context window (last 10 plain messages, strip orphan tool msgs)
         let history: { role: string; content: string }[] = [];
@@ -133,6 +143,44 @@ export async function POST(req: Request) {
             const autoResults = initialResults.filter(r => !r.requiresConfirmation);
 
             if (needsApproval.length > 0) {
+                // ── Sandbox pre-check: don't show approve/decline for blocked paths ─
+                // If the sandbox would block this action, tell the user immediately
+                // instead of presenting approve/decline buttons that lead to failure.
+                const FILE_TOOLS = new Set(['write_file', 'delete_file']);
+                const sandboxBlocked: string[] = [];
+                for (const tc of needsApproval) {
+                    if (FILE_TOOLS.has(tc.function.name)) {
+                        try {
+                            const args = JSON.parse(tc.function.arguments || '{}');
+                            if (args.path) {
+                                const guard = await isPathAllowed(String(args.path));
+                                if (!guard.allowed) {
+                                    sandboxBlocked.push(guard.reason || serverT('buddy.sandboxRestricted'));
+                                }
+                            }
+                        } catch { /* JSON parse error — let it proceed normally */ }
+                    }
+                }
+
+                if (sandboxBlocked.length > 0) {
+                    const errMsg = sandboxBlocked[0];
+                    // Save to session so it appears in chat history
+                    if (sessionId) {
+                        const session = await loadSession(sessionId);
+                        if (session) {
+                            session.messages.push(
+                                { role: 'user', content: message, timestamp: Date.now(), source: 'buddy' },
+                                { role: 'assistant', content: `🚫 ${errMsg}`, timestamp: Date.now(), source: 'buddy' }
+                            );
+                            await saveSession(session);
+                        }
+                    }
+                    return NextResponse.json({
+                        type: 'sandbox_blocked',
+                        content: `🚫 ${errMsg}`,
+                    });
+                }
+
                 // Store pending tool calls in session for approval route to pick up
                 if (sessionId) {
                     const session = await loadSession(sessionId);

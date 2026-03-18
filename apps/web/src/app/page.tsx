@@ -112,7 +112,7 @@ export default function DashboardPage() {
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
                 <Activity size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-red-500">Startup Failed</h1>
+            <h1 className="text-2xl font-bold text-red-500">{t('dashboard.startupFailed')}</h1>
             <div className="max-w-lg bg-red-950/20 border border-red-500/20 rounded-xl p-4 overflow-auto text-left">
                 <p className="font-mono text-xs text-red-300 whitespace-pre-wrap">
                     {data.message}
@@ -122,10 +122,10 @@ export default function DashboardPage() {
                 )}
             </div>
             <p className="text-muted-foreground text-sm">
-                Try restarting Skales or check the console logs.
+                {t('dashboard.startupFailedHint')}
             </p>
             <Link href="/settings" className="px-4 py-2 bg-secondary rounded-lg text-sm">
-                Go to Settings
+                {t('dashboard.goToSettings')}
             </Link>
         </div>
     );
@@ -151,11 +151,11 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 text-sm">
                         <Icon icon={Download} size={15} className="text-lime-400 shrink-0" />
                         <span style={{ color: 'var(--text-secondary)' }}>
-                            <span className="font-semibold text-lime-400">Skales v{updateBanner.version}</span> is available -
+                            <span className="font-semibold text-lime-400">Skales v{updateBanner.version}</span> {t('dashboard.updateAvailable')}
                         </span>
                         <Link href="/update"
                             className="font-semibold text-lime-400 hover:text-lime-300 underline underline-offset-2 transition-colors">
-                            View Update
+                            {t('dashboard.viewUpdate')}
                         </Link>
                     </div>
                     <button
@@ -250,26 +250,34 @@ export default function DashboardPage() {
                     <div className="space-y-3">
                         {/* LLM Connection */}
                         <ConnectionItem
-                            label="AI Brain"
+                            label={t('dashboard.connections.aiBrain')}
                             detail={d.connected ? `${d.activeProvider} · ${d.model}` : t('onboarding.connections.notConfigured')}
                             connected={d.connected}
+                            activeLabel={t('dashboard.connections.active')}
+                            offLabel={t('dashboard.connections.off')}
                         />
                         {/* Ollama */}
                         <ConnectionItem
-                            label="Local AI (Ollama)"
+                            label={t('dashboard.connections.localAI')}
                             detail={d.ollamaRunning ? t('onboarding.connections.runningLocally') : t('onboarding.connections.notRunning')}
                             connected={d.ollamaRunning}
+                            activeLabel={t('dashboard.connections.active')}
+                            offLabel={t('dashboard.connections.off')}
                         />
                         {/* Messenger integrations */}
                         <ConnectionItem
-                            label="Telegram"
+                            label={t('dashboard.connections.telegram')}
                             detail={d.telegramConnected ? t('onboarding.connections.active') : t('onboarding.connections.notConfigured')}
                             connected={d.telegramConnected}
+                            activeLabel={t('dashboard.connections.active')}
+                            offLabel={t('dashboard.connections.off')}
                         />
                         <ConnectionItem
-                            label="WhatsApp"
+                            label={t('dashboard.connections.whatsapp')}
                             detail={d.whatsappConnected ? (d.whatsappPhone ? `+${d.whatsappPhone}` : t('onboarding.connections.active')) : t('onboarding.connections.notConfigured')}
                             connected={d.whatsappConnected}
+                            activeLabel={t('dashboard.connections.active')}
+                            offLabel={t('dashboard.connections.off')}
                         />
 
                         <Link href="/settings"
@@ -378,7 +386,7 @@ export default function DashboardPage() {
                                         {s.title}
                                     </p>
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        {t('onboarding.recentSessions.messageCount', { count: s.messageCount, date: new Date(s.updatedAt).toLocaleDateString('en-US') })}
+                                        {t('onboarding.recentSessions.messageCount', { count: s.messageCount, date: new Date(s.updatedAt).toLocaleDateString() })}
                                     </p>
                                 </div>
                                 <ArrowRight size={14} className="text-lime-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -446,7 +454,9 @@ function StatCard({ icon, label, value, detail, color }: {
     );
 }
 
-function ConnectionItem({ label, detail, connected }: { label: string; detail: string; connected: boolean }) {
+function ConnectionItem({ label, detail, connected, activeLabel, offLabel }: {
+    label: string; detail: string; connected: boolean; activeLabel?: string; offLabel?: string;
+}) {
     return (
         <div className="flex items-center gap-3 p-3 rounded-xl border transition-all"
             style={{ borderColor: 'var(--border)', background: 'var(--background)' }}>
@@ -456,7 +466,7 @@ function ConnectionItem({ label, detail, connected }: { label: string; detail: s
                 <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{detail}</p>
             </div>
             <span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}>
-                {connected ? 'Active' : 'Off'}
+                {connected ? (activeLabel || 'Active') : (offLabel || 'Off')}
             </span>
         </div>
     );

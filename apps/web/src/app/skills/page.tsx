@@ -112,18 +112,18 @@ const SKILL_DEFS: SkillDef[] = [
         requiresKey: 'Google AI API key', keyLabel: 'Settings → AI Provider → Google',
         providers: [
             { id: 'imagen3', label: 'Google Imagen 3', active: true },
-            { id: 'stable_diffusion', label: 'Stable Diffusion (soon)', active: false },
-            { id: 'dall_e', label: 'DALL·E (soon)', active: false },
+            { id: 'flux', label: 'Flux (soon)', active: false },
+            { id: 'sdxl', label: 'SDXL (soon)', active: false },
         ],
     },
     {
         id: 'video_generation', name: 'Video Generation', emoji: '🎬', category: 'Creative',
-        description: 'Generate short videos from text descriptions using Google Veo 2.',
-        detail: 'Powered by Google Veo 2. Select aspect ratio, duration (5–8s), and quality from the chat toolbar. Generation takes 1–3 minutes. Uses the same Google AI API key.',
+        description: 'Generate short videos from text descriptions using Google Veo 3.',
+        detail: 'Powered by Google Veo 3. Select aspect ratio, duration (5–8s), and quality from the chat toolbar. Generation takes 1–3 minutes. Uses the same Google AI API key.',
         requiresKey: 'Google AI API key', keyLabel: 'Settings → AI Provider → Google',
         providers: [
-            { id: 'veo2', label: 'Google Veo 2', active: true },
-            { id: 'sora', label: 'Sora (soon)', active: false },
+            { id: 'veo3', label: 'Google Veo 3', active: true },
+            { id: 'kling', label: 'Kling (soon)', active: false },
             { id: 'runway', label: 'Runway (soon)', active: false },
         ],
     },
@@ -431,7 +431,7 @@ function SkillCard({ skill, isEnabled, isToggling, onToggle }: {
                     {skill.requiresKey && !skill.alwaysOn && (
                         <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
                             <Icon icon={AlertCircle} size={10} />
-                            Requires: {skill.requiresKey} - <span className="underline">{skill.keyLabel}</span>
+                            {t('skills.requires')} {skill.requiresKey} - <span className="underline">{skill.keyLabel}</span>
                         </p>
                     )}
                 </div>
@@ -548,10 +548,10 @@ function LioAiCard({ isEnabled, isToggling, onToggle }: {
                             </span>
                         </div>
                         <p className="text-xs leading-relaxed" style={{ color: 'rgba(196,181,253,0.7)' }}>
-                            Your personal code agent, powered by Skales.
+                            {t('skills.lioAI.desc')}
                         </p>
                         <p className="text-xs mt-1 leading-relaxed" style={{ color: 'rgba(148,163,184,0.6)' }}>
-                            Lio plans, builds, and ships - while you watch. Two AIs collaborate on architecture, then a dedicated builder creates your project step by step.
+                            {t('skills.lioAI.detail')}
                         </p>
                     </div>
                     {/* Toggle button */}

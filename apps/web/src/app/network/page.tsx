@@ -92,7 +92,7 @@ function ScannerTab() {
             }
             const res  = await fetch(`/api/network-scan?${params}`, { signal: controller.signal });
             const data = await res.json();
-            if (!data.success) { setError(data.error ?? 'Scan failed'); return; }
+            if (!data.success) { setError(data.error ?? t('network.scanFailed')); return; }
 
             if (mode === 'info') {
                 // API returns { success, localIp, subnet, interfaces: [{name,address,netmask,mac}] }
@@ -120,7 +120,7 @@ function ScannerTab() {
             }
         } catch (e: any) {
             if (e.name === 'AbortError') {
-                setError('Scan timed out (10 s). Your network may be slow or the subnet is large.');
+                setError(t('network.scanTimeout'));
             } else {
                 setError(e.message ?? 'Network error');
             }
@@ -137,7 +137,7 @@ function ScannerTab() {
         try {
             const res  = await fetch(`/api/network-scan?mode=host&ip=${encodeURIComponent(singleIp.trim())}&timeout=2000`);
             const data = await res.json();
-            if (!data.success) { setError(data.error ?? 'Host scan failed'); return; }
+            if (!data.success) { setError(data.error ?? t('network.hostScanFailed')); return; }
             setDevices(data.devices ?? []);
             setNetInfo(null);
         } catch (e: any) {
@@ -226,9 +226,9 @@ function ScannerTab() {
                 <div className="rounded-2xl border p-4 space-y-3" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t('network.localNetInfo')}</h3>
                     <div className="grid grid-cols-2 gap-3">
-                        {netInfo.localIp && <InfoRow label="Local IP" value={netInfo.localIp} />}
-                        {netInfo.subnet  && <InfoRow label="Subnet"   value={netInfo.subnet}  />}
-                        {netInfo.gateway && <InfoRow label="Gateway"  value={netInfo.gateway} />}
+                        {netInfo.localIp && <InfoRow label={t('network.localIp')} value={netInfo.localIp} />}
+                        {netInfo.subnet  && <InfoRow label={t('network.subnet')} value={netInfo.subnet} />}
+                        {netInfo.gateway && <InfoRow label={t('network.gateway')} value={netInfo.gateway} />}
                     </div>
                     {netInfo.ifaces && netInfo.ifaces.length > 0 && (
                         <div className="space-y-1 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
@@ -269,13 +269,13 @@ function ScannerTab() {
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                         {d.ip}
                                         {d.latencyMs != null && ` · ${d.latencyMs}ms`}
-                                        {d.openPorts?.length ? ` · ports: ${d.openPorts.join(', ')}` : ''}
+                                        {d.openPorts?.length ? ` · ${t('network.ports')}: ${d.openPorts.join(', ')}` : ''}
                                     </p>
                                 </div>
                                 {d.isSkales && (
                                     <a href={`http://${d.ip}:3000`} target="_blank" rel="noreferrer"
                                         className="text-xs text-lime-500 font-bold hover:underline flex items-center gap-1">
-                                        Open <Icon icon={ChevronRight} size={12} />
+                                        {t('network.open')} <Icon icon={ChevronRight} size={12} />
                                     </a>
                                 )}
                             </div>
@@ -286,7 +286,7 @@ function ScannerTab() {
 
             {!scanning && devices.length === 0 && !netInfo && !error && (
                 <p className="text-center text-sm py-8" style={{ color: 'var(--text-muted)' }}>
-                    Select a scan mode above and click Run Scan.
+                    {t('network.selectScanHint')}
                 </p>
             )}
         </div>
@@ -320,7 +320,7 @@ function CastingTab() {
 
     const discover = useCallback(async () => {
         setDiscovering(true);
-        setDiscoverPhase('SSDP multicast (5 s)…');
+        setDiscoverPhase(t('network.dlna.ssdpPhase'));
         setError(null);
         setDebugInfo(null);
         setRenderers([]);
@@ -328,18 +328,18 @@ function CastingTab() {
 
         // Phase-label update: after 5 s SSDP, if still running → unicast scan started
         const unicastLabelTimer = setTimeout(() => {
-            setDiscoverPhase('Unicast port scan (can take ~30 s)…');
+            setDiscoverPhase(t('network.dlna.unicastPhase'));
         }, 6_000);
 
         try {
             // No hard abort — unicast scan may take up to ~45 s for a /24 subnet
             const res  = await fetch('/api/casting?action=discover&timeout=5000');
             const data = await res.json();
-            if (!data.success) { setError(data.error ?? 'Discovery failed'); return; }
+            if (!data.success) { setError(data.error ?? t('network.dlna.discoveryFailed')); return; }
             const found: DlnaDevice[] = data.devices ?? [];
             setRenderers(found);
             if (data.debug) setDebugInfo(data.debug);
-            if (found.length === 0) setStatus('No DLNA/UPnP renderers found. If your TV is on a different Wi-Fi band (2.4 GHz vs 5 GHz), the unicast scan should still find it - check the debug info below.');
+            if (found.length === 0) setStatus(t('network.dlna.noRenderersFound'));
             else setStatus(null);
         } catch (e: any) {
             setError(e.message ?? 'Network error');
@@ -351,21 +351,21 @@ function CastingTab() {
     }, []);
 
     const doAction = useCallback(async (action: 'cast' | 'pause' | 'stop') => {
-        if (!selected?.controlUrl) { setError('No renderer selected'); return; }
+        if (!selected?.controlUrl) { setError(t('network.dlna.noRendererSelected')); return; }
         setBusy(true);
         setError(null);
         try {
             const body: Record<string, any> = { action, controlUrl: selected.controlUrl };
             if (action === 'cast') {
-                if (!mediaUrl.trim()) { setError('Enter a media URL to cast.'); setBusy(false); return; }
+                if (!mediaUrl.trim()) { setError(t('network.dlna.enterMediaUrl')); setBusy(false); return; }
                 body.mediaUrl = mediaUrl.trim();
                 body.mimeType = mimeType;
-                body.title    = title || 'Skales Cast';
+                body.title    = title || t('network.dlna.defaultTitle');
             }
             const res  = await fetch('/api/casting', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const data = await res.json();
-            if (!data.success) { setError(data.error ?? `${action} failed`); return; }
-            setStatus(`${action.charAt(0).toUpperCase() + action.slice(1)} sent to "${selected.friendlyName ?? selected.usn}".`);
+            if (!data.success) { setError(data.error ?? t('network.dlna.actionFailed', { action })); return; }
+            setStatus(t('network.dlna.actionSent', { action: action.charAt(0).toUpperCase() + action.slice(1), device: selected.friendlyName ?? selected.usn }));
         } catch (e: any) {
             setError(e.message ?? 'Network error');
         } finally {
@@ -382,7 +382,7 @@ function CastingTab() {
                     {t('network.dlna.discoverHeading')}
                 </h3>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    Scans your local network for DLNA/UPnP media renderers (smart TVs, speakers, media players).
+                    {t('network.dlna.discoverDesc')}
                 </p>
                 <button
                     onClick={discover}
@@ -453,7 +453,7 @@ function CastingTab() {
                 <div className="rounded-2xl border p-4 space-y-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                     <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                         <Icon icon={Volume2} size={15} className="text-lime-500" />
-                        Cast to: {selected.friendlyName ?? selected.usn}
+                        {t('network.dlna.castTo')} {selected.friendlyName ?? selected.usn}
                     </h3>
 
                     <div className="space-y-3">
@@ -548,7 +548,7 @@ function CastingTab() {
 
             {!discovering && renderers.length === 0 && !status && !error && (
                 <p className="text-center text-sm py-8" style={{ color: 'var(--text-muted)' }}>
-                    Click Discover Devices to find DLNA/UPnP renderers on your network.
+                    {t('network.dlna.clickDiscoverHint')}
                 </p>
             )}
         </div>
@@ -566,12 +566,15 @@ export default function NetworkPage() {
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-                        <div className="w-9 h-9 rounded-xl bg-lime-500/15 flex items-center justify-center">
-                            <Icon icon={Network} size={20} className="text-lime-500" />
-                        </div>
-                        {t('network.title')}
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+                            <div className="w-9 h-9 rounded-xl bg-lime-500/15 flex items-center justify-center">
+                                <Icon icon={Network} size={20} className="text-lime-500" />
+                            </div>
+                            {t('network.title')}
+                        </h1>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold">BETA</span>
+                    </div>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                         {t('network.subtitle')}
                     </p>

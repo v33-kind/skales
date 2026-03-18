@@ -60,6 +60,16 @@ function shuffled<T>(arr: T[]): T[] {
 }
 function nextDelay(): number { return (30 + Math.random() * 30) * 1_000; }
 
+// Bug 28: Strip LLM think/reasoning XML tags before showing text in the buddy bubble.
+// Applied ONLY here — not in the main chat UI where collapsible reasoning sections live.
+function stripThinkingTags(text: string): string {
+    let cleaned = text.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+    cleaned = cleaned.replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '');
+    cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    const trimmed = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    return trimmed || text.trim(); // fall back to raw text if stripping empties the string
+}
+
 type FSM = 'intro' | 'idle' | 'action';
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -332,27 +342,49 @@ export default function BuddyPage() {
         return () => window.removeEventListener('blur', onBlur);
     }, [thinking]);
 
-    // ── Notification polling (task/cron completions) ──────────────────────────
-    const notifQueue = useRef<string[]>([]);
+    // ── Rich notification type for v7 buddy intelligence ───────────────────────
+    type RichNotif = {
+        text: string;
+        type?: string;
+        action?: { label: string; route?: string; handler?: string };
+        expiresMs?: number;
+        isError?: boolean;
+    };
+    const notifQueue = useRef<RichNotif[]>([]);
+    const [activeAction, setActiveAction] = useState<RichNotif['action'] | null>(null);
+
     const showBubble = useCallback((text: string, ms = 8000) => {
         clearBubble();
         setBubble(text);
         setBubbleLong(false);
         setBubbleIsError(false);
-        bubbleTimer.current = setTimeout(() => { setBubble(null); setBubbleIsError(false); }, ms);
+        bubbleTimer.current = setTimeout(() => { setBubble(null); setBubbleIsError(false); setActiveAction(null); }, ms);
     }, [clearBubble]);
+
+    // ── Notification polling (task/cron completions + buddy intelligence) ─────
     useEffect(() => {
         const tryFlush = () => {
             if (notifQueue.current.length === 0 || bubble) return;
             const next = notifQueue.current.shift()!;
-            showBubble(next, 8000);
+            const displayMs = next.expiresMs || (next.action ? 15000 : 8000);
+            setActiveAction(next.action || null);
+            setBubbleIsError(next.isError || false);
+            showBubble(next.text, displayMs);
         };
         const poll = async () => {
             try {
                 const res = await fetch('/api/buddy-notifications');
                 if (!res.ok) return;
-                const data = await res.json() as { notifications: { text: string }[] };
-                for (const n of data.notifications) notifQueue.current.push(n.text);
+                const data = await res.json() as { notifications: RichNotif[] };
+                for (const n of data.notifications) {
+                    notifQueue.current.push({
+                        text: n.text,
+                        type: n.type,
+                        action: n.action,
+                        expiresMs: n.expiresMs,
+                        isError: n.isError,
+                    });
+                }
                 tryFlush();
             } catch { /* ignore network errors */ }
         };
@@ -360,6 +392,17 @@ export default function BuddyPage() {
         return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [bubble]);
+
+    // ── Activity heartbeat — reports user presence for idle detection ─────────
+    useEffect(() => {
+        const ping = () => {
+            if (document.hidden) return;
+            fetch('/api/buddy/activity', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: 'buddy' }) }).catch(() => {});
+        };
+        ping(); // immediate first ping
+        const id = setInterval(ping, 60_000); // every 60s
+        return () => clearInterval(id);
+    }, []);
 
     // ── Mascot click — toggle input ───────────────────────────────────────────
     const handleMascotClick = useCallback(() => {
@@ -395,6 +438,16 @@ export default function BuddyPage() {
                 return;
             }
 
+            // ── Sandbox blocked — file access restricted ───────────────────────
+            if (data.type === 'sandbox_blocked') {
+                setBubble(data.content || t('buddy.sandboxRestricted'));
+                setBubbleLong(false);
+                setBubbleIsError(true);
+                clearBubble();
+                bubbleTimer.current = setTimeout(() => { setBubble(null); setBubbleIsError(false); }, 15_000);
+                return;
+            }
+
             // ── Approval needed ───────────────────────────────────────────────
             if (data.type === 'approval_needed') {
                 const toolList = (data.tools as string[]).join('\n• ');
@@ -412,7 +465,8 @@ export default function BuddyPage() {
             }
 
             // ── Tool result (auto-executed) or plain text ─────────────────────
-            let reply = (data.content ?? '').trim() || 'No response.';
+            // Bug 28: strip think/reasoning XML before displaying in the buddy bubble
+            let reply = stripThinkingTags((data.content ?? '').trim() || 'No response.');
             const wasLong = data.wasLong === true || reply.length > 110;
             if (!data.wasLong && reply.length > 110) reply = reply.slice(0, 107) + '…';
 
@@ -469,15 +523,19 @@ export default function BuddyPage() {
             const data = await res.json().catch(() => ({}));
 
             if (data.type === 'executed') {
-                let result = (data.content ?? t('buddy.working')).trim();
+                // Bug 28: strip think/reasoning XML before displaying in the buddy bubble
+                let result = stripThinkingTags((data.content ?? t('buddy.working')).trim());
                 const wasLong = data.wasLong === true;
                 if (!wasLong && result.length > 110) result = result.slice(0, 107) + '…';
                 setBubble(result);
                 setBubbleLong(wasLong);
                 bubbleTimer.current = setTimeout(() => setBubble(null), 18_000);
             } else {
-                setBubble(t('buddy.cancelled'));
-                bubbleTimer.current = setTimeout(() => setBubble(null), 8_000);
+                // Show actual error from API if available, not a generic "cancelled"
+                const errorMsg = data.error || t('buddy.cancelled');
+                setBubble(errorMsg);
+                setBubbleIsError(!!data.error);
+                bubbleTimer.current = setTimeout(() => { setBubble(null); setBubbleIsError(false); }, 10_000);
             }
         } catch {
             setBubble(t('buddy.errorMessage'));
@@ -539,7 +597,10 @@ export default function BuddyPage() {
                     onClick={() => { clearBubble(); setBubble(null); setBubbleLong(false); setBubbleIsError(false); }}
                     style={{
                         position:             'absolute',
-                        bottom:               '248px',
+                        // Position the bubble ABOVE the input pill (input is at bottom:195px).
+                        // When approval is showing the bubble must be clearly above the input
+                        // so buttons are never obscured. Normal bubble sits higher at 248px.
+                        bottom:               approval ? '230px' : '248px',
                         right:                '5px',
                         width:                '190px',
                         background:           bubbleIsError ? 'rgba(20,8,8,0.92)' : 'rgba(10,10,10,0.92)',
@@ -552,7 +613,12 @@ export default function BuddyPage() {
                         lineHeight:           1.5,
                         color:                '#f0f0f0',
                         cursor:               'pointer',
-                        zIndex:               10,
+                        // When approval buttons are showing, bubble must sit above the input
+                        // (input z-index is 20, so approval bubble needs higher)
+                        zIndex:               approval ? 30 : 10,
+                        // Bug 26: long tool commands / file paths must not overflow the bubble
+                        wordBreak:            'break-word',
+                        overflowWrap:         'anywhere',
                     }}
                 >
                     {bubble}
@@ -596,7 +662,38 @@ export default function BuddyPage() {
                         </div>
                     )}
 
-                    {bubbleLong && !approval && (
+                    {/* ── Rich notification action button ──────────── */}
+                    {activeAction && !approval && (
+                        <button
+                            onClick={e => {
+                                e.stopPropagation();
+                                if (activeAction.route) {
+                                    (window as any).skales?.send('navigate', activeAction.route);
+                                }
+                                if (activeAction.handler) {
+                                    (window as any).skales?.send('buddy-action', activeAction.handler);
+                                }
+                            }}
+                            style={{
+                                display:        'block',
+                                marginTop:      '6px',
+                                padding:        '3px 8px',
+                                borderRadius:   '8px',
+                                background:     'rgba(132,204,22,0.15)',
+                                border:         '1px solid rgba(132,204,22,0.4)',
+                                color:          '#84cc16',
+                                fontSize:       '11px',
+                                fontWeight:     600,
+                                cursor:         'pointer',
+                                width:          '100%',
+                                textAlign:      'center',
+                            }}
+                        >
+                            {activeAction.label}
+                        </button>
+                    )}
+
+                    {bubbleLong && !approval && !activeAction && (
                         <button
                             onClick={e => { e.stopPropagation(); openChat(); }}
                             style={{
@@ -630,7 +727,7 @@ export default function BuddyPage() {
                 </div>
             )}
 
-            {/* ── Input pill ───────────────────────────────────────────────── */}
+            {/* ── Input pill — hidden when approval is pending ──────────────── */}
             <div style={{
                 position:             'absolute',
                 bottom:               '195px',
@@ -646,9 +743,10 @@ export default function BuddyPage() {
                 alignItems:           'center',
                 gap:                  '8px',
                 zIndex:               20,
-                opacity:          spotOpen ? 1 : 0,
-                pointerEvents:    spotOpen ? 'auto' : 'none',
-                transform:        spotOpen ? 'translateY(0)' : 'translateY(4px)',
+                // Hide input when approval buttons are showing to prevent overlap
+                opacity:          (spotOpen && !approval) ? 1 : 0,
+                pointerEvents:    (spotOpen && !approval) ? 'auto' : 'none',
+                transform:        (spotOpen && !approval) ? 'translateY(0)' : 'translateY(4px)',
                 transition:       'opacity 0.15s ease, transform 0.15s ease',
             } as React.CSSProperties}>
                 {thinking ? (

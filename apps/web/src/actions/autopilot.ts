@@ -226,10 +226,11 @@ async function callLLM(settings: any, systemPrompt: string, userMessage: string)
         deepseek:   'https://api.deepseek.com/v1/chat/completions',
         xai:        'https://api.x.ai/v1/chat/completions',
         together:   'https://api.together.xyz/v1/chat/completions',
-        ollama:     (provCfg.baseUrl ?? 'http://localhost:11434') + '/api/chat',
+        ollama:     (provCfg.baseUrl ?? 'http://localhost:11434/v1') + '/chat/completions',
     };
     const url = endpoints[provider] ?? endpoints.openrouter;
-    const hdrs: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+    const hdrs: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (apiKey && apiKey.trim() !== '') { hdrs['Authorization'] = `Bearer ${apiKey.trim()}`; }
     if (provider === 'openrouter') { hdrs['HTTP-Referer'] = 'https://skales.app'; hdrs['X-Title'] = 'Skales Autopilot'; }
 
     const res = await fetch(url, {
@@ -538,6 +539,115 @@ Generate the stand-up report now.`;
         log.info('standup_generated', `📋 Daily stand-up generated.`, { detail: { blockedCount: blocked.length, completedCount: completed.length } });
 
         return { success: true, report, hasBlockedTasks: blocked.length > 0 };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+// ─── Morning Briefing ─────────────────────────────────────────────────────────
+
+/**
+ * Generate a personalised morning briefing delivered via Telegram (if configured)
+ * and returned as a markdown string for display in the dashboard.
+ *
+ * Sections (graceful degrades if data unavailable):
+ *   1. Greeting + date/time
+ *   2. Today's calendar events (try/catch — optional integration)
+ *   3. Pending & in-progress tasks
+ *   4. Unread email count (try/catch — optional integration)
+ *   5. Closing motivational question from the LLM
+ */
+export async function generateMorningBriefing(): Promise<{
+    success: boolean;
+    briefing?: string;
+    deliveredViaTelegram?: boolean;
+    error?: string;
+}> {
+    try {
+        const settings = await loadSettings();
+        const tasks    = getAllTasks();
+
+        // ── Gather context sections ──────────────────────────────────────────
+
+        const now      = new Date();
+        const dateStr  = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const timeStr  = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        // Pending / in-progress tasks
+        const pending    = tasks.filter(t => t.state === 'pending').slice(0, 8);
+        const inProgress = tasks.filter(t => t.state === 'running').slice(0, 3);
+        const blocked    = tasks.filter(t => t.state === 'blocked');
+
+        // Calendar events — optional (no getCalendarEventsToday yet)
+        let calendarLines = '(Calendar integration not configured)';
+        try {
+            // @ts-ignore — dynamic import in case calendar module ships later
+            const { getCalendarEventsToday } = await import('@/actions/calendar');
+            const events: Array<{ time: string; title: string }> = await getCalendarEventsToday();
+            if (events.length === 0) {
+                calendarLines = 'No events scheduled for today.';
+            } else {
+                calendarLines = events.map(e => `• ${e.time} — ${e.title}`).join('\n');
+            }
+        } catch { /* calendar not available */ }
+
+        // Unread email count — optional
+        let emailLines = '(Email integration not configured)';
+        try {
+            // @ts-ignore — dynamic import in case email count helper ships later
+            const { getUnreadEmailCount } = await import('@/actions/email');
+            const count: number = await getUnreadEmailCount();
+            emailLines = count === 0 ? 'Inbox zero! 🎉' : `${count} unread message${count !== 1 ? 's' : ''} waiting.`;
+        } catch { /* email not available */ }
+
+        // ── Build LLM prompt ─────────────────────────────────────────────────
+
+        const systemPrompt = `You are Skales generating a warm, upbeat morning briefing for the user.
+Write in second person ("You have...", "Today looks...").
+Be concise, friendly, and motivating. Use light markdown (bold for key items, bullet points).
+Keep it under 250 words. End with one short, encouraging question to help the user focus.`;
+
+        const userMessage = `
+TODAY: ${dateStr} at ${timeStr}
+
+CALENDAR EVENTS:
+${calendarLines}
+
+TASKS IN PROGRESS (${inProgress.length}):
+${inProgress.map(t => `• ${t.title}`).join('\n') || 'None'}
+
+PENDING TASKS (${pending.length} shown):
+${pending.map(t => `• ${t.title} [${t.priority ?? 'normal'}]`).join('\n') || 'None'}
+
+BLOCKED TASKS (${blocked.length}):
+${blocked.map(t => `• ${t.title}: ${t.blockedReason ?? 'Unknown reason'}`).join('\n') || 'None'}
+
+EMAILS:
+${emailLines}
+
+Generate the morning briefing now.`;
+
+        const briefing = await callLLM(settings, systemPrompt, userMessage);
+
+        // ── Deliver via Telegram if configured ───────────────────────────────
+
+        let deliveredViaTelegram = false;
+        try {
+            const { loadTelegramConfig, sendMessage } = await import('@/actions/telegram');
+            const tgCfg = await loadTelegramConfig();
+            if (tgCfg?.token && tgCfg?.chatId) {
+                const header = `☀️ *Good morning — ${dateStr}*\n\n`;
+                await sendMessage(tgCfg.token, tgCfg.chatId, header + briefing);
+                deliveredViaTelegram = true;
+            }
+        } catch { /* non-fatal — Telegram may not be configured */ }
+
+        const { log } = await import('@/lib/autopilot-logger');
+        log.success('briefing_generated', `☀️ Morning briefing generated.`, {
+            detail: { pendingCount: pending.length, blockedCount: blocked.length, deliveredViaTelegram },
+        });
+
+        return { success: true, briefing, deliveredViaTelegram };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

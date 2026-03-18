@@ -12,7 +12,6 @@ import type { GroupChatEvent } from '@/skills/group-chat/group-chat-engine';
 import { useTranslation } from '@/lib/i18n';
 
 // ─── Participant Color Palette ─────────────────────────────────
-// A=lime, B=blue, C=orange, D=purple, E=pink
 
 const PARTICIPANT_COLORS = [
     {
@@ -150,7 +149,7 @@ export default function GroupChatPage() {
             });
 
             if (!resp.ok || !resp.body) {
-                addMessage({ type: 'error', status: 'error', error: `Server error: ${resp.status}` });
+                addMessage({ type: 'error', status: 'error', error: `${t('groupChat.page.serverError')}: ${resp.status}` });
                 setIsRunning(false);
                 return;
             }
@@ -180,7 +179,7 @@ export default function GroupChatPage() {
             }
         } catch (err: any) {
             if (err?.name !== 'AbortError') {
-                addMessage({ type: 'error', status: 'error', error: err?.message || 'Connection error' });
+                addMessage({ type: 'error', status: 'error', error: err?.message || t('groupChat.page.connectionError') });
             }
         } finally {
             setIsRunning(false);
@@ -225,14 +224,12 @@ export default function GroupChatPage() {
 
             case 'error':
                 if (event.participantIndex !== undefined) {
-                    // Participant-level error — update their bubble
                     updateLastThinking(event.participantIndex, {
                         status: 'error',
                         error: event.error,
                         content: '',
                     });
                 } else {
-                    // General error
                     addMessage({ type: 'error', status: 'error', error: event.error });
                 }
                 break;
@@ -249,7 +246,7 @@ export default function GroupChatPage() {
                 break;
 
             case 'summary_thinking':
-                setProgress(prev => prev ? { ...prev, currentParticipantName: 'Summary' } : null);
+                setProgress(prev => prev ? { ...prev, currentParticipantName: t('groupChat.page.summaryLabel') } : null);
                 addMessage({ type: 'summary_thinking', status: 'thinking' });
                 break;
 
@@ -272,7 +269,7 @@ export default function GroupChatPage() {
                 break;
 
             case 'abort':
-                addMessage({ type: 'error', status: 'error', error: 'Discussion was stopped.' });
+                addMessage({ type: 'error', status: 'error', error: t('groupChat.page.discussionStopped') });
                 break;
 
             case 'done':
@@ -296,29 +293,29 @@ export default function GroupChatPage() {
         if (messages.length === 0) return;
 
         const lines: string[] = [
-            `# Group Chat Discussion`,
+            `# ${t('groupChat.page.exportTitle')}`,
             ``,
-            `**Topic:** ${discussionQuestion}`,
-            `**Date:** ${new Date().toLocaleString()}`,
-            `**Participants:** ${config?.participants.map(p => p.name).join(', ')}`,
-            `**Rounds:** ${config?.rounds}`,
+            `**${t('groupChat.page.exportTopic')}:** ${discussionQuestion}`,
+            `**${t('groupChat.page.exportDate')}:** ${new Date().toLocaleString()}`,
+            `**${t('groupChat.page.exportParticipants')}:** ${config?.participants.map(p => p.name).join(', ')}`,
+            `**${t('groupChat.rounds')}:** ${config?.rounds}`,
             ``,
             `---`,
             ``,
         ];
 
         let currentRound = 1;
-        lines.push(`## Round ${currentRound}`, ``);
+        lines.push(`## ${t('groupChat.page.roundLabel')} ${currentRound}`, ``);
 
         for (const msg of messages) {
             if (msg.type === 'round_label') {
                 currentRound = msg.round || currentRound;
-                lines.push(``, `## Round ${currentRound}`, ``);
+                lines.push(``, `## ${t('groupChat.page.roundLabel')} ${currentRound}`, ``);
             } else if (msg.type === 'response' && msg.status === 'done' && msg.content) {
                 const model = msg.model ? ` *(${msg.provider}/${msg.model})*` : '';
                 lines.push(`### ${msg.participantName}${model}`, ``, msg.content, ``);
             } else if (msg.type === 'summary' && msg.content) {
-                lines.push(``, `---`, ``, `## Summary`, ``, msg.content, ``);
+                lines.push(``, `---`, ``, `## ${t('groupChat.page.summaryLabel')}`, ``, msg.content, ``);
             }
         }
 
@@ -356,9 +353,9 @@ export default function GroupChatPage() {
                         <Users size={16} className="text-black" />
                     </div>
                     <div>
-                        <h1 className="font-semibold text-sm">Group Chat</h1>
+                        <h1 className="font-semibold text-sm">{t('groupChat.page.title')}</h1>
                         <p className="text-[10px] text-text-secondary">
-                            {config.participants.length} participants · {config.rounds} rounds · {config.language}
+                            {config.participants.length} {t('groupChat.page.participants')} · {config.rounds} {t('groupChat.rounds')} · {config.language}
                         </p>
                     </div>
                 </div>
@@ -367,14 +364,14 @@ export default function GroupChatPage() {
                     className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-light"
                 >
                     <Settings size={15} />
-                    Configure
+                    {t('groupChat.page.configure')}
                 </Link>
             </div>
 
             {/* No-history banner */}
             <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-300 dark:bg-yellow-500/10 dark:border-yellow-500/20 px-6 py-2 text-xs text-amber-800 dark:text-yellow-300 shrink-0">
                 <AlertCircle size={13} />
-                Discussions are not saved. Export as Markdown if you want to keep a copy.
+                {t('groupChat.page.notSaved')}
             </div>
 
             {/* Messages area */}
@@ -387,9 +384,9 @@ export default function GroupChatPage() {
                             <MessageSquare size={28} className="text-text-muted" />
                         </div>
                         <div>
-                            <p className="font-medium">Start a group discussion</p>
+                            <p className="font-medium">{t('groupChat.page.emptyTitle')}</p>
                             <p className="text-sm text-text-secondary mt-1">
-                                Ask a question below and {config.participants.length} AI personas will debate it across {config.rounds} rounds.
+                                {t('groupChat.page.emptySubtitle', { count: config.participants.length, rounds: config.rounds })}
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2 justify-center max-w-sm">
@@ -408,7 +405,7 @@ export default function GroupChatPage() {
                 {/* Discussion question header */}
                 {hasRun && discussionQuestion && (
                     <div className="bg-surface border border-border rounded-2xl px-5 py-4">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-1">Topic</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-1">{t('groupChat.page.topicLabel')}</p>
                         <p className="text-sm font-medium">{discussionQuestion}</p>
                     </div>
                 )}
@@ -447,7 +444,7 @@ export default function GroupChatPage() {
                 {progress && (
                     <div className="flex items-center gap-2 text-xs text-text-secondary">
                         <Loader2 size={13} className="animate-spin text-lime-500" />
-                        Round {progress.currentRound}/{progress.totalRounds} · {progress.currentParticipantName} is thinking...
+                        {t('groupChat.page.progress', { round: progress.currentRound, total: progress.totalRounds, name: progress.currentParticipantName })}
                     </div>
                 )}
 
@@ -465,14 +462,14 @@ export default function GroupChatPage() {
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-foreground hover:bg-surface-light transition-all border border-border"
                         >
                             <Plus size={13} />
-                            New Discussion
+                            {t('groupChat.page.newDiscussion')}
                         </button>
                         <button
                             onClick={handleExport}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-text-secondary hover:text-foreground hover:bg-surface-light transition-all border border-border"
                         >
                             <Download size={13} />
-                            Export .md
+                            {t('groupChat.page.exportMd')}
                         </button>
                     </div>
                 )}
@@ -496,7 +493,7 @@ export default function GroupChatPage() {
                             className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 text-sm font-medium transition-all"
                         >
                             <Square size={15} />
-                            Stop
+                            {t('groupChat.page.stop')}
                         </button>
                     ) : (
                         <button
@@ -505,13 +502,13 @@ export default function GroupChatPage() {
                             className="flex items-center gap-2 px-4 py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-black font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-lime-500/20"
                         >
                             <ChevronRight size={16} />
-                            Discuss
+                            {t('groupChat.page.discuss')}
                         </button>
                     )}
                 </div>
 
                 <p className="text-[11px] text-text-muted mt-2">
-                    Press Enter to start · Shift+Enter for new line · {config.participants.length} participants × {config.rounds} rounds = {config.participants.length * config.rounds + 1} API calls
+                    {t('groupChat.page.inputHint', { participants: config.participants.length, rounds: config.rounds, total: config.participants.length * config.rounds + 1 })}
                 </p>
             </div>
         </div>
@@ -521,11 +518,12 @@ export default function GroupChatPage() {
 // ─── Sub-components ───────────────────────────────────────────
 
 function RoundLabel({ round }: { round: number }) {
+    const { t } = useTranslation();
     return (
         <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-semibold uppercase tracking-widest text-text-muted px-2">
-                Round {round}
+                {t('groupChat.page.roundLabel')} {round}
             </span>
             <div className="h-px flex-1 bg-border" />
         </div>
@@ -541,6 +539,7 @@ function ParticipantBubble({
     colors: typeof PARTICIPANT_COLORS[0];
     participants: GroupChatConfig['participants'];
 }) {
+    const { t } = useTranslation();
     const participant = participants[msg.participantIndex ?? 0];
 
     return (
@@ -574,17 +573,18 @@ function ParticipantBubble({
                 <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{msg.content}</p>
             )}
             {msg.status === 'error' && (
-                <p className="text-sm text-red-400">{msg.error || 'Failed to get response.'}</p>
+                <p className="text-sm text-red-400">{msg.error || t('groupChat.page.responseError')}</p>
             )}
         </div>
     );
 }
 
 function SummaryBubble({ msg }: { msg: Message }) {
+    const { t } = useTranslation();
     return (
         <div className="border border-lime-300 bg-lime-50 dark:border-lime-500/20 dark:bg-lime-500/5 rounded-2xl px-5 py-4 space-y-2">
             <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-lime-700 dark:text-lime-400">Discussion Summary</span>
+                <span className="text-sm font-semibold text-lime-700 dark:text-lime-400">{t('groupChat.page.summaryLabel')}</span>
                 {msg.status === 'thinking' && (
                     <Loader2 size={14} className="animate-spin text-lime-600 dark:text-lime-400" />
                 )}
@@ -600,10 +600,11 @@ function SummaryBubble({ msg }: { msg: Message }) {
 }
 
 function ErrorBubble({ msg }: { msg: Message }) {
+    const { t } = useTranslation();
     return (
         <div className="flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             <AlertCircle size={15} className="mt-0.5 shrink-0" />
-            <span>{msg.error || 'An error occurred.'}</span>
+            <span>{msg.error || t('groupChat.page.genericError')}</span>
         </div>
     );
 }

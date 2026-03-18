@@ -7,8 +7,9 @@ import {
     Globe, Zap, CheckCircle2, XCircle, Loader2, Download, User, Sparkles,
     Shield, Key, ExternalLink, TestTube2, WifiOff, Wifi, AlertTriangle, Trash2, Power, RotateCcw,
     ChevronDown, Upload, PackageOpen, Info, Layers, Eye, EyeOff, Crown, Star,
+    Volume2, Timer,
 } from 'lucide-react';
-import { clearMemories, resetBootstrap } from '@/actions/identity';
+import { clearMemories, resetBootstrap, loadHuman } from '@/actions/identity';
 import { clearOldLogs } from '@/actions/logs';
 import {
     saveAllSettings, loadSettings, saveApiKey, testProvider,
@@ -183,7 +184,7 @@ export default function SettingsPage() {
     const { locale, setLocale, t } = useTranslation();
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
-    const [initialLocale] = useState(locale);
+    const [userChangedLocale, setUserChangedLocale] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
@@ -213,11 +214,28 @@ export default function SettingsPage() {
 
     const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434/v1');
 
+    // ─── Ollama Auto-Detect State ─────────────────────────────
+    const [ollamaDetected,      setOllamaDetected]      = useState(false);
+    const [ollamaDetectedCount, setOllamaDetectedCount] = useState(0);
+    const [ollamaDetecting,     setOllamaDetecting]     = useState(false);
+    const [ollamaFetchedModels, setOllamaFetchedModels] = useState<string[]>([]);
+    const [ollamaFetchingModels,setOllamaFetchingModels]= useState(false);
+    const [ollamaFetchError,    setOllamaFetchError]    = useState('');
+
     // ─── Custom Endpoint State ────────────────────────────────
     const [customEndpointUrl, setCustomEndpointUrl] = useState('');
     const [customEndpointToolCalling, setCustomEndpointToolCalling] = useState(false);
+    const [customEndpointVisionSupport, setCustomEndpointVisionSupport] = useState(false);
+    const [customEndpointTtsUrl, setCustomEndpointTtsUrl] = useState('');
+    const [customEndpointTimeout, setCustomEndpointTimeout] = useState(30);
     const [customFetchedModels, setCustomFetchedModels] = useState<{ id: string; name: string }[]>([]);
     const [customFetchingModels, setCustomFetchingModels] = useState(false);
+
+    // ─── Model Auto-Fetch State (OpenAI, Anthropic, Google, OpenRouter) ────
+    const [fetchedModels, setFetchedModels] = useState<Record<string, { id: string; name: string }[]>>({});
+    const [fetchingModels, setFetchingModels] = useState<Record<string, boolean>>({});
+    const [fetchModelError, setFetchModelError] = useState<Record<string, string>>({});
+    const [lastFetched, setLastFetched] = useState<Record<string, number>>({});
 
     const [moreLLMsOpen, setMoreLLMsOpen] = useState(false);
 
@@ -304,6 +322,13 @@ export default function SettingsPage() {
     const [vtApiKey, setVtApiKey] = useState('');
     const [vtEnabled, setVtEnabled] = useState(false);
     const [vtSaved, setVtSaved] = useState(false);
+
+    // State for shutdown confirmations
+    const [showKillswitchConfirm, setShowKillswitchConfirm] = useState(false);
+    const [showStopServerConfirm, setShowStopServerConfirm] = useState(false);
+    const [showResetSettingsConfirm, setShowResetSettingsConfirm] = useState(false);
+    const [showDeleteAllDataConfirm, setShowDeleteAllDataConfirm] = useState(false);
+    const [shutdownMessage, setShutdownMessage] = useState('');
     const [vtSaving, setVtSaving] = useState(false);
     const [vtError, setVtError] = useState<string | null>(null);
     const [vtTesting, setVtTesting] = useState(false);
@@ -339,6 +364,34 @@ export default function SettingsPage() {
     const [calendarExchanging, setCalendarExchanging] = useState(false);
     const [calendarSaved, setCalendarSaved] = useState(false);
 
+    // Planner AI
+    const [plannerDayStart, setPlannerDayStart] = useState('08:00');
+    const [plannerDayEnd, setPlannerDayEnd] = useState('18:00');
+    const [plannerWorkDays, setPlannerWorkDays] = useState<number[]>([1, 2, 3, 4, 5]);
+    const [plannerFocusHours, setPlannerFocusHours] = useState(3);
+    const [plannerBreakStyle, setPlannerBreakStyle] = useState<'pomodoro' | '90min' | 'flexible' | 'none'>('flexible');
+    const [plannerRegularTasks, setPlannerRegularTasks] = useState('');
+    const [plannerFixedAppointments, setPlannerFixedAppointments] = useState('');
+    const [plannerSaving, setPlannerSaving] = useState(false);
+    const [plannerLoaded, setPlannerLoaded] = useState(false);
+
+    // Apple Calendar (CalDAV)
+    const [appleCalendarConfig, setAppleCalendarConfig] = useState<{ caldavUrl: string; username: string; password: string }>({ caldavUrl: 'https://caldav.icloud.com/', username: '', password: '' });
+    const [showAppleCalendarSetup, setShowAppleCalendarSetup] = useState(false);
+    const [appleCalendarTesting, setAppleCalendarTesting] = useState(false);
+    const [appleCalendarResult, setAppleCalendarResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [appleCalendarSaved, setAppleCalendarSaved] = useState(false);
+
+    // Outlook Calendar
+    const [outlookClientId, setOutlookClientId] = useState('');
+    const [outlookClientSecret, setOutlookClientSecret] = useState('');
+    const [outlookAuthCode, setOutlookAuthCode] = useState('');
+    const [showOutlookSetup, setShowOutlookSetup] = useState(false);
+    const [outlookExchanging, setOutlookExchanging] = useState(false);
+    const [outlookTesting, setOutlookTesting] = useState(false);
+    const [outlookResult, setOutlookResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [outlookSaved, setOutlookSaved] = useState(false);
+
     // Webhook
     const [webhookConfig, setWebhookConfig] = useState<WebhookConfig | null>(null);
     const [webhookEnabling, setWebhookEnabling] = useState(false);
@@ -353,6 +406,39 @@ export default function SettingsPage() {
     const [discordResult, setDiscordResult] = useState<{ success: boolean; message: string } | null>(null);
     const [discordSaved, setDiscordSaved] = useState(false);
     const [discordBotRunning, setDiscordBotRunning] = useState(false);
+
+    // ─── FTP Profile State ──────────────────────────────────
+    interface FtpProfileLocal {
+        id: string;
+        alias: string;
+        host: string;
+        port: number;
+        username: string;
+        password: string;
+        protocol: 'ftp' | 'sftp';
+        remotePath: string;
+        enabled: boolean;
+        savedAt?: number;
+    }
+    const EMPTY_FTP_PROFILE = (): FtpProfileLocal => ({
+        id: `ftp_${Date.now().toString(36)}`,
+        alias: '',
+        host: '',
+        port: 21,
+        username: '',
+        password: '',
+        protocol: 'ftp',
+        remotePath: '/',
+        enabled: true,
+    });
+    const [ftpProfiles, setFtpProfiles] = useState<FtpProfileLocal[]>([]);
+    const [expandedFtpId, setExpandedFtpId] = useState<string | null>(null);
+    const [editingFtp, setEditingFtp] = useState<FtpProfileLocal | null>(null);
+    const [ftpSaving, setFtpSaving] = useState(false);
+    const [ftpTesting, setFtpTesting] = useState(false);
+    const [ftpTestResult, setFtpTestResult] = useState<{ success: boolean; message: string } | null>(null);
+    const [showFtpSetup, setShowFtpSetup] = useState(false);
+
 
     // Browser Control
     const [browserControlConfig, setBrowserControlConfig] = useState<BrowserControlConfig>({
@@ -396,8 +482,12 @@ export default function SettingsPage() {
     const [lioSaved, setLioSaved] = useState(false);
     const [browserConfigSaving, setBrowserConfigSaving] = useState(false);
 
-    // File System Access Mode
+    // File System Access Mode (legacy toggle)
     const [fileSystemAccess, setFileSystemAccess] = useState<'workspace' | 'full'>('workspace');
+    // File Access Mode (new fine-grained control)
+    const [fileAccessMode, setFileAccessMode] = useState<'workspace_only' | 'unrestricted' | 'custom'>('workspace_only');
+    const [allowedFolders, setAllowedFolders] = useState<string[]>([]);
+    const [newFolderInput, setNewFolderInput] = useState('');
 
     // Active Skill IDs — for gating settings sections
     const [activeSkillIds, setActiveSkillIds] = useState<Set<string>>(new Set());
@@ -458,6 +548,15 @@ export default function SettingsPage() {
     const [updateSaving, setUpdateSaving] = useState(false);
     const [updateSaveResult, setUpdateSaveResult] = useState<{ success: boolean; message: string } | null>(null);
 
+    // ─── Tab Navigation State ─────────────────────────────────
+    const [activeTab, setActiveTab] = useState<string>(() => {
+        if (typeof window !== 'undefined') {
+            const hash = window.location.hash.slice(1);
+            if (['all', 'general', 'providers', 'integrations', 'buddy', 'security', 'advanced'].includes(hash)) return hash;
+        }
+        return 'general';
+    });
+
     // Desktop App — auto-launch + desktop buddy (Electron only)
     const [autoLaunch, setAutoLaunch] = useState(false);
     const [desktopBuddy, setDesktopBuddy] = useState(false);
@@ -467,6 +566,7 @@ export default function SettingsPage() {
     const [buddySkin, setBuddySkin] = useState('skales');
     const [availableSkins, setAvailableSkins] = useState<{ id: string; label: string; preview: string | null }[]>([]);
     const [skinSelectorOpen, setSkinSelectorOpen] = useState(false);
+    const [skinRestartBanner, setSkinRestartBanner] = useState(false);
 
     // ── Unified health heartbeat (every 5 s) ────────────────────
     // Polls /api/health instead of individual Server Actions so the UI always
@@ -508,6 +608,32 @@ export default function SettingsPage() {
             .catch(() => { /* non-fatal */ });
     }, [isElectron]);
 
+    // FIX A: Silently probe Ollama on page load so the banner appears immediately
+    // Uses the default localhost URL; a manual "Detect" button re-probes after URL changes.
+    useEffect(() => {
+        const probe = async () => {
+            try {
+                const res = await fetch('http://localhost:11434/api/tags', {
+                    signal: AbortSignal.timeout(3000),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const names: string[] = (data.models || []).map((m: any) => m.name as string);
+                    setOllamaDetected(true);
+                    setOllamaDetectedCount(names.length);
+                    if (names.length > 0) setOllamaFetchedModels(names);
+                }
+            } catch { /* Ollama not running — silent */ }
+        };
+        probe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Hash sync effect for tab navigation
+    useEffect(() => {
+        window.location.hash = activeTab;
+    }, [activeTab]);
+
     // Initial load
     useEffect(() => {
         setMounted(true);
@@ -525,6 +651,11 @@ export default function SettingsPage() {
             }
         }).catch(() => { });
 
+        // Load FTP profiles
+        fetch('/api/ftp/profiles').then(r => r.json()).then(data => {
+            if (data.profiles) setFtpProfiles(data.profiles);
+        }).catch(() => {});
+
         // Load skills configs
         loadCalendarConfig().then(cfg => {
             if (cfg) { setCalendarConfig(cfg); setCalendarSaved(true); }
@@ -532,6 +663,23 @@ export default function SettingsPage() {
         loadWebhookConfig().then(cfg => {
             if (cfg) setWebhookConfig(cfg);
         }).catch(() => { });
+
+        // Load Planner preferences
+        import('@/actions/planner').then(({ loadPlannerPreferences }) =>
+            loadPlannerPreferences().then(prefs => {
+                if (prefs) {
+                    setPlannerDayStart(prefs.dayStart || '08:00');
+                    setPlannerDayEnd(prefs.dayEnd || '18:00');
+                    setPlannerWorkDays(prefs.workDays || [1, 2, 3, 4, 5]);
+                    setPlannerFocusHours(prefs.focusHours || 3);
+                    setPlannerBreakStyle(prefs.breakStyle || 'flexible');
+                    setPlannerRegularTasks((prefs.regularTasks || []).join(', '));
+                    setPlannerFixedAppointments((prefs.fixedAppointments || []).join('\n'));
+                    setPlannerLoaded(true);
+                }
+            }).catch(() => { /* planner not yet configured */ })
+        ).catch(() => { });
+
         loadDiscordConfig().then(cfg => {
             if (cfg) {
                 setDiscordConfig({ botToken: '', guildId: cfg.guildId || '', channelId: cfg.channelId || '' });
@@ -589,8 +737,11 @@ export default function SettingsPage() {
                 setSkills(prev => ({ ...prev, ...settings.skills }));
             }
 
-            // Load File System Access setting
+            // Load File System Access setting (legacy)
             setFileSystemAccess(settings.fileSystemAccess || 'full');
+            // Load new fine-grained file access mode
+            if (settings.fileAccessMode) setFileAccessMode(settings.fileAccessMode as any);
+            if (Array.isArray(settings.allowedFolders)) setAllowedFolders(settings.allowedFolders);
 
             // Load Tavily API key
             if (settings.tavilyApiKey) setTavilyApiKey(settings.tavilyApiKey);
@@ -603,8 +754,11 @@ export default function SettingsPage() {
             // Load Task Timeout
             if (settings.taskTimeoutSeconds) setTaskTimeoutSeconds(settings.taskTimeoutSeconds);
 
-            // Load Safety Mode
-            if (settings.safetyMode) setSafetyMode(settings.safetyMode);
+            // Load Safety Mode (fallback invalid values like 'advanced' to 'safe')
+            if (settings.safetyMode) {
+                const mode = settings.safetyMode;
+                setSafetyMode((mode === 'safe' || mode === 'unrestricted') ? mode : 'safe');
+            }
 
             // Load Autonomous Mode
             setIsAutonomousMode(settings.isAutonomousMode ?? false);
@@ -654,6 +808,9 @@ export default function SettingsPage() {
                 setCustomEndpointUrl(settings.providers.custom.baseUrl);
             }
             setCustomEndpointToolCalling(settings.customEndpointToolCalling ?? false);
+            setCustomEndpointVisionSupport(settings.customEndpointVisionSupport ?? false);
+            setCustomEndpointTtsUrl(settings.customEndpointTtsUrl ?? '');
+            setCustomEndpointTimeout(settings.customEndpointTimeout ?? 30);
 
             setLoading(false);
         }).catch(() => setLoading(false));
@@ -690,6 +847,135 @@ export default function SettingsPage() {
             student: `The kind of tutor who makes difficult things actually click. You explain concepts step by step, starting from what the student already knows and building from there - never assuming too much or too little. You use concrete examples, analogies, and real-world applications to make abstract ideas tangible. When a student is stuck you don't just repeat the answer louder; you try a different angle. You encourage genuine understanding over memorization and shortcuts. You cover all subjects - maths, sciences, history, languages, literature, programming, and more. You're patient with confusion and honest about difficulty ("this is genuinely hard, but here's how to think about it"). When you don't know something you say so clearly, then help the student figure out how to find the answer themselves. You celebrate progress without being patronizing. You know that learning takes time and repetition, and you'll revisit the same concept as many times as needed without frustration. You always respond in the language the student writes in, matching your vocabulary and complexity to their apparent level.`,
         };
         return prompts[p] || prompts.default;
+    };
+
+    // ── FIX A/B: Ollama detect (manual button) + fetch model list ────────────
+    const detectOllamaManual = async () => {
+        setOllamaDetecting(true);
+        setOllamaFetchError('');
+        try {
+            const base = ollamaUrl.trim().replace(/\/v1\/?$/, '');
+            const res = await fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(5000) });
+            if (res.ok) {
+                const data = await res.json();
+                const names: string[] = (data.models || []).map((m: any) => m.name as string);
+                setOllamaDetected(true);
+                setOllamaDetectedCount(names.length);
+                if (names.length > 0) setOllamaFetchedModels(names);
+                else setOllamaFetchError(t('settings.ollama.helpText'));
+            } else {
+                setOllamaDetected(false);
+                setOllamaFetchError(`${t('settings.ollama.connectionFailed')} — HTTP ${res.status}`);
+            }
+        } catch {
+            setOllamaDetected(false);
+            const base = ollamaUrl.trim().replace(/\/v1\/?$/, '');
+            setOllamaFetchError(`${t('settings.ollama.connectionFailed')} (${base}). ${t('settings.ollama.helpText')}`);
+        } finally {
+            setOllamaDetecting(false);
+        }
+    };
+
+    const fetchOllamaModels = async () => {
+        setOllamaFetchingModels(true);
+        setOllamaFetchError('');
+        try {
+            const base = ollamaUrl.trim().replace(/\/v1\/?$/, '');
+            const res = await fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(5000) });
+            if (res.ok) {
+                const data = await res.json();
+                const names: string[] = (data.models || []).map((m: any) => m.name as string);
+                if (names.length > 0) {
+                    setOllamaFetchedModels(names);
+                    setOllamaDetected(true);
+                    setOllamaFetchError('');
+                } else {
+                    // FIX E: Helpful CORS/setup message when no models found
+                    setOllamaFetchError('No models found. Run: ollama pull llama3.2');
+                }
+            } else {
+                // FIX E: Clear helpful error for connection failures
+                setOllamaFetchError(
+                    `${t('settings.ollama.connectionFailed')} — HTTP ${res.status}.\n` +
+                    `${t('settings.ollama.helpText')}\n` +
+                    `macOS: ${t('settings.ollama.macOSHelp')}\n` +
+                    `Windows: ${t('settings.ollama.windowsHelp')}`
+                );
+            }
+        } catch {
+            setOllamaFetchError(
+                `${t('settings.ollama.connectionFailed')}.\n` +
+                `${t('settings.ollama.helpText')}\n` +
+                `macOS: ${t('settings.ollama.macOSHelp')}\n` +
+                `Windows: ${t('settings.ollama.windowsHelp')}`
+            );
+        } finally {
+            setOllamaFetchingModels(false);
+        }
+    };
+
+    // ── Model Auto-Fetch (OpenAI, Anthropic, Google, OpenRouter) ───────────
+    const fetchProviderModels = async (providerId: string) => {
+        setFetchingModels(prev => ({ ...prev, [providerId]: true }));
+        setFetchModelError(prev => ({ ...prev, [providerId]: '' }));
+        try {
+            const key = apiKeys[providerId as Provider] || '';
+            let models: { id: string; name: string }[] = [];
+
+            if (providerId === 'openai') {
+                const res = await fetch('https://api.openai.com/v1/models', {
+                    headers: { 'Authorization': `Bearer ${key}` },
+                    signal: AbortSignal.timeout(10000),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                models = (data.data || [])
+                    .filter((m: any) => m.id.startsWith('gpt-') || m.id.startsWith('o1') || m.id.startsWith('o3') || m.id.startsWith('chatgpt-'))
+                    .map((m: any) => ({ id: m.id, name: m.id }))
+                    .sort((a: any, b: any) => a.id.localeCompare(b.id));
+            } else if (providerId === 'anthropic') {
+                // Anthropic doesn't have a public /v1/models — use updated hardcoded list
+                models = [
+                    { id: 'claude-opus-4-20250514', name: 'Claude Opus 4 (Best)' },
+                    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
+                    { id: 'claude-3-7-sonnet-20250219', name: 'Claude 3.7 Sonnet' },
+                    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
+                    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku (Fast)' },
+                    { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus (Legacy)' },
+                ];
+            } else if (providerId === 'google') {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, {
+                    signal: AbortSignal.timeout(10000),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                models = (data.models || [])
+                    .filter((m: any) => m.name?.includes('gemini') && m.supportedGenerationMethods?.includes('generateContent'))
+                    .map((m: any) => ({
+                        id: m.name.replace('models/', ''),
+                        name: m.displayName || m.name.replace('models/', ''),
+                    }))
+                    .sort((a: any, b: any) => a.id.localeCompare(b.id));
+            } else if (providerId === 'openrouter') {
+                const res = await fetch('https://openrouter.ai/api/v1/models', {
+                    headers: key ? { 'Authorization': `Bearer ${key}` } : {},
+                    signal: AbortSignal.timeout(10000),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                models = (data.data || [])
+                    .map((m: any) => ({ id: m.id, name: m.name || m.id }))
+                    .sort((a: any, b: any) => a.name.localeCompare(b.name));
+            }
+
+            if (models.length === 0) throw new Error('No models returned');
+            setFetchedModels(prev => ({ ...prev, [providerId]: models }));
+            setLastFetched(prev => ({ ...prev, [providerId]: Date.now() }));
+        } catch (err: any) {
+            setFetchModelError(prev => ({ ...prev, [providerId]: err?.message || 'Failed to fetch models' }));
+        } finally {
+            setFetchingModels(prev => ({ ...prev, [providerId]: false }));
+        }
     };
 
     const handlePersonaChange = (newPersona: string) => {
@@ -1007,6 +1293,14 @@ export default function SettingsPage() {
                     const base64 = (ev.target?.result as string).split(',')[1];
                     const res = await importData(base64);
                     if (res.success) {
+                        // Sync locale from restored human.json → localStorage
+                        try {
+                            const human = await loadHuman();
+                            const lang = human?.preferences?.language;
+                            if (lang && lang !== 'auto') {
+                                localStorage.setItem('skales-locale', lang);
+                            }
+                        } catch { /* non-fatal — locale will stay as-is */ }
                         setImportResult({ success: true, message: `✅ ${res.message} Page will reload in 3s...` });
                         setTimeout(() => window.location.reload(), 3000);
                     } else {
@@ -1048,10 +1342,10 @@ export default function SettingsPage() {
                 setBrowserControlConfig(prev => ({ ...prev, installed: true }));
                 setBrowserInstallResult({ success: true, message: '✅ Chromium installed! Browser Control is ready.' });
             } else {
-                setBrowserInstallResult({ success: false, message: res.error || 'Installation failed. Check that npm/npx is available.' });
+                setBrowserInstallResult({ success: false, message: `${res.error || t('settings.browser.installFailed')}\n${t('settings.browser.manualInstallHint')}` });
             }
         } catch (e: any) {
-            setBrowserInstallResult({ success: false, message: e.message });
+            setBrowserInstallResult({ success: false, message: `${e.message}\n${t('settings.browser.manualInstallHint')}` });
         } finally {
             setBrowserInstalling(false);
         }
@@ -1147,6 +1441,135 @@ export default function SettingsPage() {
         setCalendarResult(null);
         setCalendarAuthUrl('');
         setCalendarAuthCode('');
+    };
+
+    // Apple Calendar
+    const handleAppleCalendarSave = async () => {
+        try {
+            const s = await loadSettings();
+            await saveAllSettings({ ...s, appleCalendar: appleCalendarConfig });
+            setAppleCalendarSaved(true);
+            setAppleCalendarResult({ success: true, message: t('calendar.connectionSuccess') });
+        } catch (e: any) {
+            setAppleCalendarResult({ success: false, message: e.message });
+        }
+    };
+
+    const handleAppleCalendarTest = async () => {
+        setAppleCalendarTesting(true);
+        setAppleCalendarResult(null);
+        try {
+            const res = await fetch('/api/calendar/apple/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appleCalendarConfig),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || t('calendar.connectionFailed'));
+            setAppleCalendarResult({ success: true, message: `${t('calendar.connectionSuccess')} ${data.eventsFound} ${t('calendar.eventsToday')}` });
+            setAppleCalendarSaved(true);
+        } catch (e: any) {
+            setAppleCalendarResult({ success: false, message: `${t('calendar.connectionFailed')}: ${e.message}` });
+        } finally {
+            setAppleCalendarTesting(false);
+        }
+    };
+
+    const handleAppleCalendarDisconnect = async () => {
+        if (!confirm('Disconnect Apple Calendar?')) return;
+        const s = await loadSettings();
+        await saveAllSettings({ ...s, appleCalendar: undefined });
+        setAppleCalendarConfig({ caldavUrl: 'https://caldav.icloud.com/', username: '', password: '' });
+        setAppleCalendarSaved(false);
+        setAppleCalendarResult(null);
+    };
+
+    // Outlook Calendar
+    const handleOutlookGetAuthUrl = () => {
+        if (!outlookClientId) return;
+        // Build OAuth URL client-side (pure URL construction — no server call needed)
+        const params = new URLSearchParams({
+            client_id: outlookClientId,
+            response_type: 'code',
+            redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+            scope: 'Calendars.ReadWrite User.Read offline_access',
+            response_mode: 'query',
+            prompt: 'consent',
+        });
+        const url = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params.toString()}`;
+        window.open(url, '_blank');
+    };
+
+    const handleOutlookExchangeCode = async () => {
+        if (!outlookAuthCode || !outlookClientId) return;
+        setOutlookExchanging(true);
+        setOutlookResult(null);
+        try {
+            const res = await fetch('/api/calendar/outlook/exchange-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: outlookAuthCode, clientId: outlookClientId, clientSecret: outlookClientSecret || undefined }),
+            });
+            const res2 = await res.json();
+            const resData = res2;
+            if (resData.success) {
+                setOutlookSaved(true);
+                setOutlookResult({ success: true, message: t('calendar.connectionSuccess') });
+                setOutlookAuthCode('');
+            } else {
+                setOutlookResult({ success: false, message: resData.error || t('calendar.connectionFailed') });
+            }
+        } catch (e: any) {
+            setOutlookResult({ success: false, message: e.message });
+        } finally {
+            setOutlookExchanging(false);
+        }
+    };
+
+    const handleOutlookTest = async () => {
+        setOutlookTesting(true);
+        setOutlookResult(null);
+        try {
+            const resp = await fetch('/api/calendar/outlook/test');
+            const res = await resp.json();
+            setOutlookResult({ success: res.success, message: res.success ? t('calendar.connectionSuccess') : (res.error || t('calendar.connectionFailed')) });
+        } catch (e: any) {
+            setOutlookResult({ success: false, message: e.message });
+        } finally {
+            setOutlookTesting(false);
+        }
+    };
+
+    const handleOutlookDisconnect = async () => {
+        if (!confirm('Disconnect Outlook Calendar?')) return;
+        await fetch('/api/calendar/outlook/disconnect', { method: 'POST' });
+        setOutlookSaved(false);
+        setOutlookResult(null);
+        setOutlookClientId('');
+        setOutlookClientSecret('');
+        setOutlookAuthCode('');
+    };
+
+    // Planner preferences save
+    const handlePlannerSave = async () => {
+        setPlannerSaving(true);
+        try {
+            const { savePlannerPreferences } = await import('@/actions/planner');
+            await savePlannerPreferences({
+                dayStart: plannerDayStart,
+                dayEnd: plannerDayEnd,
+                workDays: plannerWorkDays,
+                focusHours: plannerFocusHours,
+                breakStyle: plannerBreakStyle,
+                regularTasks: plannerRegularTasks.split(',').map(s => s.trim()).filter(Boolean),
+                fixedAppointments: plannerFixedAppointments.split('\n').map(s => s.trim()).filter(Boolean),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                createdAt: '',
+                updatedAt: '',
+            });
+            setPlannerLoaded(true);
+        } catch { /* ignore */ }
+        setPlannerSaving(false);
     };
 
     // Webhook
@@ -1274,6 +1697,8 @@ export default function SettingsPage() {
                 activeUserBehavior: activeBehavior,
                 gifIntegration: gifConfig,
                 fileSystemAccess,
+                fileAccessMode,
+                allowedFolders: fileAccessMode === 'custom' ? allowedFolders : undefined,
                 tavilyApiKey: tavilyApiKey || undefined,
                 googlePlacesApiKey: googlePlacesApiKey || undefined,
                 ttsConfig,
@@ -1282,6 +1707,9 @@ export default function SettingsPage() {
                 safetyMode,
                 isAutonomousMode,
                 customEndpointToolCalling,
+                customEndpointVisionSupport,
+                customEndpointTtsUrl: customEndpointTtsUrl || undefined,
+                customEndpointTimeout: customEndpointTimeout || 30,
                 buddy_skin: buddySkin,
             } as any);
 
@@ -1327,27 +1755,53 @@ export default function SettingsPage() {
                 <div className="mb-6 sm:mb-8 animate-fadeIn">
                     <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
                         <SettingsIcon className="text-lime-500" size={24} />
-                        Settings
+                        {t('settings.title')}
                     </h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                        Configure your AI providers, persona, and integrations.
+                        {t('settings.subtitle')}
                     </p>
+                </div>
+
+                {/* ─── Settings Tab Navigation ─── */}
+                <div className="flex gap-1 mb-6 p-1 rounded-xl border overflow-x-auto" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    {[
+                        { id: 'all',          icon: '📋', label: t('settings.tabs.all')          },
+                        { id: 'general',      icon: '⚙️', label: t('settings.tabs.general')      },
+                        { id: 'providers',    icon: '🤖', label: t('settings.tabs.providers')    },
+                        { id: 'integrations', icon: '🔗', label: t('settings.tabs.integrations') },
+                        { id: 'buddy',        icon: '🔔', label: t('settings.tabs.buddy')        },
+                        { id: 'security',     icon: '🔒', label: t('settings.tabs.security')     },
+                        { id: 'advanced',     icon: '🛠️', label: t('settings.tabs.advanced')     },
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                                activeTab === tab.id
+                                    ? 'bg-lime-500/15 text-lime-400 border border-lime-500/30'
+                                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-light)] border border-transparent'
+                            }`}
+                        >
+                            <span>{tab.icon}</span><span className="hidden sm:inline ml-1">{tab.label}</span>
+                        </button>
+                    ))}
                 </div>
 
                 <div className="max-w-4xl mx-auto space-y-8 stagger-children">
 
+                    {(activeTab === 'all' || activeTab === 'general') && (<>
                     {/* ─── Appearance ─── */}
                     <section className="rounded-2xl border p-6"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Monitor size={20} className="text-blue-500" />
-                            Appearance
+                            {t('settings.appearance')}
                         </h2>
                         <div className="flex gap-3 p-1 rounded-xl w-fit border" style={{ borderColor: 'var(--border)', background: 'var(--surface-light)' }}>
                             {[
-                                { key: 'light', icon: <Sun size={16} />, label: 'Light' },
-                                { key: 'dark', icon: <Moon size={16} />, label: 'Dark' },
-                                { key: 'system', icon: <Monitor size={16} />, label: 'System' },
+                                { key: 'light', icon: <Sun size={16} />, label: t('settings.light') },
+                                { key: 'dark', icon: <Moon size={16} />, label: t('settings.dark') },
+                                { key: 'system', icon: <Monitor size={16} />, label: t('settings.systemTheme') },
                             ].map(t => (
                                 <button key={t.key}
                                     onClick={() => setTheme(t.key)}
@@ -1376,7 +1830,7 @@ export default function SettingsPage() {
                         </p>
                         <select
                             value={locale}
-                            onChange={e => setLocale(e.target.value)}
+                            onChange={e => { setLocale(e.target.value); setUserChangedLocale(true); }}
                             className="text-sm rounded-lg px-3 py-2 border outline-none focus:ring-1 focus:ring-lime-500"
                             style={{
                                 background: 'var(--surface-light)',
@@ -1391,7 +1845,7 @@ export default function SettingsPage() {
                                 </option>
                             ))}
                         </select>
-                        {locale !== initialLocale && (
+                        {userChangedLocale && (
                             <div className="flex items-center gap-3 mt-2">
                                 <p className="text-sm text-amber-500">
                                     ⚠️ {t('settings.languageRestartHint')}
@@ -1407,7 +1861,7 @@ export default function SettingsPage() {
                                     }}
                                     className="text-xs font-bold px-3 py-1 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition-all whitespace-nowrap"
                                 >
-                                    Restart Now
+                                    {t('settings.sections.restartNow')}
                                 </button>
                             </div>
                         )}
@@ -1536,6 +1990,25 @@ export default function SettingsPage() {
                                         />
                                     </button>
 
+                                    {skinRestartBanner && (
+                                        <div className="mt-3 flex items-center gap-3 px-4 py-3 rounded-xl text-sm"
+                                            style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>
+                                            <span className="flex-1">🎨 {t('settings.skinRestartRequired')}</span>
+                                            <button onClick={() => {
+                                                if ((window as any).skales?.send) {
+                                                    (window as any).skales.send('relaunch-app');
+                                                } else {
+                                                    window.location.reload();
+                                                }
+                                            }} className="px-3 py-1 rounded-lg text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40">
+                                                {t('settings.restart')}
+                                            </button>
+                                            <button onClick={() => setSkinRestartBanner(false)} className="px-3 py-1 rounded-lg text-xs font-bold"
+                                                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                                                {t('settings.later')}
+                                            </button>
+                                        </div>
+                                    )}
                                     {skinSelectorOpen && (
                                         <div className="grid grid-cols-3 gap-3 mt-4">
                                             {availableSkins.map(skin => {
@@ -1545,18 +2018,13 @@ export default function SettingsPage() {
                                                     <button
                                                         key={skin.id}
                                                         type="button"
-                                                        onClick={() => {
+                                                        onClick={async () => {
                                                             setBuddySkin(skin.id);
-                                                            // Bug 17: Prompt restart after skin change
-                                                            setTimeout(() => {
-                                                                if (window.confirm('Restart required to apply the new skin. Restart now?')) {
-                                                                    if ((window as any).skales?.send) {
-                                                                        (window as any).skales.send('relaunch-app');
-                                                                    } else {
-                                                                        window.location.reload();
-                                                                    }
-                                                                }
-                                                            }, 300);
+                                                            // Save immediately before showing banner
+                                                            try {
+                                                                await saveAllSettings({ buddy_skin: skin.id } as any);
+                                                            } catch { /* silently handled */ }
+                                                            setSkinRestartBanner(true);
                                                         }}
                                                         className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all"
                                                         style={{
@@ -1688,7 +2156,7 @@ export default function SettingsPage() {
                             <div className="flex items-center justify-between mb-2 mt-6">
                                 <label className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                     <Sparkles size={16} className="text-amber-500" />
-                                    Soul / System Identity
+                                    {t('settings.soulIdentity')}
                                 </label>
                                 {customPromptActive && (
                                     <button onClick={handleResetPrompt}
@@ -1723,14 +2191,16 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </section>
+                    </>)}
 
 
+                    {(activeTab === 'all' || activeTab === 'providers') && (<>
                     {/* ─── AI Providers ─── */}
                     <section className="rounded-2xl border p-6"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Server size={20} className="text-lime-500" />
-                            AI Providers
+                            {t('settings.sections.aiProviders')}
                         </h2>
                         <div className="flex items-start gap-2 p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(132,204,22,0.08)', border: '1px solid rgba(132,204,22,0.25)', color: 'var(--text-secondary)' }}>
                             <span className="text-lime-400 mt-0.5 shrink-0">ℹ️</span>
@@ -1793,13 +2263,49 @@ export default function SettingsPage() {
                                                 </div>
                                             )}
                                             {provider.id === 'ollama' && (
-                                                <div>
+                                                <div className="space-y-2">
+                                                    {/* FIX A: auto-detect banner */}
+                                                    {ollamaDetected && (
+                                                        <div className="flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-semibold" style={{ background: 'rgba(163,230,53,0.12)', border: '1px solid rgba(163,230,53,0.35)', color: '#a3e635' }}>
+                                                            <span>🦙 {t('settings.ollama.detected')} — {t('settings.ollama.modelsAvailable', { count: ollamaDetectedCount })}</span>
+                                                            <button
+                                                                onClick={() => { setActiveProvider('ollama'); }}
+                                                                className="ml-2 px-2 py-0.5 rounded font-bold text-[10px] transition-colors hover:opacity-80"
+                                                                style={{ background: 'rgba(163,230,53,0.25)', color: '#a3e635' }}
+                                                            >{t('settings.ollama.useOllama')}</button>
+                                                        </div>
+                                                    )}
                                                     <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Server URL</label>
                                                     <input type="text" value={ollamaUrl}
                                                         onChange={(e) => setOllamaUrl(e.target.value)}
                                                         placeholder="http://localhost:11434/v1"
                                                         className="w-full p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-lime-500"
                                                         style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                                    {/* FIX A/B: Detect + Fetch buttons */}
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={detectOllamaManual}
+                                                            disabled={ollamaDetecting}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-colors"
+                                                            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)', opacity: ollamaDetecting ? 0.6 : 1 }}
+                                                        >
+                                                            {ollamaDetecting ? t('settings.ollama.detecting') : t('settings.ollama.detect')}
+                                                        </button>
+                                                        <button
+                                                            onClick={fetchOllamaModels}
+                                                            disabled={ollamaFetchingModels}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-colors"
+                                                            style={{ background: 'rgba(163,230,53,0.1)', border: '1px solid rgba(163,230,53,0.3)', color: '#a3e635', opacity: ollamaFetchingModels ? 0.6 : 1 }}
+                                                        >
+                                                            {ollamaFetchingModels ? t('settings.ollama.fetching') : t('settings.ollama.fetchModels')}
+                                                        </button>
+                                                    </div>
+                                                    {/* FIX E: Helpful error + CORS guidance */}
+                                                    {ollamaFetchError && (
+                                                        <div className="px-3 py-2 rounded-lg text-[11px] whitespace-pre-line" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444' }}>
+                                                            {ollamaFetchError}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {provider.id === 'custom' && (
@@ -1817,7 +2323,8 @@ export default function SettingsPage() {
                                             <div>
                                                 <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Model</label>
                                                 <select
-                                                    value={PROVIDER_MODELS[provider.id]?.some(m => m.value === models[provider.id]) ? models[provider.id] : '__custom__'}
+                                                    // FIX B: For Ollama, check fetched models in addition to the static list
+                                                    value={(PROVIDER_MODELS[provider.id]?.some(m => m.value === models[provider.id]) || (provider.id === 'ollama' && ollamaFetchedModels.includes(models[provider.id]))) ? models[provider.id] : '__custom__'}
                                                     onChange={(e) => {
                                                         if (e.target.value === '__custom__') { setModels(prev => ({ ...prev, [provider.id]: '' })); }
                                                         else { setModels(prev => ({ ...prev, [provider.id]: e.target.value })); }
@@ -1827,9 +2334,14 @@ export default function SettingsPage() {
                                                     aria-label={`Model name for ${provider.label}`}
                                                 >
                                                     {PROVIDER_MODELS[provider.id]?.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                                                    {/* FIX B: Append fetched Ollama models that aren't in the static list */}
+                                                    {provider.id === 'ollama' && ollamaFetchedModels
+                                                        .filter(m => !PROVIDER_MODELS.ollama.some(p => p.value === m))
+                                                        .map(m => <option key={m} value={m}>{m}</option>)}
                                                     <option value="__custom__">✏️ Custom model...</option>
                                                 </select>
-                                                {!PROVIDER_MODELS[provider.id]?.some(m => m.value === models[provider.id]) && (
+                                                {/* FIX B: For Ollama, also check fetched models before showing custom input */}
+                                                {!(PROVIDER_MODELS[provider.id]?.some(m => m.value === models[provider.id]) || (provider.id === 'ollama' && ollamaFetchedModels.includes(models[provider.id]))) && (
                                                     <input type="text" value={models[provider.id]}
                                                         onChange={(e) => setModels(prev => ({ ...prev, [provider.id]: e.target.value }))}
                                                         placeholder={t('settings.integrations.customModel')}
@@ -1839,6 +2351,44 @@ export default function SettingsPage() {
                                                 )}
                                             </div>
                                         </div>
+                                        {/* Model Auto-Fetch button (OpenAI, Anthropic, Google, OpenRouter) */}
+                                        {['openai', 'anthropic', 'google', 'openrouter'].includes(provider.id) && (
+                                            <div className="mt-3 p-3 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
+                                                        <RotateCcw size={11} className="inline mr-1" />Fetch Available Models
+                                                    </span>
+                                                    <button
+                                                        onClick={() => fetchProviderModels(provider.id)}
+                                                        disabled={fetchingModels[provider.id] || (!apiKeys[provider.id] && provider.id !== 'anthropic')}
+                                                        className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 bg-lime-500/10 text-lime-500 hover:bg-lime-500/20 disabled:opacity-40"
+                                                    >
+                                                        {fetchingModels[provider.id] ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
+                                                        Fetch
+                                                    </button>
+                                                </div>
+                                                {fetchedModels[provider.id]?.length > 0 && (
+                                                    <select
+                                                        value={models[provider.id]}
+                                                        onChange={(e) => setModels(prev => ({ ...prev, [provider.id]: e.target.value }))}
+                                                        className="w-full p-2 rounded-lg text-xs outline-none transition-all focus:ring-1 focus:ring-lime-500 appearance-none cursor-pointer mt-1"
+                                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                                                    >
+                                                        {fetchedModels[provider.id].map(m => (
+                                                            <option key={m.id} value={m.id}>{m.name || m.id}</option>
+                                                        ))}
+                                                    </select>
+                                                )}
+                                                {lastFetched[provider.id] && (
+                                                    <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                                                        Last fetched: {new Date(lastFetched[provider.id]).toLocaleTimeString()} ({fetchedModels[provider.id]?.length || 0} models)
+                                                    </p>
+                                                )}
+                                                {fetchModelError[provider.id] && (
+                                                    <p className="text-[10px] mt-1 text-red-400">{fetchModelError[provider.id]}</p>
+                                                )}
+                                            </div>
+                                        )}
                                         {/* Ollama Setup */}
                                         {provider.id === 'ollama' && (
                                             <div className="mt-4 p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -1930,6 +2480,57 @@ export default function SettingsPage() {
                                                             <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${customEndpointToolCalling ? 'left-5' : 'left-0.5'}`} />
                                                         </button>
                                                     </div>
+                                                </div>
+                                                {/* Vision support toggle */}
+                                                <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <h4 className="text-xs font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                                                <Eye size={13} className="text-purple-500" />{t('settings.customEndpoint.visionSupport')}
+                                                            </h4>
+                                                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('settings.customEndpoint.visionHelp')}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setCustomEndpointVisionSupport(v => !v)}
+                                                            className={`relative w-11 h-6 rounded-full transition-all flex-shrink-0 ${customEndpointVisionSupport ? 'bg-purple-500' : 'bg-gray-600'}`}
+                                                            aria-label={t('settings.customEndpoint.visionSupport')}
+                                                        >
+                                                            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${customEndpointVisionSupport ? 'left-5' : 'left-0.5'}`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {/* TTS endpoint URL */}
+                                                <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                    <h4 className="text-xs font-bold flex items-center gap-2 mb-2" style={{ color: 'var(--text-primary)' }}>
+                                                        <Volume2 size={13} className="text-purple-500" />{t('settings.customEndpoint.ttsUrl')}
+                                                    </h4>
+                                                    <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>{t('settings.customEndpoint.ttsEnabled')}</p>
+                                                    <input
+                                                        type="text"
+                                                        value={customEndpointTtsUrl}
+                                                        onChange={e => setCustomEndpointTtsUrl(e.target.value)}
+                                                        placeholder="https://api.example.com/v1/audio/speech"
+                                                        className="w-full p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-purple-500 font-mono"
+                                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                                                    />
+                                                </div>
+                                                {/* Request timeout */}
+                                                <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                                                    <h4 className="text-xs font-bold flex items-center gap-2 mb-2" style={{ color: 'var(--text-primary)' }}>
+                                                        <Timer size={13} className="text-purple-500" />{t('settings.customEndpoint.timeout')}
+                                                    </h4>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="number"
+                                                            min={5}
+                                                            value={customEndpointTimeout}
+                                                            onChange={e => setCustomEndpointTimeout(Math.max(5, Number(e.target.value) || 30))}
+                                                            className="w-24 p-2.5 rounded-lg text-sm outline-none transition-all focus:ring-1 focus:ring-purple-500"
+                                                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                                                        />
+                                                        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{t('settings.customEndpoint.seconds')}</span>
+                                                    </div>
+                                                    <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>{t('settings.customEndpoint.timeoutHint')}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -2089,14 +2690,16 @@ export default function SettingsPage() {
                             )}
                         </div>
                     </section>
+                    </>)}
 
+                    {(activeTab === 'all' || activeTab === 'buddy') && (<>
                     {/* ─── Friend Mode (Active Behavior) ─── */}
                     <section className="rounded-2xl border p-6"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                 <span className="text-xl">🤝</span>
-                                Friend Mode
+                                {t('settings.friendMode.title')}
                             </h2>
                             {/* Master Toggle */}
                             <button
@@ -2108,14 +2711,14 @@ export default function SettingsPage() {
                             </button>
                         </div>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-                            Skales proactively reaches out to build a relationship with you - sharing ideas, asking about your projects, or just checking in. Helps Skales learn about you over time.
+                            {t('settings.friendMode.desc')}
                         </p>
 
                         <div className={`space-y-5 transition-opacity ${activeBehavior?.enabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
 
                             {/* Frequency */}
                             <div>
-                                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>How often?</p>
+<p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings.friendMode.frequency')}</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     {(['low', 'medium', 'high'] as const).map(freq => (
                                         <button
@@ -2125,9 +2728,9 @@ export default function SettingsPage() {
                                             style={{ background: activeBehavior?.frequency === freq ? undefined : 'var(--background)', color: activeBehavior?.frequency === freq ? undefined : 'var(--text-secondary)' }}
                                             aria-label={`Set Friend Mode frequency to ${freq === 'low' ? 'rarely' : freq === 'medium' ? 'sometimes' : 'often'}`}
                                         >
-                                            {freq === 'low' ? '🌙 Rarely' : freq === 'medium' ? '☀️ Sometimes' : '⚡ Often'}
+                                            {freq === 'low' ? `🌙 ${t('settings.friendMode.rarely')}` : freq === 'medium' ? `☀️ ${t('settings.friendMode.sometimes')}` : `⚡ ${t('settings.friendMode.often')}`}
                                             <span className="block text-[10px] mt-0.5 opacity-70">
-                                                {freq === 'low' ? '~once/day' : freq === 'medium' ? '~few/day' : '~hourly'}
+                                                {freq === 'low' ? t('settings.friendMode.onceDay') : freq === 'medium' ? t('settings.friendMode.fewDay') : t('settings.friendMode.hourly')}
                                             </span>
                                         </button>
                                     ))}
@@ -2136,10 +2739,10 @@ export default function SettingsPage() {
 
                             {/* Quiet Hours */}
                             <div>
-                                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>🤫 Quiet Hours (no messages)</p>
+                                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>{t('settings.friendMode.quietHours')} 🤫</p>
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1">
-                                        <label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>From</label>
+<label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('settings.friendMode.from')}</label>
                                         <input
                                             type="number" min={0} max={23}
                                             value={activeBehavior?.quietHoursStart ?? 22}
@@ -2150,7 +2753,7 @@ export default function SettingsPage() {
                                     </div>
                                     <span className="text-lg mt-4" style={{ color: 'var(--text-muted)' }}>→</span>
                                     <div className="flex-1">
-                                        <label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>Until</label>
+<label className="text-xs mb-1 block" style={{ color: 'var(--text-muted)' }}>{t('settings.friendMode.until')}</label>
                                         <input
                                             type="number" min={0} max={23}
                                             value={activeBehavior?.quietHoursEnd ?? 7}
@@ -2160,14 +2763,14 @@ export default function SettingsPage() {
                                         />
                                     </div>
                                     <p className="text-xs mt-4 flex-1" style={{ color: 'var(--text-muted)' }}>
-                                        e.g. 22 → 7 = no messages 10pm–7am
+                                        {t('settings.friendMode.quietExample')}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Channels */}
                             <div>
-                                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>📡 Where should Skales reach out?</p>
+                                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>📡 {t('settings.friendMode.whereReach')}</p>
                                 <div className="space-y-2">
                                     <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-[var(--surface-light)] transition-colors"
                                         style={{ background: 'var(--background)' }}>
@@ -2178,8 +2781,8 @@ export default function SettingsPage() {
                                             className="w-4 h-4 accent-lime-500"
                                         />
                                         <div>
-                                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>💬 Dashboard Chat</p>
-                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Messages appear in the chat when the dashboard is open</p>
+                                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>💬 {t('settings.friendMode.dashboardChat')}</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings.friendMode.dashboardChatDesc')}</p>
                                         </div>
                                     </label>
                                     <label className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-[var(--surface-light)] transition-colors ${!telegramSaved ? 'opacity-50' : ''}`}
@@ -2193,51 +2796,103 @@ export default function SettingsPage() {
                                         />
                                         <div>
                                             <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                📱 Telegram {!telegramSaved && <span className="text-xs text-amber-400 ml-1">(connect Telegram first)</span>}
+                                                📱 Telegram {!telegramSaved && <span className="text-xs text-amber-400 ml-1">{t('settings.friendMode.telegramFirst')}</span>}
                                             </p>
-                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Skales messages you directly on Telegram</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings.friendMode.telegramDesc')}</p>
                                         </div>
                                     </label>
-                                    <label className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-[var(--surface-light)] transition-colors ${whatsappStatus.state !== 'ready' ? 'opacity-50' : ''}`}
+                                    <label className="flex items-center gap-3 p-3 rounded-xl transition-colors opacity-40 cursor-not-allowed"
                                         style={{ background: 'var(--background)' }}>
                                         <input
                                             type="checkbox"
-                                            checked={activeBehavior?.channels?.whatsapp === true}
-                                            disabled={whatsappStatus.state !== 'ready'}
-                                            onChange={e => setActiveBehavior(prev => ({ ...prev!, channels: { ...prev!.channels, whatsapp: e.target.checked } }))}
+                                            checked={false}
+                                            disabled={true}
                                             className="w-4 h-4 accent-lime-500"
                                         />
                                         <div>
                                             <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                                💬 WhatsApp {whatsappStatus.state !== 'ready' && <span className="text-xs text-amber-400 ml-1">(connect WhatsApp first)</span>}
+                                                💬 WhatsApp <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 ml-1">{t('settings.friendMode.whatsappSoon')}</span>
                                             </p>
-                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Skales messages you directly on WhatsApp</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('settings.friendMode.whatsappSoonDesc')}</p>
                                         </div>
                                     </label>
                                 </div>
                             </div>
 
+                            {/* ── Buddy Intelligence (Proactive Notifications) ── */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>🧠 {t('settings.buddyIntelligence.title')}</p>
+                                    <button
+                                        onClick={() => setActiveBehavior(prev => ({ ...prev!, proactiveEnabled: !(prev?.proactiveEnabled !== false) }))}
+                                        className={`relative w-10 h-5 rounded-full transition-all ${(activeBehavior as any)?.proactiveEnabled !== false ? 'bg-lime-500' : 'bg-gray-600'}`}
+                                        aria-label={t('settings.buddyIntelligence.toggleLabel')}
+                                    >
+                                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${(activeBehavior as any)?.proactiveEnabled !== false ? 'left-5' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+                                <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                                    {t('settings.buddyIntelligence.desc')}
+                                </p>
+                                <div className={`space-y-1.5 transition-opacity ${(activeBehavior as any)?.proactiveEnabled !== false ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
+                                    {([
+                                        { key: 'meeting-reminder', label: '⏰ Meeting Reminders', desc: '30 min before meetings' },
+                                        { key: 'meeting-prep',     label: '📋 Meeting Prep',      desc: '60 min before (if description available)' },
+                                        { key: 'task-complete',    label: '✅ Task Completions',   desc: 'When autopilot finishes a task' },
+                                        { key: 'task-blocked',     label: '🚫 Task Blocked',       desc: 'When a task fails after retries' },
+                                        { key: 'email-alert',      label: '📧 Email Alerts',       desc: 'When unread emails pile up' },
+                                        { key: 'eod-summary',      label: '📊 End-of-Day Summary', desc: 'Afternoon wrap-up of completed work' },
+                                        { key: 'idle-checkin',     label: '💤 Idle Check-in',      desc: 'When you\'ve been away 45+ min' },
+                                        { key: 'morning-greeting', label: '☀️ Morning Greeting',   desc: 'Good morning between 7-9am' },
+                                    ] as const).map(item => (
+                                        <label key={item.key} className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-[var(--surface-light)] transition-colors"
+                                            style={{ background: 'var(--background)' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={(activeBehavior as any)?.notificationTypes?.[item.key] !== false}
+                                                onChange={e => setActiveBehavior(prev => ({
+                                                    ...prev!,
+                                                    notificationTypes: {
+                                                        ...((prev as any)?.notificationTypes || {}),
+                                                        [item.key]: e.target.checked,
+                                                    },
+                                                }))}
+                                                className="w-3.5 h-3.5 accent-lime-500"
+                                            />
+                                            <div>
+                                                <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{item.label}</p>
+                                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{item.desc}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}>
-                                💡 Friend Mode helps Skales build long-term memory about you - your projects, preferences, and personality - to become a better companion over time.
+                                💡 {t('settings.friendMode.helpText')}
                             </div>
                         </div>
                     </section>
+                    </>)}
+                    {(activeTab === 'all' || activeTab === 'security') && (<>
+
+
 
                     {/* ─── Agent & Tasks ─── */}
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                                 <span className="text-xl">⚡</span>
-                                Agent &amp; Tasks
+                                {t('settings.agentTasks.title')}
                             </h2>
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-                                    Task timeout
+                                    {t('settings.agentTasks.timeout')}
                                 </label>
                                 <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                                    Maximum time an agent-task can run before it saves a checkpoint and stops. High-priority tasks automatically get 2×. Default: 5 minutes.
+                                    {t('settings.agentTasks.timeoutDesc')}
                                 </p>
                                 <div className="flex items-center gap-3">
                                     <input
@@ -2256,9 +2911,9 @@ export default function SettingsPage() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    <span>1 min</span>
-                                    <span>5 min (default)</span>
-                                    <span>15 min</span>
+                                    <span>{t('settings.agentTasks.min')}</span>
+                                    <span>{t('settings.agentTasks.default')}</span>
+                                    <span>{t('settings.agentTasks.max')}</span>
                                 </div>
                             </div>
                             {/* Autonomous Mode toggle */}
@@ -2266,10 +2921,10 @@ export default function SettingsPage() {
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex-1">
                                         <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                                            🤖 Autonomous Mode
+                                            🤖 {t('settings.agentTasks.autonomousMode')}
                                         </p>
                                         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                            When enabled, Skales runs a background heartbeat every 5 minutes and proactively processes any pending tasks from the queue - no message required. In <strong>Safe</strong> mode, only tasks you created manually are picked up.
+                                            {t('settings.agentTasks.autonomousModeDesc')}
                                         </p>
                                     </div>
                                     <button
@@ -2301,17 +2956,16 @@ export default function SettingsPage() {
                                 </div>
                                 {isAutonomousMode && safetyMode === 'safe' && (
                                     <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        🔒 Safety Mode is <strong>Safe</strong> - system and scheduled tasks require manual approval before execution. Only user-created tasks run automatically.
+                                        {t('settings.agentTasks.safetyNote')}
                                     </p>
                                 )}
                             </div>
 
                             <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--surface-light)', color: 'var(--text-muted)' }}>
-                                💡 When a task nears 80% of its timeout, Skales automatically saves a progress checkpoint so you can resume it later.
+                                💡 {t('settings.agentTasks.checkpointNote')}
                             </div>
                         </div>
                     </section>
-
                     {/* ─── Safety Mode ─── */}
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
@@ -2368,7 +3022,9 @@ export default function SettingsPage() {
                             ⚠️ <strong>Disclaimer:</strong> Safety Mode is a best-effort measure to limit potentially harmful commands. We cannot guarantee that the AI agent will never make mistakes or execute unintended actions. By using Unrestricted mode, you accept full responsibility. Skales is provided as-is without warranty.
                         </p>
                     </section>
+                    </>)}
 
+                    {(activeTab === 'all' || activeTab === 'integrations') && (<>
                     {/* ─── Twitter/X Integration ─── */}
                     {activeSkillIds.has('twitter') && (
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -2755,7 +3411,7 @@ export default function SettingsPage() {
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <MessageSquare size={20} className="text-purple-500" />
-                            Integrations
+                            {t('settings.sections.integrations')}
                         </h2>
 
                         {/* ── Telegram ── */}
@@ -3344,11 +4000,11 @@ export default function SettingsPage() {
 
                         {/* ── Google Calendar ── */}
                         {activeSkillIds.has('googleCalendar') && (
-                        <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                        <div className="rounded-xl border overflow-hidden mt-6" style={{ borderColor: 'var(--border)' }}>
                             <div className="p-4 flex items-center justify-between gap-4" style={{ background: 'var(--background)' }}>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                        📅 Google Calendar
+                                        📅 {t('settings.calendar.googleCalendar')}
                                         {calendarSaved && <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-bold">CONNECTED</span>}
                                     </p>
                                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -3364,7 +4020,7 @@ export default function SettingsPage() {
                                     <button onClick={() => setShowCalendarSetup(v => !v)}
                                         className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
                                         style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                                        {showCalendarSetup ? 'Hide' : 'Configure'}
+                                        {showCalendarSetup ? t('settings.calendar.hide') : t('settings.calendar.configure')}
                                     </button>
                                     <button type="button" onClick={() => toggleSkill('googleCalendar')}
                                         className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${activeSkillIds.has('googleCalendar') ? 'bg-lime-500' : 'bg-gray-600'}`}
@@ -3454,6 +4110,260 @@ export default function SettingsPage() {
                                     )}
                                 </div>
                             )}
+                        </div>
+                        )}
+
+                        {/* ── Apple Calendar (CalDAV / iCloud) ── */}
+                        {activeSkillIds.has('googleCalendar') && (
+                        <div className="rounded-xl border overflow-hidden mt-6" style={{ borderColor: 'var(--border)' }}>
+                            <div className="p-4 flex items-center justify-between gap-4" style={{ background: 'var(--background)' }}>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                        🍎 {t('calendar.apple')}
+                                        {appleCalendarSaved && <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-bold">{t('calendar.connected')}</span>}
+                                    </p>
+                                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                        {t('calendar.appPasswordHelp')}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {appleCalendarSaved && (
+                                        <button onClick={handleAppleCalendarDisconnect} className="text-xs text-red-400 hover:text-red-300 transition-colors px-2">
+                                            <Trash2 size={13} />
+                                        </button>
+                                    )}
+                                    <button onClick={() => setShowAppleCalendarSetup(v => !v)}
+                                        className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
+                                        style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                                        {showAppleCalendarSetup ? t('settings.calendar.hide') : t('settings.calendar.configure')}
+                                    </button>
+                                </div>
+                            </div>
+                            {showAppleCalendarSetup && (
+                                <div className="px-4 pb-4 pt-2 space-y-3" style={{ background: 'var(--surface)' }}>
+                                    <input type="text" placeholder={t('calendar.caldavUrl') + ' (https://caldav.icloud.com/)'}
+                                        value={appleCalendarConfig.caldavUrl}
+                                        onChange={e => setAppleCalendarConfig(p => ({ ...p, caldavUrl: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    <input type="email" placeholder={t('calendar.appleId')}
+                                        value={appleCalendarConfig.username}
+                                        onChange={e => setAppleCalendarConfig(p => ({ ...p, username: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    <input type="password" placeholder={t('calendar.appPassword')}
+                                        value={appleCalendarConfig.password}
+                                        onChange={e => setAppleCalendarConfig(p => ({ ...p, password: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    <div className="flex gap-2 pt-1">
+                                        <button onClick={handleAppleCalendarSave}
+                                            className="flex-1 py-2 text-sm font-semibold rounded-xl transition-all bg-lime-500 hover:bg-lime-400 text-black flex items-center justify-center gap-2">
+                                            <Save size={14} /> {t('calendar.connect')}
+                                        </button>
+                                        <button onClick={handleAppleCalendarTest} disabled={appleCalendarTesting}
+                                            className="flex-1 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                                            {appleCalendarTesting ? <Loader2 size={14} className="animate-spin" /> : <TestTube2 size={14} />}
+                                            {t('calendar.testConnection')}
+                                        </button>
+                                    </div>
+                                    {appleCalendarResult && (
+                                        <div className={`flex items-center gap-2 text-xs p-2 rounded-lg ${appleCalendarResult.success ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
+                                            {appleCalendarResult.success ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+                                            {appleCalendarResult.message}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        )}
+
+                        {/* ── Outlook Calendar (Microsoft Graph) ── */}
+                        {activeSkillIds.has('googleCalendar') && (
+                        <div className="rounded-xl border overflow-hidden mt-6" style={{ borderColor: 'var(--border)' }}>
+                            <div className="p-4 flex items-center justify-between gap-4" style={{ background: 'var(--background)' }}>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                        📬 {t('calendar.outlook')}
+                                        {outlookSaved && <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-bold">{t('calendar.connected')}</span>}
+                                    </p>
+                                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                        Microsoft Graph API — OAuth 2.0
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {outlookSaved && (
+                                        <button onClick={handleOutlookDisconnect} className="text-xs text-red-400 hover:text-red-300 transition-colors px-2">
+                                            <Trash2 size={13} />
+                                        </button>
+                                    )}
+                                    <button onClick={() => setShowOutlookSetup(v => !v)}
+                                        className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
+                                        style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                                        {showOutlookSetup ? t('settings.calendar.hide') : t('settings.calendar.configure')}
+                                    </button>
+                                </div>
+                            </div>
+                            {showOutlookSetup && (
+                                <div className="px-4 pb-4 pt-2 space-y-3" style={{ background: 'var(--surface)' }}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <input type="text" placeholder="OAuth Client ID (Azure AD)"
+                                            value={outlookClientId}
+                                            onChange={e => setOutlookClientId(e.target.value)}
+                                            className="px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                        <input type="password" placeholder="Client Secret (optional)"
+                                            value={outlookClientSecret}
+                                            onChange={e => setOutlookClientSecret(e.target.value)}
+                                            className="px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                            style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    </div>
+                                    {outlookClientId && (
+                                        <div className="space-y-2">
+                                            <button onClick={handleOutlookGetAuthUrl}
+                                                className="text-xs px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2"
+                                                style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                                                <ExternalLink size={12} /> Open Microsoft Auth
+                                            </button>
+                                            <div className="flex gap-2">
+                                                <input type="text" placeholder="Paste authorization code here..."
+                                                    value={outlookAuthCode}
+                                                    onChange={e => setOutlookAuthCode(e.target.value)}
+                                                    className="flex-1 px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 focus:ring-lime-500"
+                                                    style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                                <button onClick={handleOutlookExchangeCode} disabled={outlookExchanging || !outlookAuthCode}
+                                                    className="text-xs px-3 py-2 rounded-lg font-medium transition-all bg-lime-500 hover:bg-lime-400 text-black disabled:opacity-50">
+                                                    {outlookExchanging ? <Loader2 size={13} className="animate-spin" /> : 'Authorize'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {outlookSaved && (
+                                        <div className="flex gap-2 pt-1">
+                                            <button onClick={handleOutlookTest} disabled={outlookTesting}
+                                                className="flex-1 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                                style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                                                {outlookTesting ? <Loader2 size={14} className="animate-spin" /> : <TestTube2 size={14} />}
+                                                {t('calendar.testConnection')}
+                                            </button>
+                                        </div>
+                                    )}
+                                    {outlookResult && (
+                                        <div className={`flex items-center gap-2 text-xs p-2 rounded-lg ${outlookResult.success ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
+                                            {outlookResult.success ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+                                            {outlookResult.message}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        )}
+
+                        {/* ── Planner AI ── */}
+                        {activeSkillIds.has('googleCalendar') && (
+                        <div className="rounded-xl border-2 mb-4 mt-6 overflow-hidden transition-all"
+                            style={{
+                                borderColor: plannerLoaded ? 'rgba(74,222,128,0.5)' : 'var(--border)',
+                                background: plannerLoaded ? 'rgba(74,222,128,0.04)' : 'var(--background)',
+                            }}>
+                            <div className="p-4">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+                                        style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)' }}>
+                                        <Timer size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-sm">Planner AI</h3>
+                                        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                            Configure your daily schedule preferences
+                                        </p>
+                                    </div>
+                                    {plannerLoaded && (
+                                        <span className="ml-auto text-[10px] px-2 py-1 rounded-full font-bold bg-green-500/15 text-green-400">
+                                            Configured ✓
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Day Start</label>
+                                            <input type="time" value={plannerDayStart} onChange={e => setPlannerDayStart(e.target.value)}
+                                                className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Day End</label>
+                                            <input type="time" value={plannerDayEnd} onChange={e => setPlannerDayEnd(e.target.value)}
+                                                className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Work Days</label>
+                                        <div className="flex gap-1">
+                                            {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d, i) => {
+                                                const dayNum = i + 1;
+                                                const active = plannerWorkDays.includes(dayNum);
+                                                return (
+                                                    <button key={d} onClick={() => setPlannerWorkDays(prev => active ? prev.filter(x => x !== dayNum) : [...prev, dayNum])}
+                                                        className="px-2 py-1 rounded text-xs font-bold transition-all"
+                                                        style={{
+                                                            background: active ? 'rgba(74,222,128,0.2)' : 'var(--surface)',
+                                                            color: active ? '#4ade80' : 'var(--text-muted)',
+                                                            border: `1px solid ${active ? 'rgba(74,222,128,0.4)' : 'var(--border)'}`,
+                                                        }}>
+                                                        {d}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Focus Hours</label>
+                                            <input type="number" min={0} max={10} value={plannerFocusHours} onChange={e => setPlannerFocusHours(Number(e.target.value))}
+                                                className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Break Style</label>
+                                            <select value={plannerBreakStyle} onChange={e => setPlannerBreakStyle(e.target.value as any)}
+                                                className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                                                <option value="pomodoro">Pomodoro (25/5)</option>
+                                                <option value="90min">90-min blocks</option>
+                                                <option value="flexible">Flexible</option>
+                                                <option value="none">No breaks</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Regular Tasks (comma-separated)</label>
+                                        <input type="text" value={plannerRegularTasks} onChange={e => setPlannerRegularTasks(e.target.value)}
+                                            placeholder="e.g. Email triage, Code review, Standup"
+                                            className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-semibold mb-1 uppercase" style={{ color: 'var(--text-muted)' }}>Fixed Appointments (one per line, include time)</label>
+                                        <textarea value={plannerFixedAppointments} onChange={e => setPlannerFixedAppointments(e.target.value)}
+                                            placeholder={"e.g.\nKids pickup at 16:00\nGym 07:00-08:00"}
+                                            rows={3}
+                                            className="w-full p-2 rounded-lg text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={handlePlannerSave} disabled={plannerSaving}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                                            style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)', color: '#000' }}>
+                                            {plannerSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                            Save Planner Preferences
+                                        </button>
+                                        <Link href="/planner"
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                                            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                                            <ExternalLink size={14} />
+                                            Open Planner
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         )}
 
@@ -4259,6 +5169,26 @@ export default function SettingsPage() {
                             )}
 
                             {/* ── Discord Bot ── */}
+                            {!activeSkillIds.has('discord') && (
+                            <div className="p-4 rounded-xl border" style={{ background: 'var(--background)', borderColor: 'var(--border)' }}>
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                            💬 Discord Bot
+                                        </p>
+                                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                            Enable this skill to connect a Discord bot. Once enabled, configure it in the Integrations tab.
+                                        </p>
+                                    </div>
+                                    <button type="button" onClick={() => toggleSkill('discord')}
+                                        className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${activeSkillIds.has('discord') ? 'bg-lime-500' : 'bg-gray-600'}`}
+                                        role="switch" aria-checked={activeSkillIds.has('discord')}
+                                        aria-label={t('settings.toggles.discordBot')}>
+                                        <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${activeSkillIds.has('discord') ? 'translate-x-7' : 'translate-x-0'}`} />
+                                    </button>
+                                </div>
+                            </div>
+                            )}
                             {activeSkillIds.has('discord') && (
                             <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
                                 <div className="p-4 flex items-center justify-between gap-4" style={{ background: 'var(--background)' }}>
@@ -4633,44 +5563,362 @@ export default function SettingsPage() {
                     </section>
                     )}
 
+                    {/* ─── FTP / SFTP Profiles ─── */}
+                    <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                        <div className="flex items-center justify-between mb-1">
+                            <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                <Upload size={20} className="text-emerald-400" />
+                                {t('settings.ftp.title')}
+                                {ftpProfiles.length > 0 && (
+                                    <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                        {ftpProfiles.length} {ftpProfiles.length === 1 ? 'profile' : 'profiles'}
+                                    </span>
+                                )}
+                            </h2>
+                            <button onClick={() => setShowFtpSetup(!showFtpSetup)}
+                                className="text-xs px-3 py-1 rounded-full transition-all"
+                                style={{ background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                                {showFtpSetup ? t('settings.ftp.hide') : t('settings.ftp.configure')}
+                            </button>
+                        </div>
+                        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                            {t('settings.ftp.description')}
+                        </p>
+
+                        {showFtpSetup && (
+                            <div className="space-y-3">
+                                {/* Existing profiles */}
+                                {ftpProfiles.map(profile => (
+                                    <div key={profile.id} className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                                        {/* Profile header */}
+                                        <button
+                                            onClick={() => {
+                                                if (expandedFtpId === profile.id) {
+                                                    setExpandedFtpId(null);
+                                                    setEditingFtp(null);
+                                                } else {
+                                                    setExpandedFtpId(profile.id);
+                                                    setEditingFtp({ ...profile });
+                                                    setFtpTestResult(null);
+                                                }
+                                            }}
+                                            className="w-full flex items-center justify-between p-3 text-left transition-all hover:opacity-80"
+                                            style={{ background: 'var(--background)' }}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Upload size={14} className="text-emerald-400" />
+                                                <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+                                                    {profile.alias || profile.host || t('settings.ftp.unnamed')}
+                                                </span>
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-mono"
+                                                    style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
+                                                    {profile.protocol.toUpperCase()}
+                                                </span>
+                                                {profile.enabled && (
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                                )}
+                                            </div>
+                                            <ChevronDown size={14} className={`transition-transform ${expandedFtpId === profile.id ? 'rotate-180' : ''}`}
+                                                style={{ color: 'var(--text-muted)' }} />
+                                        </button>
+
+                                        {/* Expanded form */}
+                                        {expandedFtpId === profile.id && editingFtp && (
+                                            <div className="p-4 space-y-3 border-t" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                                                {/* Alias */}
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.alias')}</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingFtp.alias}
+                                                        onChange={e => setEditingFtp({ ...editingFtp, alias: e.target.value })}
+                                                        placeholder={t('settings.ftp.aliasPlaceholder')}
+                                                        className="w-full px-3 py-2 rounded-xl text-sm border"
+                                                        style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                    />
+                                                </div>
+                                                {/* Protocol + Host + Port */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.protocol')}</label>
+                                                        <select
+                                                            value={editingFtp.protocol}
+                                                            onChange={e => setEditingFtp({ ...editingFtp, protocol: e.target.value as 'ftp' | 'sftp', port: e.target.value === 'sftp' ? 22 : 21 })}
+                                                            className="w-full px-3 py-2 rounded-xl text-sm border"
+                                                            style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                        >
+                                                            <option value="ftp">FTP</option>
+                                                            <option value="sftp">SFTP</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="sm:col-span-2">
+                                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.host')}</label>
+                                                        <input
+                                                            type="text"
+                                                            value={editingFtp.host}
+                                                            onChange={e => setEditingFtp({ ...editingFtp, host: e.target.value })}
+                                                            placeholder="ftp.example.com"
+                                                            className="w-full px-3 py-2 rounded-xl text-sm border font-mono"
+                                                            style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.port')}</label>
+                                                        <input
+                                                            type="number"
+                                                            value={editingFtp.port}
+                                                            onChange={e => setEditingFtp({ ...editingFtp, port: parseInt(e.target.value) || 21 })}
+                                                            className="w-full px-3 py-2 rounded-xl text-sm border font-mono"
+                                                            style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {/* Username + Password */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.username')}</label>
+                                                        <input
+                                                            type="text"
+                                                            value={editingFtp.username}
+                                                            onChange={e => setEditingFtp({ ...editingFtp, username: e.target.value })}
+                                                            className="w-full px-3 py-2 rounded-xl text-sm border font-mono"
+                                                            style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.password')}</label>
+                                                        <input
+                                                            type="password"
+                                                            value={editingFtp.password}
+                                                            onChange={e => setEditingFtp({ ...editingFtp, password: e.target.value })}
+                                                            placeholder="******"
+                                                            className="w-full px-3 py-2 rounded-xl text-sm border font-mono"
+                                                            style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {/* Remote Path */}
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{t('settings.ftp.remotePath')}</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editingFtp.remotePath}
+                                                        onChange={e => setEditingFtp({ ...editingFtp, remotePath: e.target.value })}
+                                                        placeholder="/public_html/"
+                                                        className="w-full px-3 py-2 rounded-xl text-sm border font-mono"
+                                                        style={{ background: 'var(--surface-light)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                                    />
+                                                </div>
+
+                                                {/* SFTP warning */}
+                                                {editingFtp.protocol === 'sftp' && (
+                                                    <div className="flex items-start gap-2 p-3 rounded-xl text-xs" style={{ background: 'rgba(245,158,11,0.08)', color: '#fbbf24' }}>
+                                                        <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                                                        <span>{t('settings.ftp.sftpWarning')}</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Test result */}
+                                                {ftpTestResult && (
+                                                    <div className={`flex items-center gap-2 p-3 rounded-xl text-xs ${ftpTestResult.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                        {ftpTestResult.success ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                                                        <span>{ftpTestResult.message}</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Action buttons */}
+                                                <div className="flex items-center gap-2 pt-1">
+                                                    <button
+                                                        onClick={async () => {
+                                                            setFtpTesting(true);
+                                                            setFtpTestResult(null);
+                                                            try {
+                                                                const res = await fetch('/api/ftp/test', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify(editingFtp),
+                                                                });
+                                                                const data = await res.json();
+                                                                setFtpTestResult({ success: data.success, message: data.success ? data.message : data.error });
+                                                            } catch (e: any) {
+                                                                setFtpTestResult({ success: false, message: e.message });
+                                                            }
+                                                            setFtpTesting(false);
+                                                        }}
+                                                        disabled={ftpTesting || !editingFtp.host}
+                                                        className="text-xs px-4 py-2 rounded-xl font-semibold transition-all flex items-center gap-1.5"
+                                                        style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' }}
+                                                    >
+                                                        {ftpTesting ? <Loader2 size={12} className="animate-spin" /> : <TestTube2 size={12} />}
+                                                        {ftpTesting ? t('settings.ftp.testing') : t('settings.ftp.testConnection')}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={async () => {
+                                                            setFtpSaving(true);
+                                                            try {
+                                                                const isNew = !profile.savedAt;
+                                                                const res = await fetch('/api/ftp/profiles', {
+                                                                    method: isNew ? 'POST' : 'PUT',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify(editingFtp),
+                                                                });
+                                                                const data = await res.json();
+                                                                if (data.success || data.id) {
+                                                                    // Reload profiles
+                                                                    const reload = await fetch('/api/ftp/profiles');
+                                                                    const reloadData = await reload.json();
+                                                                    if (reloadData.profiles) setFtpProfiles(reloadData.profiles);
+                                                                    setFtpTestResult({ success: true, message: t('settings.ftp.saved') });
+                                                                }
+                                                            } catch (e: any) {
+                                                                setFtpTestResult({ success: false, message: e.message });
+                                                            }
+                                                            setFtpSaving(false);
+                                                        }}
+                                                        disabled={ftpSaving || !editingFtp.host}
+                                                        className="text-xs px-4 py-2 rounded-xl font-semibold transition-all flex items-center gap-1.5"
+                                                        style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.25)' }}
+                                                    >
+                                                        {ftpSaving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                                                        {ftpSaving ? t('settings.ftp.saving') : t('settings.ftp.save')}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm(t('settings.ftp.deleteConfirm'))) return;
+                                                            await fetch(`/api/ftp/profiles?id=${profile.id}`, { method: 'DELETE' });
+                                                            setFtpProfiles(prev => prev.filter(p => p.id !== profile.id));
+                                                            setExpandedFtpId(null);
+                                                            setEditingFtp(null);
+                                                        }}
+                                                        className="text-xs px-4 py-2 rounded-xl font-semibold transition-all flex items-center gap-1.5"
+                                                        style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                                                    >
+                                                        <Trash2 size={12} />
+                                                        {t('settings.ftp.delete')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Add new profile button */}
+                                {ftpProfiles.length < 10 && (
+                                    <button
+                                        onClick={() => {
+                                            const newProfile = EMPTY_FTP_PROFILE();
+                                            setFtpProfiles(prev => [...prev, newProfile]);
+                                            setExpandedFtpId(newProfile.id);
+                                            setEditingFtp(newProfile);
+                                            setFtpTestResult(null);
+                                        }}
+                                        className="w-full text-center text-xs py-3 rounded-xl border-2 border-dashed transition-all hover:border-emerald-500/40 hover:bg-emerald-500/5"
+                                        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                                    >
+                                        + {t('settings.ftp.addProfile')}
+                                    </button>
+                                )}
+
+                                {/* Info box */}
+                                <div className="flex items-start gap-2 p-3 rounded-xl text-xs" style={{ background: 'var(--background)', color: 'var(--text-muted)' }}>
+                                    <Info size={14} className="shrink-0 mt-0.5 text-blue-400" />
+                                    <span>{t('settings.ftp.infoBox')}</span>
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                    </>)}
+
+                    {(activeTab === 'all' || activeTab === 'security') && (<>
                     {/* ─── Security ─── */}
                     <section className="rounded-2xl border p-6"
                         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Shield size={20} className="text-amber-500" />
-                            Security & Privacy
+                            {t('settings.sections.securityPrivacy')}
                         </h2>
 
-                        {/* ── File System Access Toggle ── */}
+                        {/* ── File System Access ── */}
                         <div className="mb-5 p-4 rounded-xl border" style={{ background: 'var(--background)', borderColor: 'var(--border)' }}>
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                        🗂️ File System Access
-                                    </p>
-                                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                        {fileSystemAccess === 'workspace'
-                                            ? 'Workspace Only - Skales works exclusively in its own sandbox folder. Safe & isolated.'
-                                            : 'Full Disk Access - Skales can access all local files & folders (system folders remain locked).'}
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setFileSystemAccess(prev => prev === 'workspace' ? 'full' : 'workspace')}
-                                    className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${fileSystemAccess === 'full' ? 'bg-amber-500' : 'bg-gray-600'}`}
-                                    aria-checked={fileSystemAccess === 'full'}
-                                    role="switch"
-                                    aria-label={t('settings.toggles.fileSystemAccess')}
-                                >
-                                    <span
-                                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ${fileSystemAccess === 'full' ? 'translate-x-7' : 'translate-x-0'}`}
-                                    />
-                                </button>
+                            <p className="font-semibold text-sm flex items-center gap-2 mb-3" style={{ color: 'var(--text-primary)' }}>
+                                🗂️ {t('fileAccess.title')}
+                            </p>
+                            <div className="space-y-2">
+                                {/* Workspace Only */}
+                                <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${fileAccessMode === 'workspace_only' ? 'border-lime-500 bg-lime-500/5' : ''}`}
+                                    style={{ borderColor: fileAccessMode === 'workspace_only' ? undefined : 'var(--border)' }}>
+                                    <input type="radio" name="fileAccessMode" value="workspace_only" checked={fileAccessMode === 'workspace_only'}
+                                        onChange={() => { setFileAccessMode('workspace_only'); setFileSystemAccess('workspace'); }}
+                                        className="mt-0.5 accent-lime-500" />
+                                    <div>
+                                        <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{t('fileAccess.workspaceOnly')}</p>
+                                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('fileAccess.workspaceOnlyDesc')}</p>
+                                    </div>
+                                </label>
+                                {/* Unrestricted */}
+                                <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${fileAccessMode === 'unrestricted' ? 'border-amber-500 bg-amber-500/5' : ''}`}
+                                    style={{ borderColor: fileAccessMode === 'unrestricted' ? undefined : 'var(--border)' }}>
+                                    <input type="radio" name="fileAccessMode" value="unrestricted" checked={fileAccessMode === 'unrestricted'}
+                                        onChange={() => { setFileAccessMode('unrestricted'); setFileSystemAccess('full'); }}
+                                        className="mt-0.5 accent-amber-500" />
+                                    <div>
+                                        <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{t('fileAccess.unrestricted')}</p>
+                                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('fileAccess.unrestrictedDesc')}</p>
+                                    </div>
+                                </label>
+                                {/* Custom */}
+                                <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${fileAccessMode === 'custom' ? 'border-purple-500 bg-purple-500/5' : ''}`}
+                                    style={{ borderColor: fileAccessMode === 'custom' ? undefined : 'var(--border)' }}>
+                                    <input type="radio" name="fileAccessMode" value="custom" checked={fileAccessMode === 'custom'}
+                                        onChange={() => { setFileAccessMode('custom'); setFileSystemAccess('full'); }}
+                                        className="mt-0.5 accent-purple-500" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{t('fileAccess.custom')}</p>
+                                        <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{t('fileAccess.customDesc')}</p>
+                                    </div>
+                                </label>
                             </div>
-                            {fileSystemAccess === 'full' && (
+                            {/* Unrestricted warning */}
+                            {fileAccessMode === 'unrestricted' && (
                                 <div className="mt-3 flex items-start gap-2 p-2 rounded-lg bg-amber-500/10 text-xs text-amber-400">
                                     <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                                    <span>Full access active. Skales can read and write files across the entire disk. Only enable if you really need it.</span>
+                                    <span>{t('fileAccess.unrestrictedWarning')}</span>
+                                </div>
+                            )}
+                            {/* Custom folder list */}
+                            {fileAccessMode === 'custom' && (
+                                <div className="mt-4">
+                                    <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>{t('fileAccess.allowedFolders')}</p>
+                                    {allowedFolders.length === 0 && (
+                                        <p className="text-[11px] mb-2 italic" style={{ color: 'var(--text-muted)' }}>{t('fileAccess.noFolders')}</p>
+                                    )}
+                                    <div className="space-y-1 mb-2">
+                                        {allowedFolders.map((f, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-[11px] p-1.5 rounded-lg"
+                                                style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}>
+                                                <span className="flex-1 truncate font-mono">{f}</span>
+                                                <button type="button" onClick={() => setAllowedFolders(prev => prev.filter((_, j) => j !== i))}
+                                                    className="text-red-400 hover:text-red-300 text-xs px-1">✕</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input type="text" value={newFolderInput}
+                                            onChange={e => setNewFolderInput(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter' && newFolderInput.trim()) { setAllowedFolders(prev => [...prev, newFolderInput.trim()]); setNewFolderInput(''); } }}
+                                            placeholder={t('fileAccess.addFolderPlaceholder')}
+                                            className="flex-1 px-2 py-1.5 rounded-lg text-xs border outline-none"
+                                            style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                                        <button type="button"
+                                            onClick={() => { if (newFolderInput.trim()) { setAllowedFolders(prev => [...prev, newFolderInput.trim()]); setNewFolderInput(''); } }}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                                            style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
+                                            {t('fileAccess.addFolder')}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -4956,6 +6204,9 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </section>
+                    </>)}
+
+                    {(activeTab === 'all' || activeTab === 'advanced') && (<>
                     {/* ─── Export / Import ─── */}
                     <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                         <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
@@ -5181,15 +6432,7 @@ export default function SettingsPage() {
                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Immediately stops all running tasks, agents, and scheduled jobs. All active sessions are terminated and the server exits.</p>
                                 </div>
                                 <button
-                                    onClick={async () => {
-                                        if (confirm('Activate Killswitch? This will immediately stop ALL running tasks, agents, bots, and shut down the server. Close and reopen Skales to restart.')) {
-                                            try {
-                                                const { shutdownServer } = await import('@/actions/system');
-                                                await shutdownServer();
-                                                alert('Killswitch activated. Server is shutting down.');
-                                            } catch { alert('Killswitch sent - server shutting down.'); }
-                                        }
-                                    }}
+                                    onClick={() => setShowKillswitchConfirm(true)}
                                     className="ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
                                 >
                                     🛑 Activate Killswitch
@@ -5203,15 +6446,7 @@ export default function SettingsPage() {
                                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Shuts down Skales completely. Close and reopen the app to restart.</p>
                                 </div>
                                 <button
-                                    onClick={async () => {
-                                        if (confirm('Stop Skales? Close and reopen the app to restart.')) {
-                                            try {
-                                                const { shutdownServer } = await import('@/actions/system');
-                                                await shutdownServer();
-                                                alert('Server is shutting down...');
-                                            } catch { alert('Stop signal sent - server shutting down.'); }
-                                        }
-                                    }}
+                                    onClick={() => setShowStopServerConfirm(true)}
                                     className="ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
                                 >
                                     ⏹️ Stop Server
@@ -5235,13 +6470,7 @@ export default function SettingsPage() {
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Clear all API keys and revert to defaults</p>
                                 </div>
                                 <button
-                                    onClick={async () => {
-                                        if (confirm('Reset ALL settings to defaults? This will delete your API keys.')) {
-                                            const { deleteAllData } = await import('@/actions/system');
-                                            await deleteAllData('settings');
-                                            window.location.reload();
-                                        }
-                                    }}
+                                    onClick={() => setShowResetSettingsConfirm(true)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
                                 >
                                     <RotateCcw size={12} />
@@ -5255,21 +6484,7 @@ export default function SettingsPage() {
                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Delete all memories, chats, and agent definitions</p>
                                 </div>
                                 <button
-                                    onClick={async () => {
-                                        if (confirm('Delete ALL Skales data? This permanently removes ~/.skales-data and cannot be undone.')) {
-                                            // Use the system action which calls fs.rmSync(DATA_DIR, { recursive: true, force: true })
-                                            const { deleteAllData } = await import('@/actions/system');
-                                            await deleteAllData('all');
-                                            // In Electron: trigger a full app relaunch so the main process
-                                            // re-creates DATA_DIR and runs onboarding fresh.
-                                            // Outside Electron: redirect to the bootstrap/onboarding route.
-                                            if (typeof window !== 'undefined' && (window as Window & { skales?: { send: (channel: string, ...args: unknown[]) => void } }).skales) {
-                                                (window as Window & { skales?: { send: (channel: string, ...args: unknown[]) => void } }).skales!.send('relaunch-app');
-                                            } else {
-                                                window.location.href = '/bootstrap';
-                                            }
-                                        }
-                                    }}
+                                    onClick={() => setShowDeleteAllDataConfirm(true)}
                                     className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1.5"
                                 >
                                     <Trash2 size={12} />
@@ -5278,6 +6493,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </section>
+                    </>)}
 
                 </div>
 
@@ -5317,6 +6533,155 @@ export default function SettingsPage() {
                     </a>
                 </p>
             </div>
+
+            {/* Killswitch Confirmation Modal */}
+            {showKillswitchConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">Activate Killswitch?</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            This will immediately stop ALL running tasks, agents, bots, and shut down the server. Close and reopen Skales to restart.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowKillswitchConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowKillswitchConfirm(false);
+                                    try {
+                                        const { shutdownServer } = await import('@/actions/system');
+                                        await shutdownServer();
+                                        setShutdownMessage('Killswitch activated. Server is shutting down.');
+                                    } catch {
+                                        setShutdownMessage('Killswitch sent - server shutting down.');
+                                    }
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Activate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Stop Server Confirmation Modal */}
+            {showStopServerConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-500">Stop Skales?</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            Close and reopen the app to restart.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowStopServerConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowStopServerConfirm(false);
+                                    try {
+                                        const { shutdownServer } = await import('@/actions/system');
+                                        await shutdownServer();
+                                        setShutdownMessage('Server is shutting down...');
+                                    } catch {
+                                        setShutdownMessage('Stop signal sent - server shutting down.');
+                                    }
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-500 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reset Settings Confirmation Modal */}
+            {showResetSettingsConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">Reset All Settings?</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            This will delete your API keys and revert to defaults. This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowResetSettingsConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowResetSettingsConfirm(false);
+                                    const { deleteAllData } = await import('@/actions/system');
+                                    await deleteAllData('settings');
+                                    window.location.reload();
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete All Data Confirmation Modal */}
+            {showDeleteAllDataConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">Delete All Data?</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            This will permanently remove all memories, chats, and agent definitions. This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowDeleteAllDataConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setShowDeleteAllDataConfirm(false);
+                                    const { deleteAllData } = await import('@/actions/system');
+                                    await deleteAllData('all');
+                                    if (typeof window !== 'undefined' && (window as Window & { skales?: { send: (channel: string, ...args: unknown[]) => void } }).skales) {
+                                        (window as Window & { skales?: { send: (channel: string, ...args: unknown[]) => void } }).skales!.send('relaunch-app');
+                                    } else {
+                                        window.location.href = '/bootstrap';
+                                    }
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Delete All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shutdown Status Message */}
+            {shutdownMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-green-500/30 rounded-2xl p-6 max-w-sm mx-4 text-center space-y-4">
+                        <p className="text-sm font-medium text-green-400">{shutdownMessage}</p>
+                    </div>
+                </div>
+            )}
 
             </div>{/* max-w-4xl mx-auto */}
         </div>

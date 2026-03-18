@@ -6,7 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## V6.2.0 — "The Telegram Fix" (March 2026)
+## V7.0.0 - "The Foundation" (March 2026)
+
+### New Features
+- **Proactive Desktop Buddy** - Rule-based buddy intelligence observes calendar, email, tasks, and idle time. Meeting reminders, end-of-day summaries, idle check-ins, morning greetings. Respects quiet hours. No LLM calls.
+- **Planner AI** - AI-powered daily scheduling. 8-step wizard learns work patterns, generates time-blocked plans from calendar events, pushes them back to your calendar. Chat integration: "plan my day."
+- **Calendar Abstraction** - Google Calendar, Apple Calendar (CalDAV/iCloud), and Outlook (Microsoft Graph API). All three work simultaneously. Planner AI reads from all providers.
+- **FTP/SFTP Deploy** - Upload Lio AI projects to any FTP server. Per-project deploy config, incremental upload (only changed files), test connection, 4 website starter templates.
+- **7 Languages** - English, German, Spanish, French, Russian, Chinese (Simplified), Japanese. Full UI translation including onboarding.
+- **Skales+ Tiers** - Free Forever / Personal ($9/mo) / Business ($29/mo) tier page with waitlist. All features free during beta.
+- **Morning Briefing** - Daily digest of calendar events, pending tasks, unread emails, delivered via Telegram and chat.
+- **File Sandbox** - Three modes: Unrestricted, Workspace Only, Custom Folders. Enforced on all file tools.
+- **Redesigned Onboarding** - 7-step wizard with Cloud/Local/Custom provider cards, Ollama auto-detect, buddy picker, safety mode selection.
+- **Model Auto-Fetch** - Real-time model lists from OpenAI, Google, OpenRouter APIs. No more hardcoded model IDs.
+- **Linux Beta** - AppImage and .deb builds for x64 Linux.
+
+### Improvements
+- **Unified Notification Router** - All notifications go through one system. Quiet hours, per-type cooldowns, channel routing (bubble, Telegram, dashboard).
+- **Settings Restructured** - 6 tabs (General, AI Providers, Integrations, Buddy, Security, Advanced) replace the single long scroll.
+- **Custom Endpoint Equality** - Vision toggle, TTS URL, configurable timeout. Local AI is a first-class citizen.
+- **Ollama Revolution** - Auto-detect on startup, real model dropdown via /api/tags, localhost consistency, 5s ping timeout, CORS warning.
+
+### Bug Fixes
+- Email Bug 31: Agent respects "send from marketing@" instructions. From parameter in send_email tool.
+- Buddy speech bubble height for approval dialogs
+- Think/reasoning tags stripped from buddy bubble
+- Email whitelist per-mailbox
+- Custom endpoint timeout configurable (5-120s)
+- Empty API key no longer sends blank auth header
+- WhatsApp toggle marked "Coming Soon" (was dead control)
+- Dashboard notification channel fixed (was silently dropping messages)
+
+### Platform
+- Windows x64 (stable)
+- macOS Apple Silicon (stable)
+- macOS Intel (stable)
+- Linux x64 AppImage (beta)
+- Linux x64 .deb (beta)
+
+---
+
+## V6.2.0 - "The Telegram Fix" (March 2026)
 
 ### Critical Fixes
 - Fixed: Endless Telegram approval loop — 9 tools (check_system_status, check_capabilities, check_identity, fetch_skales_docs, analyze_image, generate_voice, update_capabilities, enable_skill, disable_skill) missing from TOOL_SAFETY map caused read-only tools to require approval every call
@@ -117,7 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## v6.0.0 - "The Living Agent" (March 2026)
+## v6.0.0 - "The Foundation" (March 2026)
 
 ### Multilingual
 - Full UI translation: English, Deutsch, Espanol, Francais (849 translated keys)

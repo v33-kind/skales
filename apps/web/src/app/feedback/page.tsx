@@ -242,11 +242,45 @@ export default function FeedbackPage() {
                     </h1>
                 </div>
 
-                {/* GDPR notice */}
-                {telemetryEnabled === false && (
-                    <div className="rounded-xl px-4 py-3 text-xs"
-                        style={{ background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.3)', color: '#facc15' }}>
-                        {t('feedback.optInRequired')}
+                {/* Telemetry toggle — always visible, two-way */}
+                {telemetryEnabled !== null && (
+                    <div className="rounded-xl px-4 py-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                    {t('feedback.telemetrySection')}
+                                </p>
+                                <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                                    {t('feedback.telemetrySectionDesc')}
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    const next = !telemetryEnabled;
+                                    try {
+                                        const { saveAllSettings } = await import('@/actions/chat');
+                                        await saveAllSettings({ telemetry_enabled: next } as any);
+                                        setTelemetryEnabled(next);
+                                    } catch { setTelemetryEnabled(next); }
+                                }}
+                                className="relative flex-shrink-0 w-12 h-6 rounded-full transition-all duration-200"
+                                style={{ background: telemetryEnabled ? '#84cc16' : 'var(--surface-raised)', border: '1px solid var(--border)' }}
+                                aria-label={telemetryEnabled ? t('feedback.telemetryOn') : t('feedback.telemetryOff')}
+                            >
+                                <span
+                                    className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200"
+                                    style={{ left: telemetryEnabled ? '26px' : '2px' }}
+                                />
+                            </button>
+                        </div>
+                        <p className="text-xs mt-2" style={{ color: telemetryEnabled ? '#84cc16' : 'var(--text-muted)' }}>
+                            {telemetryEnabled ? t('feedback.telemetryOn') : t('feedback.telemetryOff')}
+                        </p>
+                        {telemetryEnabled === false && (
+                            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+                                {t('feedback.telemetryHint')}
+                            </p>
+                        )}
                     </div>
                 )}
 

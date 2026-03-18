@@ -48,6 +48,7 @@ export default function MemoryPage() {
     const [emoji, setEmoji] = useState('👤');
     const [content, setContent] = useState('');
     const [occupation, setOccupation] = useState('');
+    const [deleteNotSupportedKey, setDeleteNotSupportedKey] = useState<string | null>(null);
     const [interests, setInterests] = useState('');
     const [goals, setGoals] = useState('');
     const [language, setLanguage] = useState('en');
@@ -618,9 +619,9 @@ export default function MemoryPage() {
                                                 // ideally we'd have a specific removeFact action, but this works for MVP.
                                                 // ACTUALLY: Let's use saveHumanProfile to overwrite with 'null' or handle differently?
                                                 // No, let's just use the server action directly if we could, but we can't from client easily without exposing it.
-                                                // Workaround: We'll implement a 'deleteFact' action next time. 
+                                                // Workaround: We'll implement a 'deleteFact' action next time.
                                                 // For now, let's just show them. Editing comes later.
-                                                alert(t('memory.facts.deleteNotSupported', { key }));
+                                                setDeleteNotSupportedKey(key);
                                             }
                                         }}
                                         className="opacity-0 group-hover:opacity-50 hover:opacity-100 p-2 text-red-500"
@@ -855,6 +856,27 @@ export default function MemoryPage() {
 
             </div>
             </div>{/* max-w-4xl mx-auto */}
+
+            {/* Delete Not Supported Notification */}
+            {deleteNotSupportedKey && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-amber-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-amber-400">Delete Not Supported</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            {t('memory.facts.deleteNotSupported', { key: deleteNotSupportedKey })}
+                        </p>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setDeleteNotSupportedKey(null)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

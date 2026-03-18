@@ -159,6 +159,7 @@ export default function AutopilotPage() {
     const [profileEditing, setProfileEditing] = useState(false);
     const [profileDraft,   setProfileDraft]   = useState<any>({});
     const [profileSaving,  setProfileSaving]  = useState(false);
+    const [showClearIdentityConfirm, setShowClearIdentityConfirm] = useState(false);
 
     // ── Section B: Master Control ─────────────────────────────────────────────
     const [autopilotEnabled, setAutopilotEnabled] = useState(false);
@@ -1518,13 +1519,7 @@ export default function AutopilotPage() {
                                 <div className="flex items-center gap-2">
                                     {!profileEditing && (
                                         <button
-                                            onClick={() => {
-                                                if (!window.confirm('Clear all identity fields? This cannot be undone.')) return;
-                                                const empty = { preferredName: '', primaryGoal: '', niche: '', budget: '', constraints: '', additionalContext: '', masterPlan: '' };
-                                                setProfileDraft(empty);
-                                                fetch('/api/autopilot', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', profile: empty }) });
-                                                setProfile(empty);
-                                            }}
+                                            onClick={() => setShowClearIdentityConfirm(true)}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
                                             style={{ background: 'rgba(239,68,68,0.06)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
                                             {t('autopilot.identity.clear')}
@@ -1660,6 +1655,39 @@ export default function AutopilotPage() {
                 )}
 
             </div>
+
+            {/* Clear Identity Confirmation Modal */}
+            {showClearIdentityConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">Clear All Identity Fields?</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            This will erase all your identity information and cannot be undone.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowClearIdentityConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowClearIdentityConfirm(false);
+                                    const empty = { preferredName: '', primaryGoal: '', niche: '', budget: '', constraints: '', additionalContext: '', masterPlan: '' };
+                                    setProfileDraft(empty);
+                                    fetch('/api/autopilot', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', profile: empty }) });
+                                    setProfile(empty);
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

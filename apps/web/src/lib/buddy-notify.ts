@@ -18,9 +18,17 @@ const QUEUE_FILE = path.join(DATA_DIR, 'buddy-queue.json');
 const MAX_QUEUE  = 20; // prevent unbounded growth if buddy window is closed
 
 export interface BuddyNotification {
-    text:     string;
-    ts:       number;
-    isError?: boolean;   // true → buddy shows friendly "Oops" message + Open Chat button
+    text:      string;
+    ts:        number;
+    isError?:  boolean;   // true → buddy shows friendly "Oops" message + Open Chat button
+    // ── v7 rich notification metadata (backward-compatible: all optional) ──
+    type?:     string;    // NotificationType from notification-router (e.g. 'meeting-reminder')
+    action?: {
+        label:    string;   // button text shown in buddy bubble
+        route?:   string;   // internal route to navigate to (e.g. '/settings')
+        handler?: string;   // named handler the buddy page can invoke
+    };
+    expiresMs?: number;   // auto-dismiss after N ms (0 = use default 8s)
 }
 
 function readQueue(): BuddyNotification[] {
@@ -47,7 +55,13 @@ function writeQueue(queue: BuddyNotification[]): void {
  *   pushBuddyNotification('✅ Task "Send weekly report" completed.');
  *   pushBuddyNotification('📧 Email sent to john@example.com.');
  */
-export function pushBuddyNotification(text: string, isError = false): void {
+export function pushBuddyNotification(
+    text: string,
+    isErrorOrMeta: boolean | { type?: string; action?: BuddyNotification['action']; expiresMs?: number; isError?: boolean } = false,
+): void {
+    // Backward compatible: second param can be boolean (old API) or metadata object (v7)
+    const meta = typeof isErrorOrMeta === 'object' ? isErrorOrMeta : { isError: isErrorOrMeta };
+
     // Detect raw error/XML/stack traces and replace with friendly message
     const looksLikeRawError = (
         text.includes('<tool_call') ||
@@ -59,8 +73,16 @@ export function pushBuddyNotification(text: string, isError = false): void {
     const cleanText = looksLikeRawError
         ? "Oops.. something didn't work. Could you take a look?"
         : text.slice(0, 300);
+    const entry: BuddyNotification = {
+        text: cleanText,
+        ts: Date.now(),
+        isError: meta.isError || looksLikeRawError,
+        ...(meta.type      ? { type: meta.type }           : {}),
+        ...(meta.action    ? { action: meta.action }       : {}),
+        ...(meta.expiresMs ? { expiresMs: meta.expiresMs } : {}),
+    };
     const queue = readQueue();
-    queue.push({ text: cleanText, ts: Date.now(), isError: isError || looksLikeRawError });
+    queue.push(entry);
     // Keep only the most recent MAX_QUEUE notifications
     writeQueue(queue.slice(-MAX_QUEUE));
 }

@@ -10,12 +10,12 @@ const Icon = ({ icon: I, ...p }: { icon: any; [k: string]: any }) => <I {...p} /
 
 // ─── Quick Ideas ────────────────────────────────────────────
 const QUICK_IDEAS = [
-    { emoji: '🎮', label: 'Snake Game', prompt: 'A retro Snake game with neon colors on a dark background, high score saved to localStorage, arrow key controls, and a start/restart screen' },
-    { emoji: '🌐', label: 'Portfolio', prompt: 'A personal developer portfolio website with hero section, skills grid, projects showcase, and contact form. Dark theme, modern typography.' },
-    { emoji: '📊', label: 'Dashboard', prompt: 'An admin dashboard with stat cards (users, revenue, orders, growth), a line chart, recent activity table, and dark sidebar navigation' },
-    { emoji: '🛒', label: 'Product Page', prompt: 'A product landing page for a premium wireless headphone. Image gallery, feature highlights, pricing, reviews section, and add-to-cart button' },
-    { emoji: '📝', label: 'Blog', prompt: 'A minimal blog homepage with featured post hero, recent posts grid with thumbnails, categories sidebar, and newsletter signup footer' },
-    { emoji: '🔧', label: 'API Server', prompt: 'A Node.js Express REST API server with user CRUD endpoints, JWT auth middleware, input validation, error handling, and health check endpoint' },
+    { id: 'snake', emoji: '🎮', labelKey: 'code.ideas.snake', prompt: 'A retro Snake game with neon colors on a dark background, high score saved to localStorage, arrow key controls, and a start/restart screen' },
+    { id: 'portfolio', emoji: '🌐', labelKey: 'code.ideas.portfolio', prompt: 'A personal developer portfolio website with hero section, skills grid, projects showcase, and contact form. Dark theme, modern typography.' },
+    { id: 'dashboard', emoji: '📊', labelKey: 'code.ideas.dashboard', prompt: 'An admin dashboard with stat cards (users, revenue, orders, growth), a line chart, recent activity table, and dark sidebar navigation' },
+    { id: 'productPage', emoji: '🛒', labelKey: 'code.ideas.productPage', prompt: 'A product landing page for a premium wireless headphone. Image gallery, feature highlights, pricing, reviews section, and add-to-cart button' },
+    { id: 'blog', emoji: '📝', labelKey: 'code.ideas.blog', prompt: 'A minimal blog homepage with featured post hero, recent posts grid with thumbnails, categories sidebar, and newsletter signup footer' },
+    { id: 'apiServer', emoji: '🔧', labelKey: 'code.ideas.apiServer', prompt: 'A Node.js Express REST API server with user CRUD endpoints, JWT auth middleware, input validation, error handling, and health check endpoint' },
 ];
 
 // ─── Types ──────────────────────────────────────────────────
@@ -87,6 +87,7 @@ export default function CodePage() {
     // Complete state
     const [iteratePrompt, setIteratePrompt] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [ftpProfileCount, setFtpProfileCount] = useState(0);
 
     const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
     const buildStartRef = useRef<number>(0);
@@ -109,6 +110,9 @@ export default function CodePage() {
     useEffect(() => {
         loadRecent();
         getRandomSurprises(6).then(s => setSurprises(s));
+        fetch('/api/ftp/profiles').then(r => r.json()).then(d => {
+            if (Array.isArray(d.profiles)) setFtpProfileCount(d.profiles.length);
+        }).catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -547,6 +551,7 @@ export default function CodePage() {
                                 surprises={surprises}
                                 recentProjects={recentProjects}
                                 promptRef={promptRef}
+                                ftpProfileCount={ftpProfileCount}
                             />
                         </div>
                     </div>
@@ -624,7 +629,7 @@ export default function CodePage() {
 // ─────────────────────────────────────────────────────────────
 // Welcome View — Premium Dark
 // ─────────────────────────────────────────────────────────────
-function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, surprises, recentProjects, promptRef }: {
+function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, surprises, recentProjects, promptRef, ftpProfileCount = 0 }: {
     prompt: string;
     setPrompt: (p: string) => void;
     onStart: (p?: string) => void;
@@ -633,6 +638,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
     surprises: string[];
     recentProjects: LioProject[];
     promptRef: React.RefObject<HTMLTextAreaElement>;
+    ftpProfileCount?: number;
 }) {
     const { t } = useTranslation();
     return (
@@ -651,10 +657,10 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                     backgroundClip: 'text',
                     filter: 'drop-shadow(0 0 30px rgba(125,211,252,0.18))',
                 }}>
-                    What do you want to build?
+                    {t('code.title')}
                 </h1>
                 <p className="text-sm" style={{ color: 'rgba(148,163,184,0.75)' }}>
-                    Describe your idea - Lio plans, builds, and ships it.
+                    {t('code.subtitle')}
                 </p>
             </div>
 
@@ -665,7 +671,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onStart(); } }}
-                    placeholder="Describe your project… e.g. A Snake game with neon colors and high score"
+                    placeholder={t('code.placeholder')}
                     rows={3}
                     className="w-full p-4 pr-16 rounded-2xl resize-none outline-none text-sm"
                     style={{
@@ -704,12 +710,12 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
             {/* ── Quick Ideas ── */}
             <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(100,116,139,0.8)' }}>
-                    Quick Ideas
+                    {t('code.quickIdeas')}
                 </p>
                 <div className="flex flex-wrap gap-2">
                     {quickIdeas.map(idea => (
                         <button
-                            key={idea.label}
+                            key={idea.id}
                             onClick={() => { setPrompt(idea.prompt); onStart(idea.prompt); }}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
                             style={{
@@ -737,7 +743,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                             }}
                         >
                             <span>{idea.emoji}</span>
-                            <span>{idea.label}</span>
+                            <span>{t(idea.labelKey as any)}</span>
                         </button>
                     ))}
                     {/* Random Surprise */}
@@ -779,7 +785,7 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
             {recentProjects.length > 0 && (
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest mb-2.5" style={{ color: 'rgba(100,116,139,0.8)' }}>
-                        Recent Projects
+                        {t('code.recentProjects')}
                     </p>
                     <div className="space-y-1.5">
                         {recentProjects.slice(0, 4).map(p => (
@@ -820,18 +826,25 @@ function WelcomeView({ prompt, setPrompt, onStart, onSelectProject, quickIdeas, 
                                 {p.status !== 'complete' ? (
                                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0"
                                         style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.25)' }}>
-                                        Resume?
+                                        {t('code.resume')}
                                     </span>
                                 ) : (
                                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0"
                                         style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.2)' }}>
-                                        View
+                                        {t('code.view')}
                                     </span>
                                 )}
                             </button>
                         ))}
                     </div>
                 </div>
+            )}
+
+            {/* FTP deploy hint */}
+            {ftpProfileCount > 0 && (
+                <p className="text-xs text-center mt-2" style={{ color: 'rgba(100,116,139,0.5)' }}>
+                    {t('code.ftpHint', { count: String(ftpProfileCount) })}
+                </p>
             )}
         </div>
     );
@@ -845,6 +858,7 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
     plan: LioPlan | null; onConfirm: () => void; onModify: (p: string) => void;
     onCancel: () => void; scrollRef: React.RefObject<HTMLDivElement>;
 }) {
+    const { t } = useTranslation();
     const [modifyInput, setModifyInput] = useState('');
     const [showModify, setShowModify] = useState(false);
 
@@ -857,12 +871,12 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
                 </div>
                 <div>
                     <h2 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
-                        Lio AI - Planning: &ldquo;{projectName}&rdquo;
+                        {t('code.planning.title')} &ldquo;{projectName}&rdquo;
                     </h2>
                     <p className="text-xs truncate max-w-md" style={{ color: 'var(--text-muted)' }}>{prompt}</p>
                 </div>
                 <button onClick={onCancel} className="ml-auto text-xs px-2 py-1 rounded-lg hover:bg-[var(--surface-light)]" style={{ color: 'var(--text-muted)' }}>
-                    Cancel
+                    {t('code.planning.cancel')}
                 </button>
             </div>
 
@@ -877,7 +891,7 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
                         {msg.role !== 'system' && (
                             <p className="font-bold text-[10px] uppercase tracking-wider mb-1.5"
                                 style={{ color: msg.role === 'architect' ? '#60a5fa' : '#fb923c' }}>
-                                {msg.role === 'architect' ? '🏗️ Architect' : '🔍 Reviewer'}
+                                {msg.role === 'architect' ? `🏗️ ${t('code.planning.architect')}` : `🔍 ${t('code.planning.reviewer')}`}
                             </p>
                         )}
                         <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -895,15 +909,15 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
             {plan && (
                 <div className="flex-shrink-0 rounded-2xl p-4 mb-4"
                     style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.05))', border: '1px solid rgba(139,92,246,0.3)', boxShadow: '0 0 20px rgba(139,92,246,0.1)' }}>
-                    <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#a78bfa' }}>📋 Final Plan</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#a78bfa' }}>📋 {t('code.planning.finalPlan')}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs mb-3">
                         {[
-                            { label: 'Tech', value: plan.techStack },
-                            { label: 'Files', value: plan.files.length + ' files' },
-                            { label: 'Steps', value: plan.steps.length + ' steps' },
-                            { label: 'Time', value: plan.timeEstimate },
-                            { label: 'Cost', value: plan.costEstimate },
-                            { label: 'Complexity', value: plan.complexity },
+                            { label: t('code.planning.tech'), value: plan.techStack },
+                            { label: t('code.planning.files'), value: `${plan.files.length} ${t('code.planning.files').toLowerCase()}` },
+                            { label: t('code.planning.steps'), value: `${plan.steps.length} ${t('code.planning.steps').toLowerCase()}` },
+                            { label: t('code.planning.time'), value: plan.timeEstimate },
+                            { label: t('code.planning.cost'), value: plan.costEstimate },
+                            { label: t('code.planning.complexity'), value: plan.complexity },
                         ].map(item => (
                             <div key={item.label} className="p-2 rounded-lg" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.12)' }}>
                                 <p className="text-[9px] uppercase tracking-wider font-bold mb-0.5" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
@@ -914,11 +928,11 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
                     <div className="flex gap-2 mt-3">
                         <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-bold"
                             style={{ background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white' }}>
-                            ✅ Let&apos;s Build
+                            ✅ {t('code.planning.letsBuild')}
                         </button>
                         <button onClick={() => setShowModify(v => !v)} className="px-4 py-2.5 rounded-xl text-sm font-bold"
                             style={{ background: 'var(--surface-light)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                            ✏️ Modify
+                            ✏️ {t('code.planning.modify')}
                         </button>
                         <button onClick={onCancel} className="px-4 py-2.5 rounded-xl text-sm font-bold"
                             style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
@@ -928,14 +942,14 @@ function PlanningView({ projectName, prompt, messages, phase, plan, onConfirm, o
                     {showModify && (
                         <div className="flex gap-2 mt-2">
                             <input type="text" value={modifyInput} onChange={e => setModifyInput(e.target.value)}
-                                placeholder="Describe changes to the plan..."
+                                placeholder={t('code.planning.modifyPlaceholder')}
                                 className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
                                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                 onKeyDown={e => { if (e.key === 'Enter' && modifyInput.trim()) onModify(modifyInput.trim()); }} />
                             <button onClick={() => modifyInput.trim() && onModify(modifyInput.trim())}
                                 className="px-3 py-2 rounded-lg text-xs font-bold"
                                 style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }}>
-                                Re-plan
+                                {t('code.planning.replan')}
                             </button>
                         </div>
                     )}
@@ -967,7 +981,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
         <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0 border-b" style={{ borderColor: 'var(--border)' }}>
                 <span className="text-lg">🦁</span>
-                <p className="flex-1 text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>Building: &ldquo;{projectName}&rdquo;</p>
+                <p className="flex-1 text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{t('code.building.header')} &ldquo;{projectName}&rdquo;</p>
                 <span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>⏱️ {formatMs(elapsedMs)}</span>
                 <button onClick={onStop} className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400" title="Stop">
                     <Icon icon={Square} size={14} />
@@ -992,7 +1006,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                     </div>
                     <div className="px-3 py-2 flex-shrink-0 border-b" style={{ borderColor: 'var(--border)' }}>
                         <span className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>
-                            {progress}% - Step {Math.min(currentStepIndex + 1, steps.length)}/{steps.length}
+                            {t('code.building.progress' as any, { percent: progress, current: Math.min(currentStepIndex + 1, steps.length), total: steps.length })}
                         </span>
                         <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ background: 'var(--surface-light)' }}>
                             <div className="h-full rounded-full transition-all duration-500"
@@ -1003,10 +1017,10 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                         {buildLog.map((line, i) => <p key={i} className="leading-relaxed">{line}</p>)}
                     </div>
                     <div className="flex-shrink-0 p-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>💬 Chat with Lio</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)' }}>💬 {t('code.building.chatLabel')}</p>
                         <div className="flex gap-2">
                             <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
-                                placeholder="Make it blue… Add dark mode…"
+                                placeholder={t('code.building.chatPlaceholder')}
                                 className="flex-1 px-2.5 py-1.5 rounded-lg text-xs outline-none"
                                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                                 onKeyDown={e => { if (e.key === 'Enter') onSendChat(); }} />
@@ -1037,7 +1051,7 @@ function BuildingView({ projectName, projectId, steps, currentStepIndex, progres
                         </div>
                         {hasPreview && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded font-bold animate-pulse flex-shrink-0"
-                                style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>● Live</span>
+                                style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>● {t('code.building.live')}</span>
                         )}
                     </div>
                     {hasPreview ? (
@@ -1082,6 +1096,101 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
     const activePreview = htmlFiles.some(f => f.name === selectedPreview) ? selectedPreview : htmlFiles[0]?.name || 'index.html';
     const hasPreview = htmlFiles.length > 0 && projectId;
 
+    // Deploy state
+    const [showDeploy, setShowDeploy] = useState(false);
+    const [deployConfigured, setDeployConfigured] = useState(false);
+    const [deploying, setDeploying] = useState(false);
+    const [deployResult, setDeployResult] = useState<{ success: boolean; filesUploaded?: number; incremental?: boolean; error?: string; errors?: string[] } | null>(null);
+    const [deployHost, setDeployHost] = useState('');
+    const [deployPort, setDeployPort] = useState('21');
+    const [deployUser, setDeployUser] = useState('');
+    const [deployPass, setDeployPass] = useState('');
+    const [deployRemotePath, setDeployRemotePath] = useState('/');
+    const [deployProtocol, setDeployProtocol] = useState('ftp');
+    const [testResult, setTestResult] = useState('');
+    const [centralFtpProfiles, setCentralFtpProfiles] = useState<Array<{ id: string; alias: string; host: string; port: number; username: string; password: string; protocol: string; remotePath: string }>>([]);
+
+    // Check if deploy config exists on mount
+    useEffect(() => {
+        if (projectId) {
+            fetch(`/api/code/project/${projectId}/deploy-config`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.configured) {
+                        setDeployConfigured(true);
+                        setDeployHost(data.host || '');
+                        setDeployPort(String(data.port || 21));
+                        setDeployUser(data.username || '');
+                        setDeployRemotePath(data.remotePath || '/');
+                        setDeployProtocol(data.protocol || 'ftp');
+                    }
+                })
+                .catch(() => {});
+            // Also load central FTP profiles
+            fetch('/api/ftp/profiles').then(r => r.json()).then(data => {
+                if (data.profiles) setCentralFtpProfiles(data.profiles);
+            }).catch(() => {});
+        }
+    }, [projectId]);
+
+    const loadFromCentralProfile = (profileId: string) => {
+        const p = centralFtpProfiles.find(pr => pr.id === profileId);
+        if (!p) return;
+        setDeployHost(p.host);
+        setDeployPort(String(p.port || 21));
+        setDeployUser(p.username);
+        setDeployPass(p.password === '******' ? '' : p.password);
+        setDeployRemotePath(p.remotePath || '/');
+        setDeployProtocol(p.protocol || 'ftp');
+    };
+
+    const saveDeployConfig = async () => {
+        if (!projectId) return;
+        const res = await fetch(`/api/code/project/${projectId}/deploy-config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                host: deployHost, port: parseInt(deployPort), username: deployUser,
+                password: deployPass, remotePath: deployRemotePath, protocol: deployProtocol,
+            }),
+        });
+        if (res.ok) setDeployConfigured(true);
+    };
+
+    const testConnection = async () => {
+        if (!projectId) return;
+        setTestResult(t('ftp.testing'));
+        try {
+            const res = await fetch(`/api/code/project/${projectId}/deploy-test`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    host: deployHost, port: parseInt(deployPort), username: deployUser,
+                    password: deployPass, remotePath: deployRemotePath, protocol: deployProtocol,
+                }),
+            });
+            const data = await res.json();
+            setTestResult(data.success ? `✅ ${data.message}` : `❌ ${data.error}`);
+        } catch (e: any) {
+            setTestResult(`❌ ${e.message}`);
+        }
+    };
+
+    const deployProject = async () => {
+        if (!projectId) return;
+        setDeploying(true);
+        setDeployResult(null);
+        try {
+            const res = await fetch(`/api/code/project/${projectId}/deploy`, { method: 'POST' });
+            const data = await res.json();
+            setDeployResult(data.success ? data : { success: false, error: data.error });
+        } catch (e: any) {
+            setDeployResult({ success: false, error: e.message });
+        } finally {
+            setDeploying(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex overflow-hidden">
             {/* Left: summary */}
@@ -1090,26 +1199,114 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
                 <div className="text-4xl mb-4">✅</div>
                 <h2 className="text-2xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{t('code.projectComplete')}</h2>
                 <p className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>&ldquo;{projectName}&rdquo; - {doneCount}/{steps.length} steps</p>
-                <p className="text-xs mb-8" style={{ color: 'var(--text-muted)' }}>
-                    {elapsedMs > 0 ? `Built in ${formatMs(elapsedMs)}` : 'Build complete'}
-                    {builtFiles.length > 0 && ` · ${builtFiles.length} file${builtFiles.length > 1 ? 's' : ''}`}
+                <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>
+                    {elapsedMs > 0 ? t('code.complete.builtIn' as any, { time: formatMs(elapsedMs) }) : t('code.complete.buildComplete')}
+                    {builtFiles.length > 0 && ` · ${builtFiles.length} ${t('code.complete.filesLabel')}`}
                 </p>
-                <div className="flex flex-wrap gap-3 justify-center mb-6">
+                <div className="flex flex-wrap gap-3 justify-center mb-4">
                     <button onClick={onOpenFolder} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold"
                         style={{ background: 'rgba(132,204,22,0.15)', color: '#84cc16', border: '1px solid rgba(132,204,22,0.3)' }}>
-                        <Icon icon={FolderOpen} size={15} /> Open Folder
+                        <Icon icon={FolderOpen} size={15} /> {t('code.complete.openFolder')}
                     </button>
                     <button onClick={onDownload} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold"
                         style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                        <Icon icon={Download} size={15} /> Download ZIP
+                        <Icon icon={Download} size={15} /> {t('code.complete.downloadZip')}
+                    </button>
+                    <button onClick={() => setShowDeploy(!showDeploy)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold"
+                        style={{ background: showDeploy ? 'rgba(244,114,182,0.15)' : 'rgba(244,114,182,0.08)', color: '#f472b6', border: `1px solid ${showDeploy ? 'rgba(244,114,182,0.4)' : 'rgba(244,114,182,0.2)'}` }}>
+                        🚀 {t('code.complete.deploy')}
                     </button>
                 </div>
+
+                {/* Deploy panel */}
+                {showDeploy && (
+                    <div className="w-full max-w-sm mb-4 p-4 rounded-xl animate-fadeIn text-left" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <h3 className="text-xs font-bold flex items-center gap-2 mb-3" style={{ color: 'var(--text-primary)' }}>
+                            🚀 {t('ftp.title')}
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-lime-500/20 text-lime-400 font-bold">BETA</span>
+                        </h3>
+                        {!deployConfigured ? (
+                            <div className="space-y-2">
+                                {centralFtpProfiles.length > 0 && (
+                                    <select
+                                        defaultValue=""
+                                        onChange={e => { if (e.target.value) loadFromCentralProfile(e.target.value); }}
+                                        className="w-full px-2.5 py-1.5 rounded-lg text-xs mb-1"
+                                        style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', color: '#34d399' }}
+                                    >
+                                        <option value="">{t('ftp.loadFromProfile')}</option>
+                                        {centralFtpProfiles.map(p => (
+                                            <option key={p.id} value={p.id}>{p.alias || p.host} ({p.protocol.toUpperCase()})</option>
+                                        ))}
+                                    </select>
+                                )}
+                                <select value={deployProtocol} onChange={e => setDeployProtocol(e.target.value)}
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-xs" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                                    <option value="ftp">FTP</option>
+                                    <option value="sftp">SFTP</option>
+                                </select>
+                                <input placeholder={t('ftp.host')} value={deployHost} onChange={e => setDeployHost(e.target.value)}
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-xs outline-none" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input placeholder={t('ftp.port')} type="number" value={deployPort} onChange={e => setDeployPort(e.target.value)}
+                                        className="px-2.5 py-1.5 rounded-lg text-xs outline-none" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                    <input placeholder={t('ftp.username')} value={deployUser} onChange={e => setDeployUser(e.target.value)}
+                                        className="px-2.5 py-1.5 rounded-lg text-xs outline-none" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                </div>
+                                <input placeholder={t('ftp.password')} type="password" value={deployPass} onChange={e => setDeployPass(e.target.value)}
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-xs outline-none" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                <input placeholder={t('ftp.remotePath')} value={deployRemotePath} onChange={e => setDeployRemotePath(e.target.value)}
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-xs outline-none" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                                <div className="flex gap-2 pt-1">
+                                    <button onClick={testConnection} className="flex-1 py-1.5 text-xs font-bold rounded-lg" style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                                        {t('ftp.testConnection')}
+                                    </button>
+                                    <button onClick={saveDeployConfig} className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-lime-500 hover:bg-lime-400 text-black">
+                                        {t('ftp.save')}
+                                    </button>
+                                </div>
+                                {testResult && <p className="text-[10px]" style={{ color: testResult.startsWith('✅') ? '#4ade80' : testResult.startsWith('❌') ? '#f87171' : 'var(--text-muted)' }}>{testResult}</p>}
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                                    {deployProtocol}://{deployHost}:{deployPort}{deployRemotePath}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button onClick={deployProject} disabled={deploying}
+                                        className="flex-1 py-2 text-xs font-bold rounded-lg disabled:opacity-50 transition-all"
+                                        style={{ background: 'linear-gradient(135deg, #f472b6, #ec4899)', color: 'white' }}>
+                                        {deploying ? t('ftp.uploading') : `🚀 ${t('code.complete.deployNow')}`}
+                                    </button>
+                                    <button onClick={() => setDeployConfigured(false)} className="px-3 py-2 text-xs font-bold rounded-lg"
+                                        style={{ background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                                        {t('code.complete.edit')}
+                                    </button>
+                                </div>
+                                {deployResult && (
+                                    <p className="text-[10px]" style={{ color: deployResult.success ? '#4ade80' : '#f87171' }}>
+                                        {deployResult.success
+                                            ? `✅ ${deployResult.filesUploaded} ${t('ftp.filesUploaded')}${deployResult.incremental ? ` ${t('code.complete.incremental')}` : ''}`
+                                            : `❌ ${deployResult.error}`}
+                                    </p>
+                                )}
+                                {/* incremental note is rendered inside the success string above */}
+                                {deployResult?.errors && deployResult.errors.length > 0 && (
+                                    <div className="text-[10px] text-red-400 space-y-0.5">
+                                        {deployResult.errors.map((e, i) => <p key={i}>{e}</p>)}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="w-full max-w-sm mb-4">
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>✏️ Request changes</p>
-                    <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Describe what to fix or add - Lio will update the existing project files.</p>
+                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>✏️ {t('code.complete.requestChanges')}</p>
+                    <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>{t('code.complete.requestChangesDesc')}</p>
                     <div className="flex gap-2">
                         <input type="text" value={iteratePrompt} onChange={e => setIteratePrompt(e.target.value)}
-                            placeholder="Add dark mode… Fix the login form… Add a search bar…"
+                            placeholder={t('code.complete.iteratePlaceholder')}
                             className="flex-1 px-3 py-2 rounded-xl text-sm outline-none"
                             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                             onKeyDown={e => { if (e.key === 'Enter' && iteratePrompt.trim()) onIterate(iteratePrompt.trim()); }} />
@@ -1117,11 +1314,11 @@ function CompleteView({ projectName, projectId, steps, elapsedMs, builtFiles, it
                             disabled={!iteratePrompt.trim()}
                             className="px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-30"
                             style={{ background: 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: 'white' }}>
-                            Apply
+                            {t('code.complete.apply')}
                         </button>
                     </div>
                 </div>
-                <button onClick={onNew} className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>🆕 New Project</button>
+                <button onClick={onNew} className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>🆕 {t('code.complete.newProject')}</button>
             </div>
             {/* Right: preview */}
             <div className="flex flex-col w-1/2 overflow-hidden">

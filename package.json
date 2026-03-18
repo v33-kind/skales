@@ -1,6 +1,6 @@
 {
   "name": "skales",
-  "version": "6.2.0",
+  "version": "7.0.0",
   "description": "Skales - Your Local AI Agent",
   "author": "Mario Simic",
   "homepage": "https://skales.app",
@@ -12,7 +12,8 @@
     "build:web": "cd apps/web && npm run build",
     "build:win": "npm run bundle:bots && npm run build:web && npm run pack:deps && electron-builder --win",
     "build:mac": "npm run bundle:bots && npm run build:web && electron-builder --mac",
-    "build:all": "npm run bundle:bots && npm run build:web && electron-builder --win --mac",
+    "build:linux": "npm run bundle:bots && npm run build:web && electron-builder --linux",
+    "build:all": "npm run bundle:bots && npm run build:web && electron-builder --win --mac --linux",
     "start:web": "cd apps/web && npm run dev",
     "postinstall": "cd apps/web && npm install --legacy-peer-deps"
   },

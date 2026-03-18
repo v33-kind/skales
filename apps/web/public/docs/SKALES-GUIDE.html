@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skales v6.2.0 - Complete Guide</title>
+    <title>Skales v7.0.0 - Complete Guide</title>
     <style>
         /* --- CSS VARIABLES & RESET --- */
         :root {
@@ -607,9 +607,9 @@
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="container">
-            <div class="badge">v6.2.0 - Complete Guide</div>
+            <div class="badge">v7.0.0 - Complete Guide</div>
             <div class="hero-logo">🦎</div>
-            <h1>Skales v6.2.0<br>Your AI Companion<br>For Everyday Life</h1>
+            <h1>Skales v7.0.0<br>Your AI Companion<br>For Everyday Life</h1>
             <p class="hero-subtitle">
                 A powerful native desktop AI agent with memory, integrations, and an emergency brake. Runs entirely on your computer as a native app - no browser, no terminal, no cloud. Just your AI, your way.
             </p>
@@ -678,7 +678,7 @@
                 <div class="card">
                     <h3>🪟 Windows</h3>
                     <ol class="step-list">
-                        <li>Download <code>Skales-Setup-6.2.0.exe</code> from skales.app</li>
+                        <li>Download <code>Skales-Setup-7.0.0.exe</code> from skales.app</li>
                         <li>Double-click the installer</li>
                         <li>Windows SmartScreen may show <em>"Windows protected your PC"</em> - this appears because Skales is not yet signed with an EV certificate. Click <strong>More info</strong> then <strong>Run anyway</strong>. This is safe.</li>
                         <li>Skales installs and creates a Desktop shortcut</li>
@@ -689,14 +689,14 @@
                 <div class="card">
                     <h3>🍏 macOS (Apple Silicon M1–M4)</h3>
                     <ol class="step-list">
-                        <li>Download <code>Skales-6.2.0-arm64.dmg</code> from skales.app</li>
+                        <li>Download <code>Skales-7.0.0-arm64.dmg</code> from skales.app</li>
                         <li>Open the DMG and drag Skales into Applications</li>
                         <li>macOS will say <em>"Skales is damaged and can't be opened"</em> or <em>"unidentified developer"</em> - this is the Gatekeeper quarantine flag</li>
                         <li>Open <strong>Terminal</strong> and run: <code>sudo xattr -rd com.apple.quarantine /Applications/Skales.app</code></li>
                         <li>Launch Skales normally from Applications. This one-time command is only needed after first install.</li>
                         <li>Why? Apple notarization costs $99/year. As an indie developer, Skales is not yet notarized. This is planned for a future release.</li>
                     </ol>
-                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;"><strong>Intel Mac:</strong> Download <code>Skales-6.2.0.dmg</code> instead - same steps.</p>
+                    <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;"><strong>Intel Mac:</strong> Download <code>Skales-7.0.0.dmg</code> instead - same steps.</p>
                     <p style="margin-top:0.5rem; font-size:0.85em; opacity:0.7;">Full guide: <a href="https://github.com/skalesapp/skales/blob/main/INSTALL-MAC.md" style="color: var(--accent-lime);">INSTALL-MAC.md</a></p>
                 </div>
             </div>
@@ -776,7 +776,7 @@
     <section id="buddy" class="section">
         <div class="container">
             <h2>🦎 Desktop Buddy</h2>
-            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+            <div class="badge" style="margin-bottom: 1.5rem;">Updated in v7.0.0</div>
             <p>The Desktop Buddy is a transparent, always-on overlay widget that floats in the corner of your screen. It's a compact glassmorphism window with an animated mascot - click it to open a Spotlight-style input, ask Skales anything, or ask it to <strong>do</strong> something for you. No need to open the main window.</p>
 
             <h3 style="margin-top: 2rem;">How to Enable the Buddy</h3>
@@ -788,7 +788,7 @@
             </ol>
 
             <h3 style="margin-top: 2rem;">Tool Execution - The Buddy Can DO Things</h3>
-            <p>In v6.0, the buddy graduated from a simple Q&amp;A widget to a full action agent. When you ask it to do something, it uses the same tool pipeline as the main chat - write files, search the web, send emails, manage calendar events, and more.</p>
+            <p>The buddy is a full action agent with proactive intelligence. It uses the same tool pipeline as the main chat — write files, search the web, send emails, manage calendar events, and more. In v7.0.0 it gained rule-based triggers, quiet hours, and cooldowns so it can check in proactively without being annoying.</p>
 
             <div class="grid">
                 <div class="card">
@@ -816,14 +816,14 @@
             <p>Every buddy conversation is automatically appended to your active chat session in the main window. You can open the main chat at any time to see the full history of what the buddy did, including tool results and approval decisions.</p>
 
             <h3 style="margin-top: 2rem;">Built-in Skins</h3>
-            <p>Skales v6.2.0 ships with two mascot skins:</p>
+            <p>Skales v7.0.0 ships with three mascot skins:</p>
             <table class="cmd-table">
                 <thead>
                     <tr><th>Skin</th><th>Description</th></tr>
                 </thead>
                 <tbody>
                     <tr><td>🦎 <strong>Skales</strong> (default)</td><td>Your trusty green AI companion. Reliable and always ready to help.</td></tr>
-                    <tr><td>💧 <strong>Bubbles</strong> <span style="font-size:0.75em;opacity:0.6;">New in v6.1.1</span></td><td>A playful blue liquid blob that morphs into different shapes. Unpredictable and fun - no two animations are the same.</td></tr>
+                    <tr><td>💧 <strong>Bubbles</strong></td><td>A playful blue liquid blob that morphs into different shapes. Unpredictable and fun - no two animations are the same.</td></tr>
                 </tbody>
             </table>
             <p style="margin-top: 1rem;">Switch skins in <strong>Settings → Desktop App → Buddy Skin</strong>. Each skin shows a description and preview icon in the selector. Both skins are available from day one - no download needed.</p>
@@ -897,6 +897,7 @@
             <ul class="feature-list">
                 <li><strong>Text chat:</strong> Type naturally, have real conversations</li>
                 <li><strong>File attachments:</strong> TXT, MD, HTML, JSON, PDF - drag &amp; drop or click the paperclip</li>
+                <li><strong>Send with attachments:</strong> Ask Skales to "send the report with the PDF attached" — the agent will attach files from your workspace or ~/.skales-data/ automatically (sandboxed for security)</li>
                 <li><strong>Image uploads:</strong> Vision-capable models can analyze screenshots, photos, diagrams</li>
                 <li><strong>Voice input/output:</strong> Speak to Skales and hear replies (requires TTS configuration)</li>
                 <li><strong>Session history:</strong> All conversations are saved and searchable</li>
@@ -967,8 +968,8 @@
                 <li><strong>Cancel anytime:</strong> Click the Stop button in chat at any time to halt the current execution.</li>
             </ul>
 
-            <h3 style="margin-top: 2rem;">🤖 Autopilot - Autonomous Agent <span style="font-size:0.7em;opacity:0.6;font-weight:normal;">New in v6.1.1</span></h3>
-            <p>Autopilot is your AI Chief of Staff. Set goals and walk away - Autopilot plans, executes, and reports back autonomously. In v6.1.1 it became a true living agent:</p>
+            <h3 style="margin-top: 2rem;">🤖 Autopilot - Autonomous Agent <span style="font-size:0.7em;opacity:0.6;font-weight:normal;">Updated in v7.0.0</span></h3>
+            <p>Autopilot is your AI Chief of Staff. Set goals and walk away — Autopilot plans, executes, and reports back autonomously. Fully supports recurring schedules, Telegram approval, and live execution views.</p>
             <div class="grid">
                 <div class="card">
                     <h3>📅 Recurring Schedules</h3>
@@ -1134,7 +1135,15 @@
             <p>When new emails arrive, a blue notification bar appears at the top of your <strong>Dashboard</strong>. It shows the count and the most recent sender and subject. Click ✕ to dismiss it. It reappears automatically when the next new email arrives.</p>
 
             <!-- GOOGLE CALENDAR -->
-            <h3 style="margin-top: 2rem;">📅 Google Calendar</h3>
+            <h3 style="margin-top: 2rem;">📅 Calendar Integration (Google, Apple &amp; Outlook)</h3>
+            <p>Skales v7.0.0 includes a unified calendar abstraction layer supporting three providers simultaneously:</p>
+            <ul>
+                <li><strong>Google Calendar</strong> — OAuth 2.0, full read/write</li>
+                <li><strong>Apple Calendar</strong> — CalDAV with iCloud credentials</li>
+                <li><strong>Outlook / Microsoft 365</strong> — Graph API with OAuth</li>
+            </ul>
+            <p>The Planner AI can read from all configured calendars and push generated day plans as calendar events. Configure providers in <strong>Settings → Integrations → Calendar</strong>.</p>
+            <h3 style="margin-top: 2rem;">📅 Google Calendar (OAuth Setup)</h3>
             <p>Let Skales help you manage your schedule. Skales can view events and create/update them - but always with your approval for changes.</p>
             <ol class="step-list">
                 <li>Go to <strong>Settings → Skills → Google Calendar</strong></li>
@@ -1518,7 +1527,7 @@
     <section id="safety-mode" class="section">
         <div class="container">
             <h2>🛡️ Safety Mode</h2>
-            <p>Safety Mode controls how much autonomy Skales has when executing actions. Configure it in <strong>Settings → Safety Mode</strong>. Since v6.0.1, Safety Mode uses two clear levels. In v6.0.2, Unrestricted mode correctly bypasses Telegram approval prompts as well.</p>
+            <p>Safety Mode controls how much autonomy Skales has when executing actions. Configure it in <strong>Settings → Safety Mode</strong>. Safety Mode uses two clear levels. Unrestricted mode bypasses Telegram approval prompts for power-user automation workflows.</p>
 
             <h3 style="margin-top: 2rem;">Two Levels</h3>
             <table class="cmd-table">
@@ -1590,8 +1599,8 @@
     <section id="language" class="section">
         <div class="container">
             <h2>🌍 Language / Multilingual</h2>
-            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
-            <p>Skales v6.0 ships with full UI translations for <strong>English, Deutsch (German), Espanol (Spanish), and Francais (French)</strong>. Every visible string is translated: settings labels, chat prompts, approval dialogs, error messages, and Desktop Buddy speech bubbles.</p>
+            <div class="badge" style="margin-bottom: 1.5rem;">Updated in v7.0.0</div>
+            <p>Skales v7.0.0 ships with full UI translations for <strong>English, Deutsch (German), Español (Spanish), Français (French), Русский (Russian), 中文 (Chinese Simplified), and 日本語 (Japanese)</strong>. Every visible string is translated: settings labels, chat prompts, approval dialogs, error messages, and Desktop Buddy speech bubbles.</p>
 
             <h3 style="margin-top: 2rem;">How to Change Language</h3>
             <ol class="step-list">
@@ -1620,7 +1629,7 @@
     <section id="replicate" class="section">
         <div class="container">
             <h2>🎨 Replicate Integration</h2>
-            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0 - BYOK</div>
+            <div class="badge" style="margin-bottom: 1.5rem;">Available since v6.0 - BYOK</div>
             <p>Replicate gives you access to 50+ open-source AI models for image and video generation - SDXL, FLUX, Stable Video Diffusion, and many more. You bring your own Replicate API key (BYOK) and pay Replicate directly for usage.</p>
 
             <h3 style="margin-top: 2rem;">Getting a Replicate API Key</h3>
@@ -1654,7 +1663,7 @@
     <section id="custom-endpoint" class="section">
         <div class="container">
             <h2>🔌 Custom OpenAI-Compatible Endpoint</h2>
-            <div class="badge" style="margin-bottom: 1.5rem;">New in v6.0</div>
+            <div class="badge" style="margin-bottom: 1.5rem;">Available since v6.0</div>
             <p>Connect any OpenAI-compatible local server to Skales: <strong>llama.cpp, LM Studio, vLLM, koboldcpp, text-generation-webui</strong>, or any server that speaks the OpenAI chat completions API format.</p>
 
             <h3 style="margin-top: 2rem;">Setup</h3>
@@ -1690,10 +1699,10 @@
     <section id="privacy" class="section">
         <div class="container">
             <h2>🔒 Privacy &amp; Feedback</h2>
-            <div class="badge" style="margin-bottom: 0.75rem;">New in v6.0</div>
-            <div class="badge" style="margin-bottom: 1.5rem; background: rgba(132,204,22,0.1); color: #84cc16; border-color: rgba(132,204,22,0.25);">Updated in v6.2.0</div>
+            <div class="badge" style="margin-bottom: 0.75rem;">Available since v6.0</div>
+            <div class="badge" style="margin-bottom: 1.5rem; background: rgba(132,204,22,0.1); color: #84cc16; border-color: rgba(132,204,22,0.25);">Updated in v7.0.0</div>
 
-            <h3 style="margin-top: 1rem;">💬 Feedback &amp; Rating Page <span style="font-size:0.75em;opacity:0.6;font-weight:normal;">New in v6.1.1</span></h3>
+            <h3 style="margin-top: 1rem;">💬 Feedback &amp; Rating Page <span style="font-size:0.75em;opacity:0.6;font-weight:normal;">Updated in v7.0.0</span></h3>
             <p>Go to <strong>/feedback</strong> in the sidebar to access the new Feedback page. It has three sections:</p>
             <div class="grid">
                 <div class="card">
@@ -1846,7 +1855,7 @@
         <div class="container">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🦎</div>
             <p>
-                <strong>Skales v6.2.0</strong><br>
+                <strong>Skales v7.0.0</strong><br>
                 A powerful AI companion for everyday humans.
             </p>
             <p style="margin-top: 1rem;">

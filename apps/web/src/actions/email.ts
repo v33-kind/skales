@@ -201,8 +201,12 @@ export async function sendEmail(params: {
     body: string;       // plain text
     htmlBody?: string;  // optional HTML version
     replyTo?: string;
+    /** Optional: supply the specific account config to use. If omitted, falls back to loadEmailConfig(). */
+    accountConfig?: EmailConfig;
+    /** Optional: absolute file paths to attach. Paths must already be validated by the caller. */
+    attachments?: string[];
 }): Promise<{ success: boolean; error?: string }> {
-    const config = await loadEmailConfig();
+    const config = params.accountConfig ?? await loadEmailConfig();
     if (!config?.enabled) return { success: false, error: 'Email not configured. Go to Settings → Email.' };
 
     try {
@@ -220,6 +224,13 @@ export async function sendEmail(params: {
         });
 
         const signatureSep = config.signature ? '\n\n-- \n' + config.signature : '';
+
+        // Build nodemailer attachments from file paths
+        const nmAttachments = params.attachments?.map(fp => ({
+            filename: fp.split('/').pop() || 'attachment',
+            path: fp,
+        }));
+
         await transport.sendMail({
             from: config.displayName
                 ? `"${config.displayName}" <${config.username}>`
@@ -231,6 +242,7 @@ export async function sendEmail(params: {
             html: params.htmlBody
                 ? params.htmlBody + (config.signature ? `<br><br><div style="color:#888">-- <br>${config.signature.replace(/\n/g, '<br>')}</div>` : '')
                 : undefined,
+            ...(nmAttachments && nmAttachments.length > 0 ? { attachments: nmAttachments } : {}),
         });
         return { success: true };
     } catch (e: any) {

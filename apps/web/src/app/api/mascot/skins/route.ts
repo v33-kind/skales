@@ -35,6 +35,7 @@ const SKIN_RE          = /^[a-z0-9_-]+$/i;
 const SKIN_DESCRIPTIONS: Record<string, string> = {
     skales:  'Skales - Your trusty green AI companion. Reliable and always ready to help.',
     bubbles: 'Bubbles - A blue liquid blob that morphs into different shapes. Playful and unpredictable.',
+    capy:    'Capy - The chillest AI companion. Calm, cozy, and always relaxed.',
 };
 
 interface SkinMeta {

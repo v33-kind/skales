@@ -55,8 +55,12 @@ export interface SkalesSettings {
         channels: {
             telegram: boolean;
             browser: boolean;
-            whatsapp?: boolean;
+            dashboard?: boolean;  // v7: show in Dashboard Chat
+            whatsapp?: boolean;   // v7: reserved (Coming Soon)
         };
+        // v7 Buddy Intelligence extensions
+        proactiveEnabled?: boolean;    // master toggle for rule-based proactive notifications (default: true)
+        notificationTypes?: Record<string, boolean>;  // per-type enable/disable (e.g. { 'meeting-reminder': true, 'idle-checkin': false })
     };
     // GIF / Sticker Integration
     gifIntegration?: {
@@ -65,10 +69,16 @@ export interface SkalesSettings {
         apiKey: string;
         autoSend: boolean; // Skales can proactively send GIFs
     };
-    // File System Access
+    // File System Access (legacy toggle — kept for backward compatibility with computer-use.ts)
     // 'workspace' = Skales stays inside its own .skales-data/workspace sandbox (safe default)
     // 'full'      = Skales can read/write anywhere on the local drive (system paths still blocked)
     fileSystemAccess?: 'workspace' | 'full';
+    // File Access Mode (new, fine-grained — supersedes the simple toggle above)
+    // 'workspace_only' = sandbox only (maps to fileSystemAccess: 'workspace')
+    // 'unrestricted'   = full disk access (maps to fileSystemAccess: 'full')
+    // 'custom'         = allow only paths listed in allowedFolders
+    fileAccessMode?: 'workspace_only' | 'unrestricted' | 'custom';
+    allowedFolders?: string[]; // absolute paths; effective only when fileAccessMode === 'custom'
     // Tavily Web Search API
     tavilyApiKey?: string;
     // TTS Configuration
@@ -101,6 +111,12 @@ export interface SkalesSettings {
     // Custom OpenAI-compatible endpoint — whether to enable tool/function calling
     // Some local models (llama.cpp, LM Studio, etc.) don't support the tools array
     customEndpointToolCalling?: boolean;
+    // Custom endpoint — vision support toggle (user declares endpoint accepts image content)
+    customEndpointVisionSupport?: boolean;
+    // Custom endpoint — TTS base URL (optional, for text-to-speech via the custom endpoint)
+    customEndpointTtsUrl?: string;
+    // Custom endpoint — request timeout in seconds (default: 30)
+    customEndpointTimeout?: number;
     // Skills — enabled/disabled flags for built-in skill modules
     skills?: {
         systemMonitor?: { enabled: boolean };
@@ -311,7 +327,10 @@ export async function saveAllSettings(newSettings: Partial<SkalesSettings>) {
             ...current,
             ...newSettings,
             providers: newSettings.providers
-                ? { ...current.providers, ...newSettings.providers }
+                ? Object.keys({ ...current.providers, ...newSettings.providers }).reduce((acc, key) => {
+                    acc[key as Provider] = { ...(current.providers[key as Provider] || {}), ...(newSettings.providers?.[key as Provider] || {}) };
+                    return acc;
+                  }, {} as typeof current.providers)
                 : current.providers,
         };
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(merged, null, 2));
@@ -357,16 +376,23 @@ async function callProvider(
         baseUrl = trimmed.endsWith('/v1') ? trimmed : trimmed + '/v1';
     }
     const model = config.model || DEFAULT_SETTINGS.providers[provider].model!;
-    const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`,
-    };
+    // Bug 30: Only send Authorization header when there is actually an API key.
+    // Sending "Bearer " (empty) causes KoboldCpp / vLLM / LM Studio to reject
+    // the request with 401 even though they don't require authentication at all.
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (config.apiKey && config.apiKey.trim() !== '') {
+        headers['Authorization'] = `Bearer ${config.apiKey.trim()}`;
+    }
 
     if (provider === 'openrouter') {
         headers['HTTP-Referer'] = 'https://skales.app';
         headers['X-Title'] = 'Skales';
     }
 
+    // Bug 29: Custom/local endpoints (Ollama, KoboldCpp, vLLM, LM Studio) can take
+    // 5-30 s on cold starts. No timeout was set, so this path could hang forever.
+    // Use a 30s floor for custom endpoints; 15s for cloud providers (they're fast).
+    const timeoutMs = provider === 'custom' || provider === 'ollama' ? 30_000 : 15_000;
     const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers,
@@ -376,6 +402,7 @@ async function callProvider(
             max_tokens: 2048,
             temperature: 0.7,
         }),
+        signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (!response.ok) {

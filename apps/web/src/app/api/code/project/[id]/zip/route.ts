@@ -44,7 +44,7 @@ export async function GET(
             // Add all project files, excluding project.json (metadata-only)
             archive.glob('**/*', {
                 cwd: projectDir,
-                ignore: ['project.json'],
+                ignore: ['project.json', 'deploy-config.json'],
                 dot: true,
             });
 

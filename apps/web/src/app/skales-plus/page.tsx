@@ -134,28 +134,29 @@ export default function SkalesPlusPage() {
         t('skalesPlus.features.unlimitedChats'),
         t('skalesPlus.features.localStorage'),
         t('skalesPlus.features.communitySupport'),
-        t('skalesPlus.features.fourLanguages'),
+        t('skalesPlus.features.sevenLanguages'),
     ];
 
     const personalFeatures = [
         `Everything in ${t('skalesPlus.free.name')}`,
         t('skalesPlus.features.hostedAI'),
+        t('skalesPlus.features.customSkins'),
+        t('skalesPlus.features.extendedMemory'),
+        t('skalesPlus.features.morningBriefing'),
+        t('skalesPlus.features.multiDevice'),
         t('skalesPlus.features.prioritySupport'),
         t('skalesPlus.features.earlyAccess'),
-        t('skalesPlus.features.cloudBackup'),
-        t('skalesPlus.features.morningBriefing'),
-        t('skalesPlus.features.allSkins'),
-        t('skalesPlus.features.advancedMemory'),
     ];
 
     const businessFeatures = [
         `Everything in ${t('skalesPlus.personal.name')}`,
         t('skalesPlus.features.teamSeats', { count: '5' }),
+        t('skalesPlus.features.teamManagement'),
         t('skalesPlus.features.sharedMemory'),
+        t('skalesPlus.features.apiAccess'),
+        t('skalesPlus.features.ftpDeploy'),
+        t('skalesPlus.features.whiteLabelBuddy'),
         t('skalesPlus.features.auditLog'),
-        t('skalesPlus.features.priorityRouting'),
-        t('skalesPlus.features.invoicing'),
-        t('skalesPlus.features.whiteLabel'),
     ];
 
     return (
@@ -169,7 +170,7 @@ export default function SkalesPlusPage() {
                     style={{ color: 'var(--text-muted)' }}
                 >
                     <ArrowLeft size={15} />
-                    Back to Settings
+                    {t('nav.settings')}
                 </Link>
 
                 {/* Header */}
@@ -206,7 +207,7 @@ export default function SkalesPlusPage() {
                             </span>
                         </div>
                         <p className="text-[11px] mb-1 font-semibold" style={{ color: '#4ade80' }}>$0 / forever</p>
-                        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>The full Skales experience, always free.</p>
+                        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>{t('skalesPlus.free.name')} — always free.</p>
                         <ul className="space-y-2.5 flex-1 mb-6">
                             {freeFeatures.map(f => <Feature key={f} text={f} />)}
                         </ul>
@@ -228,7 +229,7 @@ export default function SkalesPlusPage() {
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                             <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white"
                                 style={{ background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)' }}>
-                                <Star size={9} className="inline mr-1 -mt-px" />Most Popular
+                                <Star size={9} className="inline mr-1 -mt-px" />{t('skalesPlus.popular')}
                             </span>
                         </div>
                         <div className="flex items-center gap-2 mb-1 mt-2">
@@ -238,7 +239,7 @@ export default function SkalesPlusPage() {
                             </h2>
                         </div>
                         <p className="text-[11px] mb-0.5 font-semibold" style={{ color: '#a78bfa' }}>
-                            {t('skalesPlus.personal.price')}
+                            {t('skalesPlus.personal.price')} <span className="font-normal opacity-70">{t('skalesPlus.perMonth')}</span>
                         </p>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
                             {t('skalesPlus.personal.subtitle')}
@@ -262,7 +263,7 @@ export default function SkalesPlusPage() {
                             </h2>
                         </div>
                         <p className="text-[11px] mb-0.5 font-semibold" style={{ color: '#a78bfa' }}>
-                            {t('skalesPlus.business.price')}
+                            {t('skalesPlus.business.price')} <span className="font-normal opacity-70">{t('skalesPlus.perMonth')}</span>
                         </p>
                         <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
                             {t('skalesPlus.business.subtitle')}
@@ -278,10 +279,9 @@ export default function SkalesPlusPage() {
                 {/* Beta note */}
                 <div className="mt-10 text-center p-4 rounded-2xl mx-auto max-w-2xl"
                     style={{ background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)' }}>
-                    <p className="text-xs font-semibold text-green-400 mb-1">🎉 You're on the Beta</p>
+                    <p className="text-xs font-semibold text-green-400 mb-1">🎉 {t('skalesPlus.title')} Beta</p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        All features are unlocked during beta - no subscription needed right now.
-                        Join the waitlist to get notified and lock in a launch discount when Skales+ goes live.
+                        {t('skalesPlus.betaNote')}
                     </p>
                 </div>
 

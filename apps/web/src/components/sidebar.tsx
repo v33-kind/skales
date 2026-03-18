@@ -54,6 +54,7 @@ interface SidebarProps {
 const MENU_ITEMS = [
     { href: '/',          label: 'Dashboard', icon: LayoutDashboard, description: 'Overview & Status' },
     { href: '/chat',      label: 'Chat',      icon: MessageCircle,   description: 'Talk to Skales' },
+    { href: '/planner',   label: 'Planner',   icon: Calendar,        description: 'AI-Powered Daily Schedule', beta: true },
     { href: '/autopilot', label: 'Autopilot', icon: Star,            description: 'Autonomous Chief of Staff', premium: true },
     { href: '/agents',    label: 'Agents',    icon: Bot,             description: 'Sub-Agents' },
     { href: '/memory',    label: 'Memory',    icon: Brain,           description: 'What Skales Remembers' },
@@ -76,7 +77,7 @@ const LioIcon = ({ size = 18 }: { size?: number }) => (
 const SKILL_NAV_ITEMS = [
     { skillId: 'group_chat',      href: '/group-chat', label: 'Group Chat',        icon: Users,   description: 'Multi-AI Discussion' },
     { skillId: 'lio_ai',         href: '/code',       label: 'Lio AI',            icon: LioIcon, description: 'Code Builder' },
-    { skillId: 'network_scanner', href: '/network',    label: 'Network & Devices', icon: Network, description: 'Scanner + DLNA Cast' },
+    { skillId: 'network_scanner', href: '/network',    label: 'Network & Devices', icon: Network, description: 'Scanner + DLNA Cast', beta: true },
 ] as const;
 
 // ─── Section: SYSTEM ─────────────────────────────────────────
@@ -141,12 +142,15 @@ export default function Sidebar({
     const [activeSkills, setActiveSkills] = useState<Set<string>>(new Set());
     const [customSkillItems, setCustomSkillItems] = useState<CustomSkillNavItem[]>([]);
     // bugReportOpen state removed — sidebar now links to /feedback page
+    const [showShutdownConfirm, setShowShutdownConfirm] = useState(false);
+    const [shutdownMessage, setShutdownMessage] = useState('');
     const { t } = useTranslation();
 
     // Translated nav labels (keyed by href)
     const NAV_LABELS: Record<string, string> = {
         '/':              t('nav.dashboard'),
         '/chat':          t('nav.chat'),
+        '/planner':       t('nav.planner'),
         '/autopilot':     t('nav.autopilot'),
         '/agents':        t('nav.agents'),
         '/memory':        t('nav.memory'),
@@ -212,14 +216,18 @@ export default function Sidebar({
     const dynamicSkillItems = SKILL_NAV_ITEMS.filter(item => activeSkills.has(item.skillId));
 
     const handleShutdown = async () => {
-        if (confirm(t('sidebar.shutdown.confirm'))) {
-            try {
-                await shutdownServer();
-                alert(t('sidebar.shutdown.alert'));
-                window.close();
-            } catch (e) {
-                console.error('Shutdown failed:', e);
-            }
+        setShowShutdownConfirm(true);
+    };
+
+    const confirmShutdown = async () => {
+        setShowShutdownConfirm(false);
+        try {
+            await shutdownServer();
+            setShutdownMessage(t('sidebar.shutdown.alert'));
+            setTimeout(() => window.close(), 1500);
+        } catch (e) {
+            console.error('Shutdown failed:', e);
+            setShutdownMessage('Shutdown failed: ' + String(e));
         }
     };
 
@@ -230,12 +238,14 @@ export default function Sidebar({
         icon,
         exact   = false,
         premium = false,
+        beta    = false,
     }: {
         href:     string;
         label:    string;
         icon:     any;
         exact?:   boolean;
         premium?: boolean;
+        beta?:    boolean;
     }) => {
         const isActive = exact
             ? pathname === href
@@ -259,7 +269,7 @@ export default function Sidebar({
                         : '3px solid transparent',
                 }}
                 title={collapsed ? label : undefined}
-                aria-label={premium ? `${label} (Premium)` : label}
+                aria-label={premium ? `${label} (Premium)` : beta ? `${label} (Beta)` : label}
                 aria-current={isActive ? 'page' : undefined}
             >
                 <Icon
@@ -268,7 +278,12 @@ export default function Sidebar({
                     className="transition-transform group-hover:scale-110"
                     style={{ color: premium ? premiumGold : isActive ? '#84cc16' : undefined }}
                 />
-                {!collapsed && <span>{label}</span>}
+                {!collapsed && (
+                    <div className="flex items-center gap-2">
+                        <span>{label}</span>
+                        {beta && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold ml-auto">BETA</span>}
+                    </div>
+                )}
             </Link>
         );
     };
@@ -382,6 +397,7 @@ export default function Sidebar({
                         icon={item.icon}
                         exact={item.href === '/'}
                         premium={(item as any).premium === true}
+                        beta={(item as any).beta === true}
                     />
                 ))}
 
@@ -392,7 +408,7 @@ export default function Sidebar({
                 ))}
                 {/* Dynamic built-in skill items — only when the corresponding skill is enabled */}
                 {dynamicSkillItems.map(item => (
-                    <NavLink key={item.href} href={item.href} label={NAV_LABELS[item.href] || item.label} icon={item.icon} />
+                    <NavLink key={item.href} href={item.href} label={NAV_LABELS[item.href] || item.label} icon={item.icon} beta={(item as any).beta === true} />
                 ))}
                 {/* Dynamic custom skill items — only when custom skills have hasUI=true and are enabled */}
                 {customSkillItems.map(item => (
@@ -496,6 +512,42 @@ export default function Sidebar({
             )}
 
             {/* Bug Report Modal removed — sidebar now links to /feedback page */}
+
+            {/* Shutdown Confirmation Modal */}
+            {showShutdownConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-red-500/30 rounded-2xl p-6 max-w-sm mx-4 space-y-4">
+                        <h3 className="text-lg font-bold text-red-400">{t('sidebar.shutdown.confirm')}</h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                            {t('sidebar.shutdown.desc') || 'Are you sure you want to shut down the server? Close and reopen the app to restart.'}
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setShowShutdownConfirm(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--sidebar-hover)]"
+                                style={{ color: 'var(--text-secondary)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmShutdown}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/20 border border-red-500/40 hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                Shutdown
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shutdown Status Message */}
+            {shutdownMessage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-[var(--surface)] border border-green-500/30 rounded-2xl p-6 max-w-sm mx-4 text-center space-y-4">
+                        <p className="text-sm font-medium text-green-400">{shutdownMessage}</p>
+                    </div>
+                </div>
+            )}
         </aside>
     );
 }

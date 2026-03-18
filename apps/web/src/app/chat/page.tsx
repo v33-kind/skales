@@ -46,7 +46,7 @@ interface DisplayMessage {
     toolsExecuting?: string[];
     tokensUsed?: number;
     model?: string;
-    source?: 'browser' | 'telegram' | 'buddy';
+    source?: 'browser' | 'telegram' | 'buddy' | 'dashboard';
     telegramUser?: string;
     timestamp?: number;      // ms since epoch - used for chronological sorting
     memoriesRecalled?: number; // > 0 → show pulsing recall indicator briefly
@@ -748,10 +748,10 @@ const MessageListArea = memo(function MessageListArea({
                                         </span>
                                     </div>
                                 )}
-                                {(msg.tokensUsed && msg.tokensUsed > 0 || (msg.memoriesRecalled && msg.memoriesRecalled > 0)) && (
+                                {((msg.tokensUsed != null && msg.tokensUsed > 0) || (msg.memoriesRecalled != null && msg.memoriesRecalled > 0)) && (
                                     <div className="flex items-center gap-2 mt-2 pt-2 border-t"
                                         style={{ borderColor: 'var(--border)' }}>
-                                        {msg.tokensUsed && msg.tokensUsed > 0 && (
+                                        {msg.tokensUsed != null && msg.tokensUsed > 0 && (
                                             <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                                                 {msg.model} · {msg.tokensUsed} tokens
                                             </span>
@@ -1177,6 +1177,28 @@ export default function ChatPage() {
                 setVoiceMode(saved);
             }
         } catch { /* SSR / storage unavailable */ }
+    }, []);
+
+    // ── Chat activity heartbeat — tells buddy intelligence user is in chat ────
+    useEffect(() => {
+        const reportChatActive = () => {
+            if (document.hidden) return;
+            fetch('/api/buddy/activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: 'chat' }),
+            }).catch(() => {});
+        };
+        reportChatActive();
+        const handler = () => reportChatActive();
+        document.addEventListener('keydown', handler);
+        document.addEventListener('click', handler);
+        const interval = setInterval(reportChatActive, 30_000);
+        return () => {
+            document.removeEventListener('keydown', handler);
+            document.removeEventListener('click', handler);
+            clearInterval(interval);
+        };
     }, []);
 
     // ── Voice Chat helpers ────────────────────────────────────────────────────
@@ -1771,6 +1793,30 @@ export default function ChatPage() {
             window.removeEventListener('focus', onFocus);
         };
     }, [sessionId]);
+
+    // ── Dashboard channel polling (Friend Mode / Buddy Intelligence) ─────────
+    // Drains /api/dashboard-notifications every 5 seconds.
+    // Messages are injected into the chat as assistant messages with source:'dashboard'.
+    useEffect(() => {
+        const pollDashboard = async () => {
+            if (document.hidden) return;
+            try {
+                const res = await fetch('/api/dashboard-notifications');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data?.success || !data.messages?.length) return;
+                const dashMsgs: DisplayMessage[] = (data.messages as string[]).map((text: string) => ({
+                    role: 'assistant' as const,
+                    content: text,
+                    source: 'dashboard' as const,
+                    timestamp: Date.now(),
+                }));
+                setMessages(prev => [...prev, ...dashMsgs]);
+            } catch { /* non-fatal */ }
+        };
+        const id = setInterval(pollDashboard, 5000);
+        return () => clearInterval(id);
+    }, []);
 
 
     function getWelcomeMessage(agentId?: string | null): DisplayMessage {
@@ -2415,7 +2461,8 @@ export default function ChatPage() {
                         if (currentSessionId) {
                             const sess = await loadSession(currentSessionId);
                             if (sess) {
-                                sess.messages.push({ role: 'assistant', content: imgMsg.content, timestamp: Date.now() } as any);
+                                sess.messages.push({ role: 'assistant', content: imgMsg.content, timestamp: Date.now(), source: 'browser' } as any);
+                                lastBuddyMsgCountRef.current = sess.messages.length;
                                 await saveSession(sess);
                             }
                         }
@@ -2865,13 +2912,16 @@ export default function ChatPage() {
                     assistantMsg
                 ]);
 
-                // Save to session
+                // Save to session — mark source:'browser' so buddy polling doesn't re-inject these
                 if (currentSessionId) {
                     const sess = await loadSession(currentSessionId);
                     if (sess) {
-                        sess.messages.push({ role: 'user', content: caption || '[Image]', timestamp: Date.now() });
-                        sess.messages.push({ role: 'assistant', content: assistantMsg.content, timestamp: Date.now() });
+                        const savedCount = sess.messages.length;
+                        sess.messages.push({ role: 'user', content: caption || '[Image]', timestamp: Date.now(), source: 'browser' } as any);
+                        sess.messages.push({ role: 'assistant', content: assistantMsg.content, timestamp: Date.now(), source: 'browser' } as any);
                         await saveSession(sess);
+                        // Keep buddy poll baseline in sync so these don't re-appear as buddy msgs
+                        lastBuddyMsgCountRef.current = savedCount + 2;
                     }
                 }
             } catch (err: any) {
