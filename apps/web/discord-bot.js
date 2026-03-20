@@ -66,7 +66,7 @@ function sendToSkales(message, userId, username) {
             username,
         });
         const options = {
-            hostname: 'localhost',
+            hostname: '127.0.0.1',
             port: 3000,
             path: '/api/chat',
             method: 'POST',

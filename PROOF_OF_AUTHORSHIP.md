@@ -9,7 +9,7 @@
 - GitHub: https://github.com/skalesapp/skales
 - First commit: 2025
 - License: BSL-1.1 (Business Source License)
-- Current version: 7.0.0 "The Foundation" (March 2026)
+- Current version: 7.1.0 "The Local AI Update" (March 2026)
 
 This project is the original work of Mario Simic.
 Any fork, clone, or derivative must retain this attribution.

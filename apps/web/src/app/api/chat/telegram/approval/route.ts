@@ -14,8 +14,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { loadSession, saveSession, loadSettings, type ChatMessage } from '@/actions/chat';
-import { agentExecute, agentDecide } from '@/actions/orchestrator';
+import { loadSession, saveSession, type ChatMessage } from '@/actions/chat';
+import { agentExecute } from '@/actions/orchestrator';
 import { loadApproval, deleteApproval } from '@/lib/approval-store';
 
 export const dynamic    = 'force-dynamic';
@@ -97,37 +97,11 @@ export async function POST(req: NextRequest) {
                 } as any;
                 session.messages.push(toolMsg);
             }
-            await saveSession(session);
 
-            // Re-enter the agent loop so the LLM can produce a natural response
-            // incorporating the tool results (e.g. "Done! I created the file for you.")
-            try {
-                const settings = await loadSettings();
-                const recentMessages = session.messages.slice(-10).map((m: any) => ({
-                    role: m.role,
-                    content: m.content,
-                    tool_calls: m.tool_calls,
-                    tool_call_id: m.tool_call_id,
-                    name: m.name,
-                }));
-                const finalDecision = await agentDecide(recentMessages, {
-                    provider: settings.activeProvider,
-                    model: settings.providers[settings.activeProvider]?.model,
-                });
-                if (finalDecision.decision === 'response' && finalDecision.response) {
-                    session.messages.push({
-                        role:      'assistant',
-                        content:   finalDecision.response,
-                        timestamp: Date.now(),
-                    } as ChatMessage);
-                    await saveSession(session);
-                    return NextResponse.json({ success: true, response: finalDecision.response });
-                }
-            } catch (e) {
-                console.warn('[TelegramApproval] Post-approval agentDecide failed, using raw result:', e);
-            }
-
-            // Fallback: return the raw tool result summary
+            // BUG 1 FIX: Do NOT re-enter the agent loop after approval execution.
+            // Previously we called agentDecide() here which could trigger another
+            // tool call -> another approval -> infinite loop. Instead, just confirm
+            // "Done." with the raw tool result summary.
             session.messages.push({
                 role:      'assistant',
                 content:   response,

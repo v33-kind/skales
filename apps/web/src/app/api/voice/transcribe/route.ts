@@ -80,6 +80,27 @@ async function transcribeOpenAI(opts: TranscriptionOptions): Promise<string> {
     return (data.text ?? '').trim();
 }
 
+/** Call local STT endpoint (OpenAI-compatible) */
+async function transcribeLocal(opts: { audioBuffer: Buffer; mimeType: string; localUrl: string }): Promise<string> {
+    const form = new FormData();
+    form.append('file', new Blob([opts.audioBuffer.buffer as ArrayBuffer], { type: opts.mimeType }), 'audio.webm');
+    form.append('model', 'whisper-1');
+    form.append('response_format', 'json');
+
+    const res = await fetch(opts.localUrl, {
+        method: 'POST',
+        body: form,
+    });
+
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Local STT error ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    return (data.text ?? '').trim();
+}
+
 /** Determine which provider + key to use, then call the right API */
 async function transcribeAudio(opts: {
     audioBuffer: Buffer;
@@ -89,6 +110,17 @@ async function transcribeAudio(opts: {
 }): Promise<string> {
     const settings = await loadSettings();
     const providers = settings.providers ?? {};
+    const localSttUrl = (settings as any).localSttUrl as string | undefined;
+
+    // Try local STT first if configured
+    if (localSttUrl && localSttUrl.trim()) {
+        try {
+            return await transcribeLocal({ audioBuffer: opts.audioBuffer, mimeType: opts.mimeType, localUrl: localSttUrl });
+        } catch (err) {
+            console.error('[voice/transcribe] Local STT failed:', err);
+            // Fall through to cloud providers
+        }
+    }
 
     // Priority order: user preference → groq → openai → openrouter
     const order: Array<'groq' | 'openai' | 'openrouter'> = opts.preferredProvider
@@ -121,7 +153,7 @@ async function transcribeAudio(opts: {
     }
 
     throw new Error(
-        'No speech-to-text provider available. Please configure a Groq or OpenAI API key in Settings.',
+        'No speech-to-text provider available. Please configure a local STT URL in Settings, or set up a Groq/OpenAI API key.',
     );
 }
 

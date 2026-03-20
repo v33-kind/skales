@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v7.1.0 — "The Local AI Update" (March 2026)
+
+### Bug Fixes
+- **Telegram Approval Loop:** Fixed infinite loop where approving an action in Telegram
+  triggered the same approval again. Approval responses now route correctly and don't
+  trigger memory scans.
+- **IPv6 localhost:** Fixed bot->server connection failure on systems where localhost
+  resolves to ::1 instead of 127.0.0.1. All bot files now use 127.0.0.1 explicitly.
+  (Thanks @bmp-jaller)
+- **Think Tags:** Fixed <think> blocks leaking into chat responses from Qwen/DeepSeek
+  models via KoboldCpp. Both <think> and <thinking> variants now stripped.
+  (Thanks @henk717)
+- **Desktop Buddy Approve:** Fixed approve button showing "cancelled" due to sandbox
+  restrictions not being communicated. Input field no longer overlaps approval buttons.
+- **Auto-Updater:** Honest message - "Download at skales.app" instead of false
+  "will install automatically" claim.
+
+### Improvements
+- **Onboarding Renamed:** "Custom Endpoint" -> "OpenAI Compatible" (moved above Ollama).
+  KoboldCpp, LM Studio, vLLM are now first-class options, not hidden under "Custom."
+- **API Key Truly Optional:** Empty key = no auth header sent. Local AI servers
+  that don't need authentication work without workarounds.
+- **Local TTS Endpoint:** Voice settings now support local TTS servers (KoboldCpp,
+  XTTS-API-Server). Not limited to cloud providers.
+- **Local STT Endpoint:** Voice transcription can use local Whisper (KoboldCpp).
+- **Local Image Generation:** Configurable image generation endpoint alongside Replicate.
+
+### Contributors
+- @bmp-jaller - IPv6 localhost fix
+- @henk717 - KoboldCpp feedback shaping the local AI experience
+- @btafoya - Linux testing
+
 ## v7.0.1 — Hotfix (March 2026)
 
 ### Bug Fixes

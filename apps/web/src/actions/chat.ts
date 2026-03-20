@@ -83,7 +83,8 @@ export interface SkalesSettings {
     tavilyApiKey?: string;
     // TTS Configuration
     ttsConfig?: {
-        provider: 'default' | 'elevenlabs' | 'azure';
+        provider: 'default' | 'local' | 'elevenlabs' | 'azure';
+        localTtsUrl?: string;
         elevenlabsApiKey?: string;
         elevenlabsVoiceId?: string;  // e.g. "21m00Tcm4TlvDq8ikWAM" (Rachel)
         azureSpeechKey?: string;
@@ -106,8 +107,12 @@ export interface SkalesSettings {
     googlePlacesApiKey?: string;
     // Replicate API token (BYOK — gives access to 50+ image/video models)
     replicate_api_token?: string;
-    // Image/video generation provider preference ('google' | 'replicate')
-    imageGenProvider?: 'google' | 'replicate';
+    // Image/video generation provider preference ('google' | 'replicate' | 'local')
+    imageGenProvider?: 'google' | 'replicate' | 'local';
+    // Local image generation endpoint URL
+    localImageGenUrl?: string;
+    // Local STT (Speech-to-Text) endpoint URL
+    localSttUrl?: string;
     // Custom OpenAI-compatible endpoint — whether to enable tool/function calling
     // Some local models (llama.cpp, LM Studio, etc.) don't support the tools array
     customEndpointToolCalling?: boolean;
@@ -816,8 +821,8 @@ export async function processMessage(
             if (envKey) providerConfig.apiKey = envKey;
         }
 
-        // Check if provider has API key (except Ollama)
-        if (provider !== 'ollama' && !providerConfig.apiKey) {
+        // Check if provider has API key (except Ollama and Custom/local endpoints)
+        if (provider !== 'ollama' && provider !== 'custom' && !providerConfig.apiKey) {
             console.warn(`[Skales] Setup missing for ${provider}. Triggering fallback...`);
             const fallbackOrder: Provider[] = ['google', 'groq', 'openrouter', 'openai', 'anthropic', 'ollama'];
             let fallbackFound = false;

@@ -408,9 +408,18 @@ export default function BuddyPage() {
     const handleMascotClick = useCallback(() => {
         if (thinking) return;
         if (spotOpen) { setSpotOpen(false); setQuery(''); return; }
+        // Clear any pending approval so the input pill becomes accessible again
+        if (approval) {
+            fetch('/api/buddy-chat/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: approval.sessionId, toolCallIds: approval.toolCallIds, approved: false }),
+            }).catch(() => {});
+            setApproval(null);
+        }
         clearBubble(); setBubble(null); setBubbleLong(false); setBubbleIsError(false);
         setSpotOpen(true);
-    }, [thinking, spotOpen, clearBubble]);
+    }, [thinking, spotOpen, clearBubble, approval]);
 
     // ── Submit to /api/buddy-chat ─────────────────────────────────────────────
     const submit = async () => {
@@ -531,10 +540,15 @@ export default function BuddyPage() {
                 setBubbleLong(wasLong);
                 bubbleTimer.current = setTimeout(() => setBubble(null), 18_000);
             } else {
-                // Show actual error from API if available, not a generic "cancelled"
-                const errorMsg = data.error || t('buddy.cancelled');
+                // BUG 5 FIX: Show meaningful error instead of generic "Abgebrochen".
+                // Check for sandbox/file-access errors and show a clear message.
+                const rawErr = data.error || '';
+                const isSandbox = /sandbox|restricted|not allowed|permission|access denied/i.test(rawErr);
+                const errorMsg = isSandbox
+                    ? t('buddy.sandboxRestricted')
+                    : (rawErr || (!res.ok ? `Error (${res.status})` : t('buddy.errorMessage')));
                 setBubble(errorMsg);
-                setBubbleIsError(!!data.error);
+                setBubbleIsError(true);
                 bubbleTimer.current = setTimeout(() => { setBubble(null); setBubbleIsError(false); }, 10_000);
             }
         } catch {
@@ -594,7 +608,13 @@ export default function BuddyPage() {
             {bubble && (
                 <div
                     aria-live="polite"
-                    onClick={() => { clearBubble(); setBubble(null); setBubbleLong(false); setBubbleIsError(false); }}
+                    onClick={() => {
+                        // When approval buttons are showing, only the buttons themselves
+                        // (or the mascot click) should dismiss — don't auto-decline on
+                        // accidental bubble text clicks
+                        if (approval) return;
+                        clearBubble(); setBubble(null); setBubbleLong(false); setBubbleIsError(false);
+                    }}
                     style={{
                         position:             'absolute',
                         // Position the bubble ABOVE the input pill (input is at bottom:195px).
@@ -602,17 +622,35 @@ export default function BuddyPage() {
                         // so buttons are never obscured. Normal bubble sits higher at 248px.
                         bottom:               approval ? '230px' : '248px',
                         right:                '5px',
-                        width:                '190px',
-                        background:           bubbleIsError ? 'rgba(20,8,8,0.92)' : 'rgba(10,10,10,0.92)',
-                        backdropFilter:       'blur(14px)',
-                        WebkitBackdropFilter: 'blur(14px)',
-                        border:               bubbleIsError ? '1px solid rgba(248,113,113,0.45)' : '1px solid rgba(132,204,22,0.35)',
-                        borderRadius:         '14px',
-                        padding:              '10px 13px',
+                        width:                '185px',
+                        // Solid dark background — buddy window is transparent/frameless,
+                        // so glassmorphism is invisible on light wallpapers. Must be opaque.
+                        background:           approval
+                            ? 'rgba(24, 28, 24, 0.95)'
+                            : bubbleIsError
+                                ? 'rgba(30, 20, 20, 0.95)'
+                                : 'rgba(20, 24, 20, 0.95)',
+                        backdropFilter:       'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        border:               approval
+                            ? '1px solid rgba(74, 222, 128, 0.4)'
+                            : bubbleIsError
+                                ? '1px solid rgba(248, 113, 113, 0.4)'
+                                : '1px solid rgba(255, 255, 255, 0.10)',
+                        borderRadius:         '18px',
+                        padding:              approval ? '10px 14px' : '10px 14px',
                         fontSize:             '12px',
                         lineHeight:           1.5,
-                        color:                '#f0f0f0',
+                        color:                '#e8e8e8',
                         cursor:               'pointer',
+                        // Shadow kept tight (4px blur) so it doesn't clip at the
+                        // Electron BrowserWindow edge (300x400px frameless window)
+                        boxShadow:            approval
+                            ? '0 2px 6px rgba(0, 0, 0, 0.3)'
+                            : bubbleIsError
+                                ? '0 2px 6px rgba(0, 0, 0, 0.3)'
+                                : '0 2px 6px rgba(0, 0, 0, 0.25)',
+                        animation:            'slideUp 0.3s ease-out',
                         // When approval buttons are showing, bubble must sit above the input
                         // (input z-index is 20, so approval bubble needs higher)
                         zIndex:               approval ? 30 : 10,
@@ -631,15 +669,19 @@ export default function BuddyPage() {
                                 onClick={() => handleApprove(true)}
                                 style={{
                                     flex:           1,
-                                    padding:        '4px 8px',
-                                    borderRadius:   '8px',
-                                    background:     'rgba(132,204,22,0.2)',
-                                    border:         '1px solid rgba(132,204,22,0.5)',
-                                    color:          '#84cc16',
+                                    padding:        '5px 10px',
+                                    borderRadius:   '12px',
+                                    background:     'rgba(74, 222, 128, 0.2)',
+                                    border:         'none',
+                                    color:          '#4ade80',
                                     fontSize:       '11px',
-                                    fontWeight:     700,
+                                    fontWeight:     600,
                                     cursor:         'pointer',
+                                    transition:     'all 0.15s ease',
+                                    whiteSpace:     'nowrap',
                                 }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(74, 222, 128, 0.35)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(74, 222, 128, 0.2)')}
                             >
                                 {t('buddy.approve')}
                             </button>
@@ -647,15 +689,19 @@ export default function BuddyPage() {
                                 onClick={() => handleApprove(false)}
                                 style={{
                                     flex:           1,
-                                    padding:        '4px 8px',
-                                    borderRadius:   '8px',
-                                    background:     'rgba(239,68,68,0.15)',
-                                    border:         '1px solid rgba(239,68,68,0.4)',
-                                    color:          '#ef4444',
+                                    padding:        '5px 10px',
+                                    borderRadius:   '12px',
+                                    background:     'rgba(248, 113, 113, 0.15)',
+                                    border:         'none',
+                                    color:          '#f87171',
                                     fontSize:       '11px',
-                                    fontWeight:     700,
+                                    fontWeight:     600,
                                     cursor:         'pointer',
+                                    transition:     'all 0.15s ease',
+                                    whiteSpace:     'nowrap',
                                 }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(248, 113, 113, 0.3)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(248, 113, 113, 0.15)')}
                             >
                                 {t('buddy.decline')}
                             </button>
@@ -677,17 +723,20 @@ export default function BuddyPage() {
                             style={{
                                 display:        'block',
                                 marginTop:      '6px',
-                                padding:        '3px 8px',
-                                borderRadius:   '8px',
-                                background:     'rgba(132,204,22,0.15)',
-                                border:         '1px solid rgba(132,204,22,0.4)',
-                                color:          '#84cc16',
+                                padding:        '5px 10px',
+                                borderRadius:   '12px',
+                                background:     'rgba(96, 165, 250, 0.2)',
+                                border:         'none',
+                                color:          '#60a5fa',
                                 fontSize:       '11px',
                                 fontWeight:     600,
                                 cursor:         'pointer',
                                 width:          '100%',
                                 textAlign:      'center',
+                                transition:     'all 0.15s ease',
                             }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(96, 165, 250, 0.35)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(96, 165, 250, 0.2)')}
                         >
                             {activeAction.label}
                         </button>
@@ -699,30 +748,36 @@ export default function BuddyPage() {
                             style={{
                                 display:        'block',
                                 marginTop:      '6px',
-                                background:     'none',
+                                background:     'rgba(255, 255, 255, 0.08)',
                                 border:         'none',
-                                padding:        0,
-                                color:          '#84cc16',
+                                padding:        '4px 10px',
+                                borderRadius:   '10px',
+                                color:          'rgba(255, 255, 255, 0.65)',
                                 fontSize:       '11px',
                                 cursor:         'pointer',
-                                textDecoration: 'underline',
-                                fontWeight:     600,
+                                fontWeight:     500,
+                                width:          '100%',
+                                textAlign:      'center',
+                                transition:     'all 0.15s ease',
                             }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.color = '#e8e8e8'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.65)'; }}
                             aria-label="Open Skales Chat"
                         >
                             {t('buddy.openChatDetails')} →
                         </button>
                     )}
 
+                    {/* Tail pointer — matches dark bubble background */}
                     <div style={{
                         position:     'absolute',
-                        bottom:       '-7px',
-                        right:        '70px',
+                        bottom:       '-6px',
+                        right:        '55px',
                         width:        0,
                         height:       0,
-                        borderLeft:   '7px solid transparent',
-                        borderRight:  '7px solid transparent',
-                        borderTop:    '7px solid rgba(10,10,10,0.92)',
+                        borderLeft:   '6px solid transparent',
+                        borderRight:  '6px solid transparent',
+                        borderTop:    '6px solid rgba(20, 24, 20, 0.95)',
                     }} />
                 </div>
             )}
@@ -732,13 +787,13 @@ export default function BuddyPage() {
                 position:             'absolute',
                 bottom:               '195px',
                 right:                '5px',
-                width:                '180px',
-                background:           'rgba(10,10,10,0.88)',
-                backdropFilter:       'blur(22px)',
-                WebkitBackdropFilter: 'blur(22px)',
-                border:               '1px solid rgba(132,204,22,0.5)',
-                borderRadius:         '14px',
-                padding:              '9px 12px',
+                width:                '175px',
+                background:           'rgba(20, 24, 20, 0.92)',
+                backdropFilter:       'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border:               '1px solid rgba(132, 204, 22, 0.35)',
+                borderRadius:         '16px',
+                padding:              '8px 10px',
                 display:              'flex',
                 alignItems:           'center',
                 gap:                  '8px',
@@ -811,6 +866,14 @@ export default function BuddyPage() {
             {/* ── Global keyframes ─────────────────────────────────────────── */}
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translateY(0); }
+                    to   { opacity: 0; transform: translateY(-5px); }
+                }
                 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
                 html, body { background: transparent !important; overflow: hidden; }
             `}</style>

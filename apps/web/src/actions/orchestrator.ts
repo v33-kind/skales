@@ -54,6 +54,12 @@ export async function isPathAllowed(filePath: string): Promise<{ allowed: boolea
         const mode: string = settings.fileAccessMode ?? 'workspace_only';
         const resolved = path.resolve(filePath);
 
+        // Skales' own data directory is ALWAYS allowed — internal operations
+        // (identity, memory, sessions, settings) must never be blocked by sandbox
+        if (resolved.startsWith(DATA_DIR + path.sep) || resolved === DATA_DIR) {
+            return { allowed: true };
+        }
+
         if (mode === 'unrestricted') {
             return { allowed: true };
         }
@@ -80,10 +86,6 @@ export async function isPathAllowed(filePath: string): Promise<{ allowed: boolea
         // Default: workspace_only
         const workspaceDir = path.join(DATA_DIR, 'workspace');
         if (resolved.startsWith(workspaceDir + path.sep) || resolved === workspaceDir) {
-            return { allowed: true };
-        }
-        // Also allow reads of DATA_DIR config files (settings, skills, etc.)
-        if (resolved.startsWith(DATA_DIR + path.sep)) {
             return { allowed: true };
         }
         return { allowed: false, reason: `Workspace-only mode: '${resolved}' is outside the sandbox. Enable Full Access or Custom mode in Settings → Security to access external files.` };
@@ -2237,6 +2239,20 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Too
                     let ttsProvider = 'none';
                     const ttsProviderPref = ttsConf?.provider || 'default';
 
+                    // 0. Local TTS (when user selected 'local' and URL is configured)
+                    if (ttsProviderPref === 'local' && ttsConf?.localTtsUrl) {
+                        try {
+                            const res = await fetch(ttsConf.localTtsUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ model: 'tts-1', input: voiceText, voice: 'alloy', response_format: 'mp3' }),
+                                signal: AbortSignal.timeout(30000),
+                            });
+                            if (res.ok) { audioBuffer = await res.arrayBuffer(); ttsProvider = 'Local TTS'; }
+                            else { console.error(`[TTS] Local endpoint error ${res.status}`); }
+                        } catch (e) { console.error('[TTS] Local endpoint failed:', e); }
+                    }
+
                     // 1. ElevenLabs (only when user selected 'elevenlabs')
                     if (ttsProviderPref === 'elevenlabs' && ttsConf?.elevenlabsApiKey) {
                         const vid = ttsConf.elevenlabsVoiceId || '21m00Tcm4TlvDq8ikWAM';
@@ -3555,13 +3571,49 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                     const googleApiKey = settings.providers.google?.apiKey;
                     const replicateToken = (settings as any).replicate_api_token as string | undefined;
                     const imageGenProvider = (settings as any).imageGenProvider as string | undefined;
+                    const localImageGenUrl = (settings as any).localImageGenUrl as string | undefined;
+
+                    // Local image generation (highest priority if configured)
+                    const imgPrompt = args.prompt as string;
+                    if (localImageGenUrl && localImageGenUrl.trim()) {
+                        try {
+                            const res = await fetch(localImageGenUrl.trim(), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ prompt: imgPrompt, n: 1, size: '512x512' }),
+                                signal: AbortSignal.timeout(120000),
+                            });
+                            if (res.ok) {
+                                const data = await res.json();
+                                // OpenAI format: { data: [{ url: "..." }] } or { data: [{ b64_json: "..." }] }
+                                const imgData = data?.data?.[0];
+                                if (imgData?.url || imgData?.b64_json) {
+                                    // Save locally
+                                    const imagesDir = path.join(DATA_DIR, 'workspace', 'files', 'images');
+                                    if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+                                    const imgPath = path.join(imagesDir, `local_img_${Date.now()}.png`);
+                                    if (imgData.b64_json) {
+                                        fs.writeFileSync(imgPath, Buffer.from(imgData.b64_json, 'base64'));
+                                    } else if (imgData.url) {
+                                        const imgRes = await fetch(imgData.url, { signal: AbortSignal.timeout(30000) });
+                                        if (imgRes.ok) fs.writeFileSync(imgPath, Buffer.from(await imgRes.arrayBuffer()));
+                                    }
+                                    const relPath = imgPath.replace(DATA_DIR, '').replace(/\\/g, '/').replace(/^\//, '');
+                                    return { toolName: name, success: true, result: { filename: path.basename(imgPath), provider: 'local' }, displayMessage: `IMG_FILE:${relPath}|${imgPrompt}|auto|1:1` };
+                                }
+                            }
+                            console.error(`[ImageGen] Local endpoint returned ${res.status}`);
+                        } catch (e) {
+                            console.error('[ImageGen] Local endpoint failed:', e);
+                        }
+                        // Fall through to cloud providers
+                    }
 
                     // Use Replicate if: no Google key, OR user explicitly set Replicate as preferred provider
                     const useReplicate = replicateToken?.trim() && (!googleApiKey || imageGenProvider === 'replicate');
 
                     if (useReplicate) {
                         // ── Replicate image generation ──
-                        const imgPrompt = args.prompt as string;
                         const replicateModel = 'black-forest-labs/flux-schnell'; // fast, good quality default
                         try {
                             const createRes = await fetch('https://api.replicate.com/v1/predictions', {
@@ -3636,7 +3688,6 @@ Or use **Ollama** locally with LLaVA (free, private).`,
                             displayMessage: `❌ **Image generation requires a Google AI API key** (or a Replicate API token).\n\nAdd one in **Settings → AI Provider → Google** or **Settings → Integrations → Replicate**.`,
                         };
                     }
-                    const imgPrompt = args.prompt as string;
                     const imgStyle = (args.style as string) || 'auto';
                     const imgRatio = (args.aspectRatio as string) || '1:1';
                     const stylePrefix: Record<string, string> = {
@@ -4817,7 +4868,10 @@ export async function agentDecide(
         console.log(`[Skales Vision] ${provider}: sending image to active model "${providerConfig.model || 'default'}"`);
     }
 
-    if (effectiveProvider !== 'ollama' && !providerConfig.apiKey) {
+    // H1 FIX: Allow custom endpoint (KoboldCpp, LM Studio, vLLM) and Ollama
+    // to work without an API key. Only cloud providers require one.
+    const keylessProviders = new Set(['ollama', 'custom']);
+    if (!keylessProviders.has(effectiveProvider) && !providerConfig.apiKey) {
         return {
             decision: 'error',
             error: `No API key configured for ${effectiveProvider}.`,
@@ -5056,7 +5110,17 @@ responses are only acceptable for pure questions or conversations.
  *   ```
  */
 function stripModelMarkers(text: string): string {
-    if (!text || !text.includes('<|')) return text;
+    if (!text) return text;
+
+    // BUG 3 FIX: Strip <think>...</think> and <thinking>...</thinking> blocks
+    // emitted by Qwen, DeepSeek, and other reasoning models via KoboldCpp.
+    // Must handle BOTH variants (with and without "-ing").
+    text = text.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '');
+    // Clean up leading whitespace left behind after stripping
+    text = text.replace(/^\s+/, '');
+
+    if (!text.includes('<|')) return text;
 
     // Kimi / Moonshot embeds text AND tool-call markers in the same fenced block:
     //   ```text\nPerfekt! ...\n<|tool_calls_section_begin|>...<|tool_calls_section_end|>\n```

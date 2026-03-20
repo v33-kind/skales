@@ -12,7 +12,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **Download. Install. Done.**
 
-[![Version](https://img.shields.io/badge/version-7.0.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
+[![Version](https://img.shields.io/badge/version-7.1.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
 [![License](https://img.shields.io/badge/license-BSL_1.1-1DB954?style=for-the-badge&labelColor=0D1117)](./LICENSE)
 [![Platform](https://img.shields.io/badge/Windows_+_macOS_+_Linux-1DB954?style=for-the-badge&labelColor=0D1117&logo=windows&logoColor=white)](https://skales.app)
 [![GitHub](https://img.shields.io/badge/GitHub-skalesapp%2Fskales-1DB954?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)](https://github.com/skalesapp/skales)
@@ -35,6 +35,32 @@ If you find this useful, a ⭐ helps others discover it
 
 ---
 
+## 🆕 What's New in v7.1.0 - "The Local AI Update"
+
+**🔧 OpenAI Compatible** - "Custom Endpoint" renamed to "OpenAI Compatible" and moved above Ollama in onboarding. KoboldCpp, LM Studio, vLLM are first-class citizens.
+
+**🔑 API Key Truly Optional** - Empty key field sends no auth header. Local servers that don't need authentication just work.
+
+**🗣️ Local TTS** - Configure a local TTS endpoint (KoboldCpp built-in TTS, XTTS) in Settings. No cloud required for voice output.
+
+**🎤 Local STT/Whisper** - Point Skales at your local Whisper endpoint for speech-to-text. KoboldCpp has Whisper on board.
+
+**🎨 Local Image Generation** - Configurable local image generation endpoint alongside Replicate and Google.
+
+**🌍 9 Languages** - Korean (한국어) and Portuguese (Português) added by community contributors @SohaibKhaliq and @VladB-evs.
+
+**💬 Buddy Redesign** - Speech bubbles redesigned with glassmorphism pills, smooth animations, and pill-shaped action buttons.
+
+**🔧 Telegram Fix** - Approval loop eliminated. Bot now uses fork() instead of spawn('node'). IPv6 localhost fixed.
+
+**🧠 Think Tags** - `<think>` and `<thinking>` blocks from Qwen/DeepSeek models now stripped from responses.
+
+**🔒 Sandbox Fix** - Skales' own data directory (.skales-data) is always allowed regardless of sandbox mode.
+
+**📢 Auto-Updater** - Honest message: "Download at skales.app" instead of false "will install automatically" claim.
+
+---
+
 ## 🆕 What's New in v7.0.0 - "The Foundation"
 
 **📅 Planner AI** - AI-powered daily scheduling. 8-step wizard learns your work patterns, generates time-blocked plans from your calendar events, and pushes them back. Day and week views.
@@ -47,7 +73,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **🦫 Capy Skin** - Meet the third Desktop Buddy: a needle-felted capybara. Three skins, three aesthetics: Skales (3D gecko), Bubbles (Pixar blob), Capy (wool yarn capybara).
 
-**🌍 7 Languages** - English, Deutsch, Espanol, Francais, Russian, Chinese (Simplified), Japanese. Full UI translation including onboarding.
+**🌍 9 Languages** - English, Deutsch, Español, Français, Русский, 中文, 日本語, 한국어 & Português. Full UI translation including onboarding.
 
 **🐧 Linux Beta** - AppImage and .deb builds for x64 Linux. Community-tested on Ubuntu.
 
@@ -71,7 +97,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **🖥️ Native Desktop App** - Runs as a proper desktop application. System tray, auto-start, graceful shutdown. No browser needed.
 
-**Multi-Provider Hub** - 13+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Minimax, Replicate (BYOK), Custom OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM, KoboldCpp), and local Ollama.
+**Multi-Provider Hub** - 13+ LLM providers: OpenRouter, OpenAI, Groq, Anthropic, Google, Mistral, Together AI, xAI, DeepSeek, Minimax, Replicate (BYOK), OpenAI Compatible endpoint (KoboldCpp, LM Studio, vLLM), and local Ollama.
 
 **🦁 Lio AI - Code Builder** - Multi-AI code builder. Architect designs, Reviewer improves, Builder executes. Live preview. Build entire projects from plain language. Deploy to FTP/SFTP with one click.
 
@@ -99,11 +125,15 @@ If you find this useful, a ⭐ helps others discover it
 
 **🛑 Killswitch** - Emergency stop via dashboard, Telegram, or automatic trigger.
 
-**🌍 Multilingual** - Full UI in 7 languages: English, Deutsch, Espanol, Francais, Russian, Chinese, Japanese. Language picker on first launch.
+**🌍 Multilingual** - Full UI in 9 languages: English, Deutsch, Español, Français, Русский, 中文, 日本語, 한국어 & Português. Language picker on first launch.
 
 **🎨 Image & Video Generation** - Google Imagen 3, Veo 3, Replicate SDXL, FLUX, and 50+ more models via your own Replicate API key.
 
-**🔌 Custom AI Endpoint** - Connect any OpenAI-compatible local server (llama.cpp, LM Studio, vLLM, KoboldCpp). Tool-calling toggle. Configurable Vision + TTS URLs. Uncapped timeout.
+**🔌 OpenAI Compatible** - Connect KoboldCpp, LM Studio, vLLM, or any OpenAI-compatible local server. API key optional. Tool calling toggle. Configurable Vision + TTS URLs. Uncapped timeout.
+
+**🗣️ Local TTS/STT** - Text-to-speech via KoboldCpp or XTTS, speech-to-text via local Whisper. Fully offline voice I/O.
+
+**🎨 Local Image Generation** - Generate images with locally running Stable Diffusion or FLUX via KoboldCpp / ComfyUI. No cloud credits needed.
 
 **👑 Skales+** - Coming soon. Free tier stays free forever. Join the waitlist from Settings.
 
@@ -223,7 +253,11 @@ Please read the [BSL-1.1 license](./LICENSE) before contributing. All contributi
 
 ### Contributors
 
-- **[@btafoya](https://github.com/btafoya)** - Linux support, first community contributor and Linux beta tester
+- **[@btafoya](https://github.com/btafoya)** - Linux support, first community contributor
+- **[@bmp-jaller](https://github.com/bmp-jaller)** - IPv6 localhost fix
+- **[@henk717](https://github.com/henk717)** - KoboldCpp feedback, shaping the local AI experience
+- **[@SohaibKhaliq](https://github.com/SohaibKhaliq)** - Korean translation
+- **[@VladB-evs](https://github.com/VladB-evs)** - Portuguese translation
 
 ---
 
@@ -259,7 +293,7 @@ I'm **Mario Simic** - 10+ years in Marketing & Design. I got tired of agents tha
 
 See [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md) for details.
 
-**Local AI Agent (Source Available) - v7.0.0 "The Foundation" is the latest release under BSL-1.1.**
+**Local AI Agent (Source Available) - v7.1.0 "The Local AI Update" is the latest release under BSL-1.1.**
 
 ---
 

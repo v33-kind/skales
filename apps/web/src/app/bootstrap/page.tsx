@@ -261,7 +261,7 @@ export default function BootstrapPage() {
                             Wähle deine Sprache · Elige tu idioma · Choisissez votre langue · Выберите язык · 选择语言 · 言語を選択
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                         {SUPPORTED_LOCALES.map(loc => (
                             <button
                                 key={loc.code}
@@ -559,7 +559,53 @@ export default function BootstrapPage() {
                             )}
                         </div>
 
-                        {/* ── Local AI Card ── */}
+                        {/* ── OpenAI Compatible Card (moved above Ollama per H2) ── */}
+                        <div
+                            onClick={() => setProviderChoice('custom')}
+                            className="p-4 rounded-xl border cursor-pointer transition-all"
+                            style={{
+                                background: providerChoice === 'custom' ? 'rgba(132,204,22,0.08)' : 'var(--surface-light)',
+                                borderColor: providerChoice === 'custom' ? 'rgba(132,204,22,0.6)' : 'var(--border)',
+                            }}
+                        >
+                            <div className="flex items-center gap-3 mb-1">
+                                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t('onboarding.customLabel')}</span>
+                                {providerChoice === 'custom' && <span className="ml-auto text-lime-400 text-xs font-bold">✓</span>}
+                            </div>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('onboarding.customDesc')}</p>
+                            {providerChoice === 'custom' && (
+                                <div className="mt-3 space-y-3" onClick={e => e.stopPropagation()}>
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                            {t('onboarding.customEndpointUrl')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={customEndpointUrl}
+                                            onChange={e => setCustomEndpointUrl(e.target.value)}
+                                            placeholder={t('onboarding.customEndpointPlaceholder')}
+                                            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:border-lime-500 transition-colors font-mono"
+                                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                            {t('onboarding.customEndpointKey')}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            value={customEndpointKey}
+                                            onChange={e => setCustomEndpointKey(e.target.value)}
+                                            placeholder={t('onboarding.customEndpointKeyPlaceholder')}
+                                            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:border-lime-500 transition-colors font-mono"
+                                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ── Ollama Card ── */}
                         <div
                             onClick={() => {
                                 setProviderChoice('local');
@@ -615,52 +661,6 @@ export default function BootstrapPage() {
                                             </button>
                                         </div>
                                     )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ── Custom Endpoint Card ── */}
-                        <div
-                            onClick={() => setProviderChoice('custom')}
-                            className="p-4 rounded-xl border cursor-pointer transition-all"
-                            style={{
-                                background: providerChoice === 'custom' ? 'rgba(132,204,22,0.08)' : 'var(--surface-light)',
-                                borderColor: providerChoice === 'custom' ? 'rgba(132,204,22,0.6)' : 'var(--border)',
-                            }}
-                        >
-                            <div className="flex items-center gap-3 mb-1">
-                                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{t('onboarding.customLabel')}</span>
-                                {providerChoice === 'custom' && <span className="ml-auto text-lime-400 text-xs font-bold">✓</span>}
-                            </div>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t('onboarding.customDesc')}</p>
-                            {providerChoice === 'custom' && (
-                                <div className="mt-3 space-y-3" onClick={e => e.stopPropagation()}>
-                                    <div>
-                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                            {t('onboarding.customEndpointUrl')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={customEndpointUrl}
-                                            onChange={e => setCustomEndpointUrl(e.target.value)}
-                                            placeholder={t('onboarding.customEndpointPlaceholder')}
-                                            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:border-lime-500 transition-colors font-mono"
-                                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                            {t('onboarding.customEndpointKey')}
-                                        </label>
-                                        <input
-                                            type="password"
-                                            value={customEndpointKey}
-                                            onChange={e => setCustomEndpointKey(e.target.value)}
-                                            placeholder="sk-..."
-                                            className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:border-lime-500 transition-colors font-mono"
-                                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                                        />
-                                    </div>
                                 </div>
                             )}
                         </div>

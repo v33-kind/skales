@@ -517,7 +517,14 @@ export default function SettingsPage() {
         azureSpeechKey: '',
         azureSpeechRegion: '',
         azureVoiceName: '',
+        localTtsUrl: '',
     });
+
+    // Local STT (Speech-to-Text) URL
+    const [localSttUrl, setLocalSttUrl] = useState('');
+
+    // Local Image Generation URL
+    const [localImageGenUrl, setLocalImageGenUrl] = useState('');
 
     // Task Timeout
     const [taskTimeoutSeconds, setTaskTimeoutSeconds] = useState<number>(300);
@@ -750,6 +757,12 @@ export default function SettingsPage() {
 
             // Load TTS config
             if (settings.ttsConfig) setTtsConfig(settings.ttsConfig);
+
+            // Load Local STT URL
+            if ((settings as any).localSttUrl) setLocalSttUrl((settings as any).localSttUrl);
+
+            // Load Local Image Gen URL
+            if ((settings as any).localImageGenUrl) setLocalImageGenUrl((settings as any).localImageGenUrl);
 
             // Load Task Timeout
             if (settings.taskTimeoutSeconds) setTaskTimeoutSeconds(settings.taskTimeoutSeconds);
@@ -1702,6 +1715,8 @@ export default function SettingsPage() {
                 tavilyApiKey: tavilyApiKey || undefined,
                 googlePlacesApiKey: googlePlacesApiKey || undefined,
                 ttsConfig,
+                localSttUrl: localSttUrl || undefined,
+                localImageGenUrl: localImageGenUrl || undefined,
                 skills,
                 taskTimeoutSeconds,
                 safetyMode,
@@ -3216,8 +3231,8 @@ export default function SettingsPage() {
                         </p>
 
                         {/* Provider selector */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-                            {(['default', 'elevenlabs', 'azure'] as const).map(p => (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                            {(['default', 'local', 'elevenlabs', 'azure'] as const).map(p => (
                                 <button
                                     key={p}
                                     onClick={() => setTtsConfig(prev => ({ ...prev!, provider: p }))}
@@ -3226,9 +3241,9 @@ export default function SettingsPage() {
                                         : 'border-transparent hover:border-[var(--border)]'
                                         }`}
                                     style={{ background: ttsConfig?.provider === p ? undefined : 'var(--background)', color: ttsConfig?.provider === p ? undefined : 'var(--text-secondary)' }}
-                                    aria-label={`Select ${p === 'default' ? 'Default' : p === 'elevenlabs' ? 'ElevenLabs' : 'Azure'} as TTS provider`}
+                                    aria-label={`Select ${p === 'default' ? 'Default' : p === 'local' ? 'Local' : p === 'elevenlabs' ? 'ElevenLabs' : 'Azure'} as TTS provider`}
                                 >
-                                    {p === 'default' ? '⚡ Default' : p === 'elevenlabs' ? '🎙️ ElevenLabs' : '☁️ Azure'}
+                                    {p === 'default' ? '⚡ Default' : p === 'local' ? '🖥️ Local' : p === 'elevenlabs' ? '🎙️ ElevenLabs' : '☁️ Azure'}
                                 </button>
                             ))}
                         </div>
@@ -3319,6 +3334,70 @@ export default function SettingsPage() {
                                 </p>
                             </div>
                         )}
+
+                        {/* Local TTS */}
+                        {ttsConfig?.provider === 'local' && (
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-sm font-medium mb-1.5 block" style={{ color: 'var(--text-primary)' }}>Local TTS Endpoint URL</label>
+                                    <input
+                                        type="text"
+                                        value={ttsConfig.localTtsUrl || ''}
+                                        onChange={e => setTtsConfig(prev => ({ ...prev!, localTtsUrl: e.target.value }))}
+                                        placeholder="http://127.0.0.1:5001/v1/audio/speech"
+                                        className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-lime-500 font-mono"
+                                        style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                                    />
+                                    <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                                        OpenAI-compatible TTS endpoint (e.g. local Groq API, FastAPI wrapper). Expects POST with JSON: {JSON.stringify({ model: 'tts-1', input: 'text', voice: 'alloy', response_format: 'mp3' })}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* ─── Local STT Configuration ─── */}
+                    <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                        <h2 className="text-lg font-semibold flex items-center gap-2 mb-3" style={{ color: 'var(--text-primary)' }}>
+                            <span className="text-xl">🎤</span>
+                            Local STT (Speech-to-Text)
+                        </h2>
+                        <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                            Run your own speech-to-text model (e.g. Whisper via Groq, local inference server).
+                        </p>
+                        <input
+                            type="text"
+                            value={localSttUrl}
+                            onChange={e => setLocalSttUrl(e.target.value)}
+                            placeholder="http://127.0.0.1:5001/v1/audio/transcriptions"
+                            className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-lime-500 font-mono"
+                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                        />
+                        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                            Expects multipart POST with audio file + {"model: 'whisper-1'"}
+                        </p>
+                    </section>
+
+                    {/* ─── Local Image Generation ─── */}
+                    <section className="rounded-2xl border p-6" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                        <h2 className="text-lg font-semibold flex items-center gap-2 mb-3" style={{ color: 'var(--text-primary)' }}>
+                            <span className="text-xl">🎨</span>
+                            Local Image Generation
+                        </h2>
+                        <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                            Use local image generation (Stable Diffusion, DALL-E compatible API).
+                        </p>
+                        <input
+                            type="text"
+                            value={localImageGenUrl}
+                            onChange={e => setLocalImageGenUrl(e.target.value)}
+                            placeholder="http://127.0.0.1:7860/api/v1/generation/text-to-image"
+                            className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-lime-500 font-mono"
+                            style={{ background: 'var(--background)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                        />
+                        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                            OpenAI-compatible endpoint. POST JSON: {JSON.stringify({ prompt: 'text', n: 1, size: '512x512' })}
+                        </p>
                     </section>
 
                     {/* ─── GIF & Sticker Integration ─── */}
@@ -6518,7 +6597,33 @@ export default function SettingsPage() {
                     </button>
                 </div>
             {/* Footer */}
-            <div className="mt-12 pb-32 text-center">
+            <div className="mt-12 pb-32 text-center space-y-3">
+                <div style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}>
+                    <a href="https://x.com/skalesapp" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)"
+                       style={{ color: 'var(--text-muted)', transition: 'color 0.15s' }}
+                       onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                       onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="https://instagram.com/skales.app" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                       style={{ color: 'var(--text-muted)', transition: 'color 0.15s' }}
+                       onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                       onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                    </a>
+                    <a href="https://tiktok.com/@skales.app" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
+                       style={{ color: 'var(--text-muted)', transition: 'color 0.15s' }}
+                       onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                       onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.51a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.75a8.18 8.18 0 0 0 4.76 1.52V6.84a4.83 4.83 0 0 1-1-.15z"/></svg>
+                    </a>
+                    <a href="https://youtube.com/@skalesapp" target="_blank" rel="noopener noreferrer" aria-label="YouTube"
+                       style={{ color: 'var(--text-muted)', transition: 'color 0.15s' }}
+                       onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                       onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><path d="M9.545 15.568V8.432L15.818 12z" fill="var(--bg-base, #0b0f19)"/></svg>
+                    </a>
+                </div>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     Made by Mario Simic &bull;{' '}
                     <a
