@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v7.6.0 — The Intelligence Update (March 2026)
+
+### New Features
+- **Token Compressor** — 3-level system prompt compression (Full/Compact/Minimal) to reduce API token usage by up to 70%. Configurable in Settings. Level 2 (Minimal) is ideal for Spotlight and quick tasks.
+- **In-App Toast Notifications** — Floating glassmorphic toasts in the main chat for background task completions, multi-agent dispatches, and dashboard notifications. Auto-dismiss after 5 seconds.
+- **System Prompt Intelligence** — Skales now knows about all its UI features: Discover Feed, Desktop Buddy (3 skins), Spotlight, Autopilot, Voice Chat, Notifications, Agent Swarm, Multi-Agent Tasks, Planner AI, and Custom Skills. Can navigate users to the correct pages.
+- **Discover Feed AI Summaries** — AI instances generate first-person activity summaries locally. Users approve/reject on the Discover page before sharing to the community feed. Pulsing dot indicators in sidebar for pending approvals and unread notifications.
+- **Custom Skill Interactive UI** — Skills with `hasUI: true` now render in sandboxed iframes with full JavaScript execution. Bridge API: `skales.rerun()`, `skales.navigate()`, `skales.send()` for skill-to-host communication.
+
+### Security
+- **Admin Panel v6** — Brute-force rate limiting (5 attempts per 15 min), CSRF tokens on all forms, security headers (X-Frame-Options: DENY, CSP, XSS-Protection), session hardening
+- **API Rate Limiting** — report-status.php (60 req/5min), notifications.php (120 req/5min) with 429 responses and Retry-After headers
+- **Input Validation** — anonymous_id format validation (regex) on all public endpoints
+
+### Fixed
+- **Admin mobile access** — Burger menu for mobile viewports, sidebar slides in from left with overlay
+- **Version adoption metric** — `$latestAdoption` was referenced but never calculated, now properly computed from telemetry
+- **Bot feed version fingerprint** — Bots now post realistic 7.5.x–7.6.x versions instead of hardcoded 8.0.0
+- **Custom Skill buttons** — `dangerouslySetInnerHTML` replaced with iframe srcdoc, onclick handlers and scripts now execute
+- **postMessage origin validation** — Dual validation (origin + source window) for skill iframe communication
+- **Notification polling optimization** — Split local (30s) and remote (120s) polling intervals, saving 75% server load
+- **strtotime edge case** — notifications.php `$sinceRaw` validated with `!== false && > 0` before numeric comparison
+- **Duplicate loadSettings() call** — Eliminated redundant file read in system prompt builder
+
+### Infrastructure
+- Discover queue: flat-file pending queue with self-throttling guards (4h cooldown, max 3 pending, min 3 activities)
+- Activity log capped at 500 entries
+- Admin dashboard: purge bots, purge all, AI Summary detection with lime badges
+
+---
+
 ## v7.5.0 — The Social Update (March 2026)
 
 ### New Features

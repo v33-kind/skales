@@ -9,12 +9,12 @@
 - GitHub: https://github.com/skalesapp/skales
 - First commit: 2025
 - License: BSL-1.1 (Business Source License)
-- Current version: 7.5.0 The Social Update (March 2026)
+- Current version: 7.6.0 The Intelligence Update (March 2026)
 
 This project is the original work of Mario Simic.
 Any fork, clone, or derivative must retain this attribution.
 
-### File Integrity Hashes (v7.5.0)
+### File Integrity Hashes (v7.6.0)
 
 ```
 2ed04eb81d857d7e78343601610159438df5ef5a6b91272b82ca422c126e3fb9  apps/web/src/actions/orchestrator.ts

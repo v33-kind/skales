@@ -7,13 +7,15 @@ If you find this useful, a ⭐ helps others discover it
 ### Your Local AI Agent - Desktop App for Windows, macOS & Linux
 <table border="0">
   <tr>
-    <td width="50%" align="center">
-      <img src="https://skales.app/magic.gif" width="100%" alt="Skales Magic Animation">
-    </td>
-    <td width="50%" align="center">
+    <td align="center">
       <a href="https://youtube.com/watch?v=8fXGsQGyxCU">
         <img src="https://img.youtube.com/vi/8fXGsQGyxCU/maxresdefault.jpg" width="100%" alt="Skales Demo Video">
       </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://skales.app/magic.gif" width="100%" alt="Skales Magic Animation">
     </td>
   </tr>
 </table>
@@ -21,7 +23,7 @@ If you find this useful, a ⭐ helps others discover it
 
 **Download. Install. Done.**
 
-[![Version](https://img.shields.io/badge/version-7.5.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
+[![Version](https://img.shields.io/badge/version-7.6.0-1DB954?style=for-the-badge&labelColor=0D1117)](https://skales.app)
 [![License](https://img.shields.io/badge/license-BSL_1.1-1DB954?style=for-the-badge&labelColor=0D1117)](./LICENSE)
 
 [![Platform](https://img.shields.io/badge/Windows_+_macOS_+_Linux-1DB954?style=for-the-badge&labelColor=0D1117&logo=windows&logoColor=white)](https://skales.app)
@@ -58,29 +60,21 @@ If you find this useful, a ⭐ helps others discover it
 
 ---
 
-## 🆕 What's New in v7.5.0 — The Social Update
+## 🆕 What's New in v7.6.0 — The Intelligence Update
 
-**🌍 Discover Feed** - Global activity feed showing what the Skales community is building. Gamertag system, upvotes, category filters. Privacy-first: zero personal data collected.
+**⚡ Token Compressor** - 3-level system prompt compression (Full/Compact/Minimal) saves up to 70% API tokens. Perfect for budget-conscious users. Configurable in Settings.
 
-**🔍 Spotlight + Vision** - Press Cmd/Ctrl+Shift+S to open a floating search bar anywhere on your desktop. Ask Skales anything without opening the main window. Click the eye icon to capture your screen and ask about what's visible. Toggle in Settings → Notifications.
+**🔔 In-App Toast Notifications** - Floating glassmorphic toasts for background task completions, multi-agent dispatches, and autopilot results. No more missed notifications.
 
-**💬 Mini-Chat Mode** - Shrink Skales to a compact always-on-top chat window. Toggle from the chat header.
+**🧠 System Prompt Intelligence** - Skales now knows about all its features and can navigate you to the right pages. Ask "What is the Discover Feed?" and get a real answer.
 
-**🔔 Sound Notifications** - Audible feedback when tasks complete, notifications arrive, or Swarm tasks finish. Theme-aware sounds, configurable in Settings.
+**🤖 Discover Feed AI Summaries** - Your AI generates first-person activity updates. Approve or reject before sharing to the community. Pulsing dot indicators in sidebar.
 
-**🤖 Agent Swarm Redesign** - Dedicated Swarm page with hub-and-spoke node visualization, task history, and quick delegate.
+**🎮 Custom Skill Interactive UI** - Skills with buttons, forms, and scripts now work via sandboxed iframes with a Bridge API (`skales.rerun()`, `skales.navigate()`, `skales.send()`).
 
-**🔔 Notification Center** - Dedicated page for all notifications with read/unread state, filters, and admin broadcast support.
+**🛡️ Admin Security Hardening** - Brute-force protection, CSRF tokens, rate limiting on all public APIs, input validation, security headers. Admin panel v6 with mobile burger menu.
 
-**📅 Calendar Month View + .ics Export** - Full month grid with event previews, click-to-navigate, and today highlighting. Download your plan as a calendar file.
-
-**🗣️ TTS Local Provider** - Connect KoboldCpp, XTTS-API-Server, or any OpenAI-compatible TTS endpoint with automatic browser fallback.
-
-**🛡️ Privacy Policy + Delete My Data** - GDPR-ready privacy policy page, in-app Delete My Data with 2-step confirmation. Cookie consent with Google Consent Mode v2.
-
-**👯 Friend Mode + Buddy Intelligence Fix** - Both systems now fire independently of Autonomous Mode.
-
-**🌍 9 Languages** - English, Deutsch, Español, Français, Русский, 中文, 日本語, 한국어 & Português. 1839 translation keys fully synced.
+**Plus everything from v7.5.0:** Discover Feed, Spotlight + Vision, Mini-Chat, Sound Notifications, Agent Swarm, Notification Center, Calendar Month View, TTS Local, Privacy Policy, 9 Languages.
 ---
 
 ## 🚀 Features
@@ -213,13 +207,14 @@ Contributions are welcome for bug fixes and non-commercial improvements.
 
 Please read the [BSL-1.1 license](./LICENSE) before contributing. All contributions are subject to the same license terms.
 
-### Contributors
+## 🦎 Contributors
 
 - **[@btafoya](https://github.com/btafoya)** - Linux support, first community contributor
 - **[@bmp-jaller](https://github.com/bmp-jaller)** - IPv6 localhost fix
 - **[@henk717](https://github.com/henk717)** - KoboldCpp feedback, shaping the local AI experience
 - **[@SohaibKhaliq](https://github.com/SohaibKhaliq)** - Korean translation
 - **[@VladB-evs](https://github.com/VladB-evs)** - Portuguese translation
+- **[@v33-kind](https://github.com/v33-kind)** - LM Studio setup documentation
 
 ---
 
@@ -256,7 +251,7 @@ I'm **Mario Simic** - 10+ years in Marketing & Design. I got tired of agents tha
 
 See [COMMERCIAL-LICENSE.md](./COMMERCIAL-LICENSE.md) for details.
 
-**Local AI Agent (Source Available) - v7.5.0 (The Social Update) is the latest release under BSL-1.1.**
+**Local AI Agent (Source Available) - v7.6.0 (The Intelligence Update) is the latest release under BSL-1.1.**
 
 ---
 
