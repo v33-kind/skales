@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Swarm v2 - Skales</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ffffff;--surface:#f8f8fa;--surface2:#f0f0f4;--border:#dcdce4;
+  --text:#1a1a2e;--muted:#6b7280;--dim:#9ca3af;
+  --lime:#65a30d;--lime-dim:rgba(101,163,13,.08);
+  --indigo:#6366f1;--green:#22c55e;--blue:#3b82f6;--amber:#f59e0b;--pink:#ec4899;--teal:#14b8a6;--purple:#8b5cf6;--red:#ef4444;
+  --font:'Montserrat',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;line-height:1.7}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1B2A4A;border-right:none;overflow-y:auto;z-index:100;padding:12px 0}
+.sidebar .brand{font-size:12px;font-weight:800;color:#fff;padding:8px 14px 16px;display:block;border-bottom:1px solid #3D4F6F;margin-bottom:8px}
+.sidebar h3{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#718096;padding:12px 14px 4px}
+.sidebar a{display:block;padding:5px 14px;color:#c8d1e0;text-decoration:none;font-size:11px;font-weight:500;transition:.12s}
+.sidebar a:hover{color:#fff;background:#3D4F6F}
+.sidebar .sig{padding:14px;border-top:1px solid #3D4F6F;margin-top:12px}
+.sidebar .sig-name{font-size:10px;font-weight:700;color:#fff}
+.sidebar .sig-tag{font-size:9px;color:#718096;font-style:italic}
+
+/* Main */
+.main{margin-left:200px;padding:0 32px 60px}
+
+/* Cover */
+.cover-band{background:#1B2A4A;height:40px;margin:0 -32px}
+.cover{padding:32px 0;text-align:center;border-bottom:1px solid var(--border)}
+.cover h1{font-size:28px;font-weight:800;color:#1B2A4A;letter-spacing:-0.5px}
+.cover .sub{font-size:14px;color:#3D4F6F;margin-top:6px}
+.cover .divider{width:120px;height:3px;background:#1B2A4A;margin:16px auto}
+.cover .meta{font-size:11px;color:var(--muted);margin-top:8px}
+.cover .sig-inline{font-size:11px;font-weight:700;color:#1B2A4A;margin-top:12px}
+.cover .sig-tag{font-size:10px;color:var(--muted);font-style:italic}
+
+/* Sections */
+.section{padding:32px 0;border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:none}
+.section-title{font-size:16px;font-weight:800;color:#1B2A4A;margin-bottom:4px;display:flex;align-items:center;gap:8px;border-top:3px solid #1B2A4A;padding-top:10px}
+.section-sub{font-size:11px;color:var(--muted);margin-bottom:20px}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:16px 0}
+.card{padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--surface)}
+.card-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.card-value{font-size:16px;font-weight:800;color:#1B2A4A}
+.card-desc{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* Tags */
+.tag{display:inline-block;font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px;margin:1px}
+.tag-agent{background:rgba(99,102,241,.1);color:#4f46e5}
+.tag-skill{background:rgba(34,197,94,.1);color:#16a34a}
+.tag-task{background:rgba(59,130,246,.1);color:#2563eb}
+.tag-memory{background:rgba(245,158,11,.1);color:#d97706}
+.tag-schedule{background:rgba(236,72,153,.1);color:#db2777}
+.tag-fix{background:rgba(239,68,68,.1);color:#dc2626}
+.tag-new{background:rgba(132,204,22,.1);color:#4d7c0f}
+
+/* User stories */
+.story{border:1px solid var(--border);border-radius:8px;margin:10px 0;overflow:hidden}
+.story-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);cursor:pointer;transition:.12s}
+.story-head:hover{background:#e8e8f0}
+.story-id{font-size:9px;font-weight:700;color:var(--muted);min-width:28px}
+.story-title{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.story-status{font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.story-status.fix{background:rgba(34,197,94,.1);color:#16a34a}
+.story-status.proposed{background:rgba(59,130,246,.1);color:#2563eb}
+.story-status.confirmed{background:rgba(245,158,11,.1);color:#d97706}
+.story-status.feature{background:rgba(139,92,246,.1);color:#7c3aed}
+.story-body{padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.8;display:none;border-top:1px solid var(--border)}
+.story-body.open{display:block}
+.story-body strong{color:var(--text)}
+.story-arrow{font-size:9px;color:var(--dim);transition:transform .15s}
+.story-arrow.open{transform:rotate(180deg)}
+
+/* Workspace canvas */
+.workspace{border-radius:10px;border:1px solid var(--border);background:var(--bg);overflow:hidden;margin:16px 0}
+.ws-toolbar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--border)}
+.ws-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:var(--font);transition:.12s}
+.ws-btn:hover{border-color:#555;color:var(--text)}
+.ws-btn.active{background:var(--lime-dim);border-color:rgba(132,204,22,.3);color:var(--lime)}
+.ws-btn.primary{background:var(--lime);color:#111;border-color:var(--lime);font-weight:700}
+.ws-btn.primary:hover{background:#a3e635}
+.ws-spacer{flex:1}
+.ws-label{font-size:9px;color:var(--dim)}
+.ws-canvas{position:relative;height:500px;cursor:grab;overflow:hidden}
+.ws-canvas.grabbing{cursor:grabbing}
+.ws-inner{position:absolute;top:0;left:0;transform-origin:0 0}
+.ws-canvas::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,#e0e0e0 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+
+/* Workspace nodes */
+.ws-node{position:absolute;border-radius:8px;border:1px solid var(--border);background:#fff;min-width:140px;cursor:grab;user-select:none;transition:border-color .2s,box-shadow .2s,opacity .3s;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.ws-node:hover{border-color:#b0b0c0;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.ws-node.selected{border-color:var(--indigo);box-shadow:0 0 0 2px rgba(99,102,241,.15),0 2px 10px rgba(0,0,0,.1)}
+.ws-node.dimmed{opacity:.1}
+.ws-node-head{display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:1px solid var(--border);border-radius:7px 7px 0 0;background:var(--surface)}
+.ws-node-color{width:3px;height:16px;border-radius:2px;flex-shrink:0}
+.ws-node-emoji{font-size:12px}
+.ws-node-name{font-size:10px;font-weight:700;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-node-badge{font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;text-transform:uppercase;letter-spacing:.2px}
+.ws-node-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ws-node-dot.on{background:var(--lime);box-shadow:0 0 4px rgba(132,204,22,.4)}
+.ws-node-dot.off{background:var(--red)}
+.ws-node-body{padding:5px 10px 6px;font-size:9px;color:var(--muted);line-height:1.7}
+.ws-node-row{display:flex;justify-content:space-between;margin-bottom:1px}
+.ws-node-val{font-weight:600;color:#9ca3af;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-port{position:absolute;width:8px;height:8px;border-radius:50%;border:1.5px solid #fff;z-index:3;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.1)}
+.ws-port.top{top:-5px;left:50%;margin-left:-4px}
+.ws-port.bottom{bottom:-5px;left:50%;margin-left:-4px}
+.ws-port.left{left:-5px;top:50%;margin-top:-4px}
+.ws-port.right{right:-5px;top:50%;margin-top:-4px}
+
+/* AI Prompt */
+.ai-prompt{margin:16px 0;border-radius:8px;border:1px solid var(--border);background:var(--surface);overflow:hidden}
+.ai-prompt-head{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surface2)}
+.ai-prompt-head span{font-size:12px;font-weight:700;color:var(--text)}
+.ai-prompt-body{padding:12px 14px}
+.ai-input{width:100%;padding:10px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:var(--font);outline:none;resize:none;min-height:60px;transition:border-color .15s}
+.ai-input:focus{border-color:rgba(132,204,22,.4)}
+.ai-input::placeholder{color:var(--dim)}
+.ai-result{margin-top:10px;padding:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);font-size:11px;color:var(--muted);line-height:1.8;display:none}
+.ai-result.show{display:block}
+.ai-actions{display:flex;gap:6px;margin-top:8px}
+
+/* Routing demo */
+.demo-toggle{display:flex;align-items:center;gap:10px;margin:12px 0;padding:10px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border)}
+.demo-switch{width:44px;height:24px;border-radius:12px;background:var(--red);cursor:pointer;position:relative;transition:.3s}
+.demo-switch.on{background:var(--lime)}
+.demo-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.3s}
+.demo-switch.on::after{left:22px}
+.demo-label{font-size:11px;font-weight:600}
+
+/* Phases */
+.phase-item{display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid #1e2130;font-size:12px}
+.phase-item:last-child{border-bottom:none}
+.phase-num{font-size:11px;font-weight:800;color:var(--lime);min-width:24px}
+.phase-title{font-weight:700;color:#1B2A4A}
+.phase-desc{color:var(--muted);margin-left:4px}
+.phase-sub{margin:4px 0 0 36px;font-size:11px;color:var(--dim);line-height:1.8}
+
+/* Note */
+.note{background:#EDF1F7;border-left:4px solid #1B2A4A;padding:12px 16px;border-radius:0 4px 4px 0;font-size:11px;color:#2D3748;margin:12px 0;line-height:1.8}
+.note strong{color:#1B2A4A}
+
+/* Log */
+.log-panel{border-radius:8px;border:1px solid var(--border);background:var(--surface);max-height:200px;overflow-y:auto;margin:12px 0;font-family:'Courier New',monospace}
+.log-head{padding:6px 12px;border-bottom:1px solid var(--border);font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;background:var(--surface);font-family:var(--font)}
+.log-entry{padding:3px 12px;font-size:10px;color:var(--muted);border-bottom:1px solid #16181f;line-height:1.8}
+
+/* Node detail panel */
+.ws-detail{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:360px;max-width:calc(100% - 24px);background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:20;display:none;overflow:hidden}
+.ws-detail.open{display:block}
+.ws-detail-head{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface)}
+.ws-detail-head .emoji{font-size:14px}
+.ws-detail-head .name{font-size:12px;font-weight:700;color:var(--text);flex:1}
+.ws-detail-head .type-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.ws-detail-head .close{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);padding:0 4px}
+.ws-detail-head .close:hover{color:var(--text)}
+.ws-detail-body{padding:10px 12px}
+.ws-detail-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:10px}
+.ws-detail-row .key{color:var(--muted);font-weight:500}
+.ws-detail-row .val{color:var(--text);font-weight:600}
+.ws-detail-actions{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);background:var(--surface)}
+.ws-detail-btn{padding:5px 10px;border-radius:5px;font-size:9px;font-weight:600;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:var(--font);transition:.12s;flex:1;text-align:center}
+.ws-detail-btn:hover{border-color:#b0b0c0;background:var(--surface2)}
+.ws-detail-btn.primary{background:var(--lime);color:#111;border-color:var(--lime)}
+.ws-detail-btn.primary:hover{background:#7cc00e}
+
+/* Footer */
+.footer{text-align:center;padding:32px;border-top:3px solid #1B2A4A;margin-top:24px}
+.footer .handle{font-size:11px;font-weight:700;color:#1B2A4A}
+.footer .tagline{font-size:10px;color:var(--muted);font-style:italic;margin-top:2px}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding:0 16px 40px}
+  .cards{grid-template-columns:1fr}
+}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <span class="brand">Agent Swarm v2</span>
+  <h3>Overview</h3>
+  <a href="#cover">Cover</a>
+  <a href="#summary">Summary</a>
+  <a href="#workspace">Visual Workspace</a>
+  <h3>Solutions</h3>
+  <a href="#stories">User Stories</a>
+  <a href="#solutions">Solutions Delivered</a>
+  <a href="#ai-create">AI Agent Builder</a>
+  <h3>Direction</h3>
+  <a href="#roadmap">Roadmap</a>
+  <a href="#final">Final Thoughts</a>
+  <div class="sig">
+    <div class="sig-name">@v33-kind</div>
+    <div class="sig-tag">kind. curious. clauding.</div>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- COVER -->
+<div class="cover" id="cover">
+  <div class="cover-band"></div>
+  <h1>AGENT SWARM v2</h1>
+  <div class="sub">Visual Workspace + Agent Routing + AI-Assisted Creation</div>
+  <div class="divider"></div>
+  <div class="meta">Concept for Skales | Inspired by Discussion #34</div>
+  <div class="sig-inline">@v33-kind</div>
+  <div class="sig-tag">kind. curious. clauding.</div>
+</div>
+
+<!-- SUMMARY -->
+<div class="section" id="summary">
+  <div class="section-title">Summary</div>
+  <div class="section-sub">What this addresses, why it matters, and what it enables.</div>
+
+  <div class="note">
+    <strong>Context:</strong> Discussion #34 surfaced a real use case. A user with 20+ custom agents, 3 provider instances, and 2 billion tokens per week hit the wall: agents can be created but can't work together. The CEO agent delegates, but every subtask ignores the assignment and runs on the default provider. This proposal addresses that and more.
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="card-label">Problem</div><div class="card-value">Ghost Field</div><div class="card-desc">task.agent is saved but never read during execution. All subtasks use default provider.</div></div>
+    <div class="card"><div class="card-label">Impact</div><div class="card-value">20+ agents idle</div><div class="card-desc">Custom agents with specialized prompts and providers can't be used in delegation.</div></div>
+    <div class="card"><div class="card-label">Fix</div><div class="card-value">~25 lines</div><div class="card-desc">Read task.agent, look up definition, route to that agent's provider/model/prompt. Full patch in <code>agent-routing-patch-v2.py</code>.</div></div>
+    <div class="card"><div class="card-label">Unlock</div><div class="card-value">Multi-provider orchestration</div><div class="card-desc">CEO delegates to agents on different providers. Each uses their own prompt and model.</div></div>
+  </div>
+</div>
+
+<!-- VISUAL WORKSPACE -->
+<div class="section" id="workspace">
+  <div class="section-title">Visual Workspace</div>
+  <div class="section-sub">Interactive agent ecosystem. Drag nodes, click to select, see connections.</div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin-bottom:16px;font-size:10px;color:var(--muted);line-height:1.6">
+    <div><strong style="color:var(--text)">+ Agent (AI)</strong><br>Scrolls to the AI builder. Describe an agent in plain language, generates config, adds to canvas.</div>
+    <div><strong style="color:var(--text)">+ Skill</strong><br>Adds a skill node. Auto-connects to the first available agent. Click to edit name and status.</div>
+    <div><strong style="color:var(--text)">+ Task</strong><br>Adds a task node. Click it, then "Assign Agent" to connect it to one or more agents.</div>
+    <div><strong style="color:var(--text)">Discover</strong><br>Auto-discovers memory and schedule nodes. Connects tasks to memory, schedules to CEO. Fits canvas.</div>
+    <div><strong style="color:var(--text)">Routing: OFF/ON</strong><br>Toggles the agent routing fix. When ON, delegation routes to assigned agents. When OFF, all tasks use default.</div>
+    <div><strong style="color:var(--text)">Delegate</strong><br>Runs a live delegation simulation. CEO dispatches tasks to agents. Log shows routing decisions per task.</div>
+    <div><strong style="color:var(--text)">Fit</strong><br>Scales and centers all nodes within the visible canvas area.</div>
+    <div><strong style="color:var(--text)">Reset</strong><br>Returns all nodes to their original positions and deselects everything.</div>
+    <div><strong style="color:var(--text)">Export</strong><br>Downloads the full workspace state (nodes + edges) as a JSON file.</div>
+    <div><strong style="color:var(--text)">Click node</strong><br>Select it. Detail panel shows info + actions: Edit, Assign Agent, Toggle Status, Delete.</div>
+    <div><strong style="color:var(--text)">Drag node</strong><br>Reposition it. Snaps to 40px grid. Connection lines update in real time.</div>
+    <div><strong style="color:var(--text)">Ctrl + Scroll</strong><br>Zoom in/out on the canvas. Normal scroll moves the page.</div>
+  </div>
+
+  <div class="workspace">
+    <div class="ws-toolbar">
+      <button class="ws-btn primary" onclick="addAgentPrompt()">+ Agent (AI)</button>
+      <button class="ws-btn" onclick="addSkillNode()">+ Skill</button>
+      <button class="ws-btn" onclick="addTaskNode()">+ Task</button>
+      <button class="ws-btn" onclick="autoDiscover()">Discover</button>
+      <span style="width:1px;height:18px;background:var(--border);margin:0 2px"></span>
+      <span style="font-size:9px;color:var(--muted)">Routing:</span>
+      <button class="ws-btn" id="ws-fix-btn" onclick="toggleWsFix()" style="font-size:9px;padding:3px 8px">OFF</button>
+      <button class="ws-btn" onclick="runWsDemo()">&#x25B6; Delegate</button>
+      <span class="ws-spacer"></span>
+      <button class="ws-btn" onclick="fitWorkspace()">Fit</button>
+      <button class="ws-btn" onclick="resetWorkspace()">Reset</button>
+      <button class="ws-btn" onclick="exportWorkspace()">Export</button>
+    </div>
+    <div class="ws-canvas" id="ws-canvas">
+      <div class="ws-inner" id="ws-inner">
+        <svg id="ws-svg" style="position:absolute;top:0;left:0;width:2000px;height:1000px;pointer-events:none;z-index:1"></svg>
+        <div id="ws-nodes"></div>
+      </div>
+      <div class="ws-detail" id="ws-detail"></div>
+    </div>
+  </div>
+  <div class="log-panel" id="ws-log" style="display:none">
+    <div class="log-head">Delegation Log</div>
+  </div>
+  <div class="note" style="margin-top:8px"><strong>Routing fix:</strong> See <code>agent-routing-patch-v2.py</code> for root cause, 4 code changes, and testing steps. Toggle routing ON above to see the difference.</div>
+</div>
+
+<!-- USER STORIES -->
+<div class="section" id="stories">
+  <div class="section-title">User Stories from Discussion #34</div>
+  <div class="section-sub">Each issue raised, categorized and addressed. Click to expand.</div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-1</span><span class="story-title">Agent delegation ignores assigned agent</span><span class="story-status fix">Fix Ready</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>task.agent field is saved but executeTask() never reads it</li><li>All subtasks run on the default provider regardless of assignment</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Missing ~25 lines in the task executor</li><li>No lookup of the assigned agent's definition before calling agentDecide()</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Multi-agent orchestration is non-functional for delegation</li><li>20+ custom agents with specialized prompts are unused</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li><code>agent-routing-patch-v2.py</code> Changes 1-4 (lines 75-178)</li><li>Full working code provided, commented out for review</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-2</span><span class="story-title">Custom API not working on Lio AI</span><span class="story-status confirmed">Fixed v8.0.1</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Lio AI defaulted to OpenRouter for all three roles</li><li>Active provider setting was ignored</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Lio AI config had hardcoded OpenRouter defaults</li><li>Separate from main provider settings</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users with custom endpoints (codex-lb, LM Studio, vLLM) could not use them in Lio AI</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li>Fixed in v8.0.1</li><li>Lio AI settings now show Custom (OpenAI-compatible) for all three roles</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-3</span><span class="story-title">Autopilot doesn't know about custom agents</span><span class="story-status fix">Fix Ready</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Autopilot uses DEFAULT provider and DEFAULT persona from Settings</li><li>Custom agents are invisible to it</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Autopilot task creation has no agent selection</li><li>Autonomous runner supports assignedProvider/assignedModel but they're never populated from agent definitions</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users cannot assign specialized agents to scheduled or automated tasks</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li>Same pattern as Changes 1-4</li><li>Autonomous runner already reads assignedProvider/assignedModel</li><li>Linking those to agent definitions via getAgent() completes the circuit</li><li>Confirmed for v8.0.1</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-4</span><span class="story-title">Custom agents as Lio AI roles</span><span class="story-status feature">Feature</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Lio AI uses a fixed 3-role system (Architect/Reviewer/Builder)</li><li>Generic prompts for each role</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>No mechanism to override built-in roles with custom agent definitions</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users who've invested in building agents with detailed prompts can't leverage them in Lio AI</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li>Add an "Agent Override" dropdown to each Lio AI role</li><li>When set, use that agent's system prompt and provider instead of defaults</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-5</span><span class="story-title">Multiple custom providers per agent</span><span class="story-status fix">Fix Ready</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>One custom endpoint URL in settings</li><li>Shared by all features and agents</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>AgentDefinition has provider and model fields but no baseUrl field</li><li>All custom agents share a single endpoint</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users running multiple codex-lb instances cannot route different agents to different endpoints</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li><code>agent-routing-patch-v2.py</code> Enhancement 2 (line 333)</li><li>Adds baseUrl and apiKey fields to AgentDefinition</li><li>Passes them through agentDecide to the provider config</li><li>Includes UI field suggestion for the agent creation page</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-6</span><span class="story-title">Vision Provider needs Custom option</span><span class="story-status fix">Fix Ready</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Vision Provider dropdown only shows Google, OpenAI, Anthropic, OpenRouter</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>'custom' is not listed in the Vision Provider options array</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users with vision-capable local models cannot use them for screenshots and browser control</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li>Add 'custom' to the Vision Provider dropdown</li><li>Custom endpoint handler already supports vision-capable models</li><li>Single-line change</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-7</span><span class="story-title">Port 3000 conflict</span><span class="story-status fix">Fix Suggested</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>If another service runs on port 3000, Skales starts silently</li><li>Displays the other service's UI with no error</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Electron main process spawns Next.js server on port 3000 without checking availability</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users see another app's UI thinking it's Skales</li><li>No error, no warning, silent failure</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li><code>agent-routing-patch-v2.py</code> Bug Fix 1 (line 756)</li><li>TCP port probe tries 3000-3009</li><li>Error dialog if all ports taken</li><li>Desktop notification if fallback port used</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-8</span><span class="story-title">Lio AI input box freezes after build</span><span class="story-status fix">Fix Suggested</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>After a Lio AI build completes, input box stops accepting text</li><li>Happens after a couple of follow-up attempts</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Build completion handler doesn't reset isProcessing/isBuilding state on error paths</li><li>Input gate stays closed permanently</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users must restart the app to continue working after every build</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li><code>agent-routing-patch-v2.py</code> Bug Fix 2 (line 815)</li><li>try/finally always resets input state</li><li>10-minute safety timeout force-resets if build hangs</li><li>Direct DOM re-enable as safety net</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-9</span><span class="story-title">Autopilot says file created but nothing saved</span><span class="story-status fix">Fix Suggested</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Autopilot tasks report "file created" in the result</li><li>No file exists on disk</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>(A) Agent hallucinates file creation without issuing the actual tool call</li><li>(B) Sandbox mode blocks the write silently without returning an error</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users trust the output, discover nothing was saved</li><li>Loss of work and trust in Autopilot</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li><code>agent-routing-patch-v2.py</code> Bug Fix 3 (line 878)</li><li>Post-execution verification parses claimed file paths and checks they exist</li><li>Marks task as failed if files are missing</li><li>Pre-write sandbox check returns clear error instead of silent block</li></ul>
+    </div>
+  </div>
+
+  <div class="story" onclick="toggleStory(this)">
+    <div class="story-head"><span class="story-id">US-10</span><span class="story-title">GitHub integration for Lio AI</span><span class="story-status feature">Feature</span><span class="story-arrow">&#x25BC;</span></div>
+    <div class="story-body">
+      <strong>Current:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Lio AI builds projects in a local workspace folder</li><li>No version control integration</li></ul>
+      <strong>Root cause:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>No Git skill exists</li><li>Lio AI cannot clone, branch, commit, or push</li></ul>
+      <strong>Impact:</strong><ul style="margin:2px 0 8px 16px;list-style:disc;line-height:1.8"><li>Users must manually move Lio AI output into their repos</li><li>Cannot iterate on existing GitHub projects</li></ul>
+      <strong>Solution:</strong><ul style="margin:2px 0 0 16px;list-style:disc;line-height:1.8"><li>Git skill that can clone, branch, commit, and push</li><li>Combined with Lio AI code builder for autonomous development</li><li>Enables iteration on existing repositories</li></ul>
+    </div>
+  </div>
+</div>
+
+<!-- SOLUTIONS DELIVERED -->
+<div class="section" id="solutions">
+  <div class="section-title">Solutions Delivered</div>
+  <div class="section-sub">All suggested code is in <code>agent-routing-patch-v2.py</code>. Commented out for review. Nothing executes without approval.</div>
+
+  <div style="font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 10px">Core Fix</div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#16a34a">1.</span><span style="font-weight:700;color:var(--text)">Agent Routing</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Lines 75-178)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>4 changes across 2 files, ~25 lines total</li>
+      <li>Reads task.agent field and looks up agent definition</li>
+      <li>Routes to assigned agent's provider, model, and system prompt</li>
+      <li>Fully backward compatible - unassigned tasks use defaults as before</li>
+    </ul>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;color:#4f46e5;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px">Enhancements</div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#4f46e5">2.</span><span style="font-weight:700;color:var(--text)">Tool Filtering</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 256)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>Filter available tools per agent based on capabilities whitelist</li>
+      <li>Writer agent can't access delete_file or execute_command</li>
+      <li>Code agent can't access send_email or calendar tools</li>
+      <li>Uses the existing tools[] array on AgentDefinition</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#4f46e5">3.</span><span style="font-weight:700;color:var(--text)">Per-Agent Base URL</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 333)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>Each agent gets its own custom endpoint URL</li>
+      <li>Optional per-agent API key</li>
+      <li>Enables multiple codex-lb instances per agent</li>
+      <li>Includes UI field suggestion for the agent creation page</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#4f46e5">4.</span><span style="font-weight:700;color:var(--text)">Result Passing</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 428)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>Compile subtask results after all agents complete</li>
+      <li>Feed combined output back to the CEO agent's conversation</li>
+      <li>No more manually checking each task for results</li>
+      <li>Optional auto-resume of delegating agent with compiled data</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#4f46e5">5.</span><span style="font-weight:700;color:var(--text)">Chain Visualization</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 510)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>API endpoint returning delegation chain as nodes + edges</li>
+      <li>Includes agent assignments, task status, parent-child relationships</li>
+      <li>Powers the Agent Swarm visual workspace with live data</li>
+      <li>Pollable endpoint for real-time graph updates</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#4f46e5">6.</span><span style="font-weight:700;color:var(--text)">Availability Checks</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 615)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>Ping custom endpoints before task execution</li>
+      <li>Check Ollama availability and model presence</li>
+      <li>Verify API keys for cloud providers</li>
+      <li>Auto-fallback to default provider if agent is offline</li>
+      <li>Optional health status API for workspace node status dots</li>
+    </ul>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.5px;margin:20px 0 10px">Bug Fixes</div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#dc2626">7.</span><span style="font-weight:700;color:var(--text)">Port 3000 Conflict</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 756)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>TCP port probe tries ports 3000 through 3009</li>
+      <li>Error dialog if all ports are taken</li>
+      <li>Desktop notification if fallback port used</li>
+      <li>Logs which port was selected on startup</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#dc2626">8.</span><span style="font-weight:700;color:var(--text)">Lio AI Input Freeze</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 815)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>try/finally block always resets input state, even on error paths</li>
+      <li>10-minute safety timeout force-resets if build hangs</li>
+      <li>Direct DOM re-enable as a safety net</li>
+      <li>Addresses state management gap in build completion handler</li>
+    </ul>
+  </div>
+
+  <div style="padding:8px 0;font-size:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-weight:800;color:#dc2626">9.</span><span style="font-weight:700;color:var(--text)">Autopilot Ghost Files</span><span style="font-size:11px;font-weight:700;color:var(--text);background:var(--surface);padding:1px 6px;border-radius:3px">(Line 878)</span></div>
+    <ul style="margin:0 0 0 28px;font-size:11px;color:var(--muted);line-height:1.9;list-style:disc">
+      <li>Post-execution verification parses claimed file paths from result text</li>
+      <li>Checks each claimed file actually exists on disk</li>
+      <li>Marks task as failed if files are missing (catches hallucinated tool calls)</li>
+      <li>Pre-write sandbox check returns clear error to agent instead of silent block</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Routing demo merged into workspace above -->
+
+<!-- AI AGENT BUILDER -->
+<div class="section" id="ai-create">
+  <div class="section-title">AI-Assisted Agent Creation</div>
+  <div class="section-sub">Describe what you need in plain language. AI generates the agent config. No form fields.</div>
+
+  <div class="ai-prompt">
+    <div class="ai-prompt-head"><span>&#x1F916;</span><span>Create Agent with AI</span></div>
+    <div class="ai-prompt-body">
+      <textarea class="ai-input" id="ai-input" placeholder="Describe the agent you need...&#10;&#10;Example: I need a strict code reviewer that focuses on security vulnerabilities, checks for injection attacks, and enforces OWASP top 10. Use my local Ollama with deepseek-coder."></textarea>
+      <div class="ai-actions">
+        <button class="ws-btn primary" onclick="generateAgent()">&#x2728; Generate Agent</button>
+        <button class="ws-btn" onclick="document.getElementById('ai-input').value='I need a content writer that specializes in SEO blog posts for health and wellness. Should research keywords, write engaging titles, and format with proper headings. Use OpenRouter with Claude.'">Try Example</button>
+      </div>
+      <div class="ai-result" id="ai-result"></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>How this works in Skales:</strong> Instead of filling out Name, Description, Emoji, System Prompt, Provider, Model, and Capabilities manually, the user describes what they need. AI generates the complete agent definition. User reviews, edits if needed, and saves. The agent appears in the visual workspace immediately.
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="section" id="roadmap">
+  <div class="section-title">Proposed Roadmap</div>
+
+  <div class="phase-item"><span class="phase-num">1.</span><div><span class="phase-title">Agent Routing Fix</span><span class="phase-desc"> - Read task.agent, route to assigned provider/model/prompt.</span><div class="phase-sub">1.1 executeTask() reads task.agent and looks up agent definition<br>1.2 agentDecide() receives agent's provider, model, and systemPrompt<br>1.3 dispatch_subtasks tool schema updated to expose agent field to LLM<br>1.4 Backward compatible - unassigned tasks use default as before</div></div></div>
+
+  <div class="phase-item"><span class="phase-num">2.</span><div><span class="phase-title">Visual Workspace</span><span class="phase-desc"> - See how agents, skills, tasks, memory, and schedules connect.</span><div class="phase-sub">2.1 Agent relationship mapping with auto-routing connections<br>2.2 Skill assignment visualization<br>2.3 Task execution tracking with live status<br>2.4 Memory category clustering<br>2.5 Schedule trigger connections</div></div></div>
+
+  <div class="phase-item"><span class="phase-num">3.</span><div><span class="phase-title">AI-Assisted Creation</span><span class="phase-desc"> - Describe an agent in plain language, AI generates the config.</span><div class="phase-sub">3.1 Natural language to agent definition<br>3.2 Auto-suggest capabilities and tools based on description<br>3.3 Provider recommendation based on task type<br>3.4 Bulk agent generation ("create a dev team of 5 specialists")</div></div></div>
+
+  <div class="phase-item"><span class="phase-num">4.</span><div><span class="phase-title">Multi-Provider Routing</span><span class="phase-desc"> - Per-agent custom endpoints. Full suggested code in <code>agent-routing-patch-v2.py</code> Enhancements 1-5.</span><div class="phase-sub">4.1 Per-agent tool filtering by capabilities (Enhancement 1)<br>4.2 Per-agent baseUrl for different codex-lb instances (Enhancement 2)<br>4.3 Agent-to-agent result passing in delegation chains (Enhancement 3)<br>4.4 Delegation chain visualization via API endpoint (Enhancement 4)<br>4.5 Agent availability checks with auto-fallback (Enhancement 5)</div></div></div>
+
+  <div class="phase-item"><span class="phase-num">5.</span><div><span class="phase-title">Protocol Alignment</span><span class="phase-desc"> - MCP for tools, A2A for cross-agent communication.</span><div class="phase-sub">5.1 Expose Skales skills as MCP tool endpoints<br>5.2 Standardize agent-sync to A2A v1.0<br>5.3 Cross-framework delegation (CrewAI, LangGraph, n8n)<br>5.4 Network Swarm visualization for LAN peers</div></div></div>
+</div>
+
+<!-- FINAL -->
+<div class="section" id="final">
+  <div class="section-title">Final Thoughts</div>
+  <div class="note" style="border-left-color:#3D4F6F">
+    Agents shouldn't just exist. They should work together.<br><br>
+    The data structures are already there. The interfaces already support it. The routing just needs to read what's already being written. Once that connection is made, every custom agent becomes usable in delegation, every provider becomes routable, every system prompt becomes purposeful.<br><br>
+    The visual workspace, the protocol alignment, the observability layer - those are the longer play. But the foundation is a product that treats its agents as collaborators, not isolated tools.<br><br>
+    That's what makes Skales different. Not the number of features. The way they connect.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="handle">@v33-kind</div>
+  <div class="tagline">kind. curious. clauding.</div>
+  <div style="margin-top:12px;font-size:9px;color:var(--dim)">
+    <a href="https://github.com/v33-kind" style="color:var(--muted);text-decoration:none">GitHub</a>
+    &middot;
+    <a href="https://github.com/skalesapp/skales" style="color:var(--muted);text-decoration:none">Skales</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── Workspace Data ───────────────────────────────────────
+const COLORS = {agent:'#6366f1',skill:'#22c55e',task:'#3b82f6',memory:'#f59e0b',schedule:'#ec4899'};
+let wsNodes = [
+  // Row 1: CEO
+  {id:'a1',type:'agent',name:'CEO / Orchestrator',emoji:'&#x1F451;',status:'on',provider:'OpenRouter',model:'gpt-5.4',x:320,y:40},
+  // Row 2: Agents (report to CEO)
+  {id:'a2',type:'agent',name:'Code Assistant',emoji:'&#x1F468;&#x200D;&#x1F4BB;',status:'on',provider:'codex-lb #1',model:'gpt-5.4',x:80,y:200},
+  {id:'a3',type:'agent',name:'Content Writer',emoji:'&#x270D;&#xFE0F;',status:'on',provider:'codex-lb #2',model:'gpt-5.4',x:320,y:200},
+  {id:'a4',type:'agent',name:'Data Analyst',emoji:'&#x1F4CA;',status:'on',provider:'codex-lb #3',model:'gpt-5.4',x:560,y:200},
+  // Row 3: Skills (used by agents)
+  {id:'s1',type:'skill',name:'Web Search',emoji:'&#x1F50D;',status:'on',x:0,y:360},
+  {id:'s2',type:'skill',name:'Email',emoji:'&#x1F4E7;',status:'on',x:200,y:360},
+  {id:'s3',type:'skill',name:'Code Exec',emoji:'&#x2699;&#xFE0F;',status:'on',x:400,y:360},
+  {id:'s4',type:'skill',name:'Vision',emoji:'&#x1F441;',status:'on',x:600,y:360},
+  // Row 4: Tasks (assigned to agents)
+  {id:'t1',type:'task',name:'Review PR #42',emoji:'&#x1F4CB;',status:'on',x:40,y:520},
+  {id:'t2',type:'task',name:'Write blog post',emoji:'&#x1F4CB;',status:'on',x:280,y:520},
+  {id:'t3',type:'task',name:'Analyze metrics',emoji:'&#x1F4CB;',status:'off',x:520,y:520},
+];
+let wsEdges = [
+  // CEO delegates to agents
+  {from:'a1',to:'a2'},{from:'a1',to:'a3'},{from:'a1',to:'a4'},
+  // Agents use skills
+  {from:'a2',to:'s1'},{from:'a2',to:'s3'},
+  {from:'a3',to:'s2'},{from:'a3',to:'s1'},
+  {from:'a4',to:'s4'},{from:'a4',to:'s3'},
+  // Agents assigned to tasks
+  {from:'a2',to:'t1'},{from:'a3',to:'t2'},{from:'a4',to:'t3'},
+];
+let wsSel = null;
+let wsIdCounter = 100;
+
+function bezier(x1,y1,x2,y2){
+  const dy=Math.abs(y2-y1),off=Math.max(dy*.4,30);
+  return `M${x1},${y1} C${x1},${y1+off} ${x2},${y2-off} ${x2},${y2}`;
+}
+
+function bestPorts(a,b){
+  const NW=140,NH=54;
+  const ports=(n)=>({top:{x:n.x+NW/2,y:n.y},bottom:{x:n.x+NW/2,y:n.y+NH},left:{x:n.x,y:n.y+NH/2},right:{x:n.x+NW,y:n.y+NH/2}});
+  const pa=ports(a),pb=ports(b);
+  let best=null,bestD=Infinity;
+  for(const sa of ['top','bottom','left','right'])
+    for(const sb of ['top','bottom','left','right']){
+      const dx=pa[sa].x-pb[sb].x,dy=pa[sa].y-pb[sb].y,d=dx*dx+dy*dy;
+      if(d<bestD){bestD=d;best={from:pa[sa],to:pb[sb],fs:sa,ts:sb};}
+    }
+  return best;
+}
+
+function bezPort(p){
+  const{from,to,fs,ts}=p;const off=40;
+  let cx1=from.x,cy1=from.y,cx2=to.x,cy2=to.y;
+  if(fs==='bottom')cy1+=off;else if(fs==='top')cy1-=off;else if(fs==='right')cx1+=off;else cx1-=off;
+  if(ts==='top')cy2-=off;else if(ts==='bottom')cy2+=off;else if(ts==='left')cx2-=off;else cx2+=off;
+  return `M${from.x},${from.y} C${cx1},${cy1} ${cx2},${cy2} ${to.x},${to.y}`;
+}
+
+function renderWorkspace(){
+  const nm=Object.fromEntries(wsNodes.map(n=>[n.id,n]));
+  const conn=new Set();
+  if(wsSel){conn.add(wsSel);wsEdges.forEach(e=>{if(e.from===wsSel)conn.add(e.to);if(e.to===wsSel)conn.add(e.from);});}
+
+  // Resize SVG to fit all nodes
+  const maxX=Math.max(...wsNodes.map(n=>n.x+200))+100;
+  const maxY=Math.max(...wsNodes.map(n=>n.y+80))+100;
+  const svgEl=document.getElementById('ws-svg');
+  svgEl.style.width=maxX+'px';svgEl.style.height=maxY+'px';
+
+  // SVG edges
+  let svg='';
+  wsEdges.forEach(e=>{
+    const a=nm[e.from],b=nm[e.to];if(!a||!b)return;
+    const col=COLORS[a.type]||'#555';
+    const p=bestPorts(a,b);
+    const dim=wsSel&&!conn.has(e.from)&&!conn.has(e.to);
+    const op=dim?0.06:0.5;
+    svg+=`<path d="${bezPort(p)}" stroke="${col}" stroke-width="1.2" fill="none" opacity="${op}" stroke-linecap="round"/>`;
+    svg+=`<circle cx="${p.from.x}" cy="${p.from.y}" r="3" fill="#fff" stroke="${col}" stroke-width="1" opacity="${op}"/>`;
+    svg+=`<circle cx="${p.to.x}" cy="${p.to.y}" r="3" fill="#fff" stroke="${col}" stroke-width="1" opacity="${op}"/>`;
+  });
+  document.getElementById('ws-svg').innerHTML=svg;
+
+  // Nodes
+  let html='';
+  wsNodes.forEach(n=>{
+    const c=COLORS[n.type]||'#555';
+    const sel=wsSel===n.id?' selected':'';
+    const dim=wsSel&&!conn.has(n.id)?' dimmed':'';
+    const dot=n.status==='on'?'on':'off';
+    let body='';
+    if(n.type==='agent')body=`<div class="ws-node-row"><span>Provider</span><span class="ws-node-val">${n.provider||'default'}</span></div><div class="ws-node-row"><span>Model</span><span class="ws-node-val">${n.model||'default'}</span></div>`;
+    else if(n.type==='task')body=`<div class="ws-node-row"><span>Status</span><span class="ws-node-val">${n.status}</span></div>`;
+    else body=`<div class="ws-node-row"><span>Status</span><span class="ws-node-val">${n.status==='on'?'active':'inactive'}</span></div>`;
+
+    html+=`<div class="ws-node${sel}${dim}" style="left:${n.x}px;top:${n.y}px" data-id="${n.id}">
+      <div class="ws-port top" style="background:${c}"></div>
+      <div class="ws-port bottom" style="background:${c}"></div>
+      <div class="ws-port left" style="background:${c}"></div>
+      <div class="ws-port right" style="background:${c}"></div>
+      <div class="ws-node-head"><div class="ws-node-color" style="background:${c}"></div><span class="ws-node-emoji">${n.emoji||'&#x2B21;'}</span><span class="ws-node-name">${n.name}</span><span class="ws-node-badge" style="background:${c}22;color:${c}">${n.type}</span><div class="ws-node-dot ${dot}"></div></div>
+      <div class="ws-node-body">${body}</div>
+    </div>`;
+  });
+  document.getElementById('ws-nodes').innerHTML=html;
+}
+
+function selectWsNode(id){
+  wsSel=wsSel===id?null:id;
+  renderWorkspace();
+  renderDetail();
+}
+function renderDetail(){
+  const panel=document.getElementById('ws-detail');
+  if(!wsSel){panel.className='ws-detail';panel.innerHTML='';return;}
+  const n=wsNodes.find(n=>n.id===wsSel);
+  if(!n){panel.className='ws-detail';return;}
+  const c=COLORS[n.type]||'#6366f1';
+  let rows='';
+  if(n.type==='agent'){
+    rows=`<div class="ws-detail-row"><span class="key">Provider</span><span class="val">${n.provider||'default'}</span></div>
+      <div class="ws-detail-row"><span class="key">Model</span><span class="val">${n.model||'default'}</span></div>
+      <div class="ws-detail-row"><span class="key">Status</span><span class="val">${n.status==='on'?'Online':'Offline'}</span></div>`;
+  } else if(n.type==='skill'){
+    rows=`<div class="ws-detail-row"><span class="key">Status</span><span class="val">${n.status==='on'?'Enabled':'Disabled'}</span></div>
+      <div class="ws-detail-row"><span class="key">Type</span><span class="val">Built-in</span></div>`;
+  } else if(n.type==='task'){
+    rows=`<div class="ws-detail-row"><span class="key">Status</span><span class="val">${n.status==='on'?'Running':'Pending'}</span></div>
+      <div class="ws-detail-row"><span class="key">Priority</span><span class="val">Medium</span></div>`;
+  } else if(n.type==='memory'){
+    rows=`<div class="ws-detail-row"><span class="key">Category</span><span class="val">${n.name}</span></div>
+      <div class="ws-detail-row"><span class="key">Status</span><span class="val">Active</span></div>`;
+  } else if(n.type==='schedule'){
+    rows=`<div class="ws-detail-row"><span class="key">Schedule</span><span class="val">${n.name}</span></div>
+      <div class="ws-detail-row"><span class="key">Status</span><span class="val">${n.status==='on'?'Active':'Paused'}</span></div>`;
+  }
+
+  let actions='';
+  if(n.type==='agent'){
+    actions=`<button class="ws-detail-btn primary" onclick="addAgentPrompt()">Generate with AI</button>
+      <button class="ws-detail-btn" onclick="editNode('${n.id}')">Edit</button>
+      <button class="ws-detail-btn" onclick="deleteWsNode('${n.id}')">Delete</button>`;
+  } else if(n.type==='skill'){
+    actions=`<button class="ws-detail-btn primary" onclick="editNode('${n.id}')">Edit</button>
+      <button class="ws-detail-btn" onclick="toggleNodeStatus('${n.id}')">Toggle Status</button>
+      <button class="ws-detail-btn" onclick="deleteWsNode('${n.id}')">Delete</button>`;
+  } else if(n.type==='task'){
+    actions=`<button class="ws-detail-btn primary" onclick="showAgentAssign('${n.id}')">Assign Agent</button>
+      <button class="ws-detail-btn" onclick="editNode('${n.id}')">Edit</button>
+      <button class="ws-detail-btn" onclick="deleteWsNode('${n.id}')">Delete</button>`;
+  } else {
+    actions=`<button class="ws-detail-btn" onclick="editNode('${n.id}')">Edit</button>
+      <button class="ws-detail-btn" onclick="toggleNodeStatus('${n.id}')">Toggle Status</button>
+      <button class="ws-detail-btn" onclick="deleteWsNode('${n.id}')">Delete</button>`;
+  }
+
+  panel.className='ws-detail open';
+  panel.innerHTML=`<div class="ws-detail-head">
+    <span class="emoji">${n.emoji||'&#x2B21;'}</span>
+    <span class="name">${n.name}</span>
+    <span class="type-badge" style="background:${c}15;color:${c}">${n.type}</span>
+    <button class="close" onclick="wsSel=null;renderWorkspace();renderDetail();">&#x2715;</button>
+  </div>
+  <div class="ws-detail-body">${rows}</div>
+  <div class="ws-detail-actions">${actions}</div>`;
+}
+function showAgentAssign(taskId){
+  const agents=wsNodes.filter(n=>n.type==='agent');
+  const existingEdges=wsEdges.filter(e=>e.to===taskId).map(e=>e.from);
+  const panel=document.getElementById('ws-detail');
+  const body=panel.querySelector('.ws-detail-body');
+  let html='<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Select agents for this task:</div>';
+  agents.forEach(a=>{
+    const checked=existingEdges.includes(a.id);
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="toggleAgentAssign('${taskId}','${a.id}',this)">
+      <div style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${checked?'var(--indigo)':'var(--border)'};background:${checked?'var(--indigo)':'#fff'};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:.12s" class="assign-check">${checked?'&#x2713;':''}</div>
+      <span style="font-size:12px">${a.emoji}</span>
+      <span style="font-size:11px;font-weight:600;color:var(--text);flex:1">${a.name}</span>
+      <span style="font-size:9px;color:var(--muted)">${a.provider||'default'}</span>
+    </div>`;
+  });
+  if(!agents.length) html+='<div style="font-size:11px;color:var(--muted);font-style:italic;padding:8px 0">No agents created yet</div>';
+  body.innerHTML=html;
+}
+function toggleAgentAssign(taskId,agentId,el){
+  const idx=wsEdges.findIndex(e=>e.from===agentId&&e.to===taskId);
+  const check=el.querySelector('.assign-check');
+  if(idx>=0){
+    wsEdges.splice(idx,1);
+    check.style.background='#fff';check.style.borderColor='var(--border)';check.innerHTML='';
+  } else {
+    wsEdges.push({from:agentId,to:taskId});
+    check.style.background='var(--indigo)';check.style.borderColor='var(--indigo)';check.innerHTML='&#x2713;';
+  }
+  renderWorkspace();wsApplyTransform();
+}
+function editNode(id){
+  const n=wsNodes.find(n=>n.id===id);
+  if(!n)return;
+  const panel=document.getElementById('ws-detail');
+  const c=COLORS[n.type]||'#6366f1';
+  let fields='';
+  if(n.type==='agent'){
+    fields=`<div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Name</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.name}" onchange="updateNodeField('${id}','name',this.value)"/></div>
+    <div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Provider</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.provider||''}" onchange="updateNodeField('${id}','provider',this.value)"/></div>
+    <div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Model</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.model||''}" onchange="updateNodeField('${id}','model',this.value)"/></div>
+    <div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Base URL (optional)</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" placeholder="http://localhost:5001/v1" value="${n.baseUrl||''}" onchange="updateNodeField('${id}','baseUrl',this.value)"/></div>
+    <div><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Status</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" onchange="updateNodeField('${id}','status',this.value)"><option value="on" ${n.status==='on'?'selected':''}>Online</option><option value="off" ${n.status!=='on'?'selected':''}>Offline</option></select></div>`;
+  } else if(n.type==='skill'){
+    fields=`<div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Name</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.name}" onchange="updateNodeField('${id}','name',this.value)"/></div>
+    <div><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Status</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" onchange="updateNodeField('${id}','status',this.value)"><option value="on" ${n.status==='on'?'selected':''}>Enabled</option><option value="off" ${n.status!=='on'?'selected':''}>Disabled</option></select></div>`;
+  } else if(n.type==='task'){
+    const agentOpts=wsNodes.filter(a=>a.type==='agent').map(a=>`<option value="${a.id}" ${n.assignedAgent===a.id?'selected':''}>${a.name}</option>`).join('');
+    fields=`<div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Title</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.name}" onchange="updateNodeField('${id}','name',this.value)"/></div>
+    <div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Priority</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" onchange="updateNodeField('${id}','priority',this.value)"><option ${n.priority==='low'?'selected':''}>Low</option><option ${n.priority==='medium'||!n.priority?'selected':''}>Medium</option><option ${n.priority==='high'?'selected':''}>High</option></select></div>
+    <div><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Status</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" onchange="updateNodeField('${id}','status',this.value)"><option value="on" ${n.status==='on'?'selected':''}>Running</option><option value="off" ${n.status!=='on'?'selected':''}>Pending</option></select></div>`;
+  } else {
+    fields=`<div style="margin-bottom:6px"><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Name</label><input style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" value="${n.name}" onchange="updateNodeField('${id}','name',this.value)"/></div>
+    <div><label style="font-size:9px;font-weight:600;color:var(--muted);display:block;margin-bottom:2px">Status</label><select style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:var(--font);color:var(--text);background:#fff" onchange="updateNodeField('${id}','status',this.value)"><option value="on" ${n.status==='on'?'selected':''}>Active</option><option value="off" ${n.status!=='on'?'selected':''}>Inactive</option></select></div>`;
+  }
+  panel.querySelector('.ws-detail-body').innerHTML=fields;
+  panel.querySelector('.ws-detail-actions').innerHTML=`<button class="ws-detail-btn primary" onclick="renderDetail()">Done</button><button class="ws-detail-btn" onclick="deleteWsNode('${id}')">Delete</button>`;
+}
+function updateNodeField(id,field,value){
+  const n=wsNodes.find(n=>n.id===id);
+  if(n){n[field]=value;renderWorkspace();wsApplyTransform();}
+}
+function toggleNodeStatus(id){
+  const n=wsNodes.find(n=>n.id===id);
+  if(n){n.status=n.status==='on'?'off':'on';renderWorkspace();renderDetail();wsApplyTransform();}
+}
+function exportWorkspace(){
+  const data={nodes:wsNodes,edges:wsEdges,exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='skales-swarm-workspace.json';a.click();
+  URL.revokeObjectURL(url);
+}
+function deleteWsNode(id){
+  wsNodes=wsNodes.filter(n=>n.id!==id);
+  wsEdges=wsEdges.filter(e=>e.from!==id&&e.to!==id);
+  wsSel=null;renderWorkspace();renderDetail();
+}
+function resetWorkspace(){wsSel=null;renderWorkspace();}
+function fitWorkspace(){wsSel=null;renderWorkspace();}
+function addSkillNode(){
+  // Place in skill row, find next open slot
+  const existingSkills=wsNodes.filter(n=>n.type==='skill');
+  const x=existingSkills.length*200;
+  const id='s'+wsIdCounter++;
+  wsNodes.push({id,type:'skill',name:'New Skill',emoji:'&#x26A1;',status:'on',x,y:360});
+  // Auto-connect to first agent if one exists
+  const firstAgent=wsNodes.find(n=>n.type==='agent'&&n.id!=='a1');
+  if(firstAgent) wsEdges.push({from:firstAgent.id,to:id});
+  wsSel=id;renderWorkspace();wsApplyTransform();renderDetail();
+}
+function addTaskNode(){
+  // Place in task row, find next open slot
+  const existingTasks=wsNodes.filter(n=>n.type==='task');
+  const x=existingTasks.length*240;
+  const id='t'+wsIdCounter++;
+  wsNodes.push({id,type:'task',name:'New Task',emoji:'&#x1F4CB;',status:'on',x,y:520});
+  // Auto-select so user can assign agent via detail panel
+  wsSel=id;renderWorkspace();wsApplyTransform();renderDetail();
+}
+function autoDiscover(){
+  if(!wsNodes.find(n=>n.id==='m1')){
+    // Row 5: Memory (connected from tasks)
+    wsNodes.push({id:'m1',type:'memory',name:'preference (8)',emoji:'&#x1F9E0;',status:'on',x:80,y:680});
+    wsNodes.push({id:'m2',type:'memory',name:'fact (15)',emoji:'&#x1F9E0;',status:'on',x:320,y:680});
+    wsNodes.push({id:'m3',type:'memory',name:'contact (3)',emoji:'&#x1F9E0;',status:'on',x:560,y:680});
+    // Row 6: Schedules (connect to CEO)
+    wsNodes.push({id:'c1',type:'schedule',name:'Daily standup',emoji:'&#x1F552;',status:'on',x:200,y:840});
+    wsNodes.push({id:'c2',type:'schedule',name:'Weekly digest',emoji:'&#x1F552;',status:'on',x:440,y:840});
+    wsEdges.push(
+      {from:'t1',to:'m1'},{from:'t2',to:'m2'},{from:'t3',to:'m3'},
+      {from:'c1',to:'a1'},{from:'c2',to:'a1'}
+    );
+  }
+  renderWorkspace();wsApplyTransform();
+  setTimeout(()=>fitWorkspace(),100);
+}
+function addAgentPrompt(){document.getElementById('ai-create').scrollIntoView({behavior:'smooth'});}
+
+// ── Story toggles ──
+function toggleStory(el){
+  const body=el.querySelector('.story-body');
+  const arrow=el.querySelector('.story-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// ── AI Agent Generator (simulated) ──
+function generateAgent(){
+  const input=document.getElementById('ai-input').value.trim();
+  if(!input){return;}
+  const result=document.getElementById('ai-result');
+  result.className='ai-result show';
+  const lc=input.toLowerCase();
+
+  // Intent detection
+  const patterns=[
+    {match:['code','review','debug','refactor','lint','security'],name:'Code Reviewer',emoji:'&#x1F50D;',caps:['code-review','security-audit','linting','refactoring'],tools:['file_read','file_write','web_search'],model:'claude-sonnet-4'},
+    {match:['write','content','seo','blog','article','copy'],name:'Content Writer',emoji:'&#x270D;&#xFE0F;',caps:['writing','seo','research','formatting'],tools:['web_search','file_write'],model:'claude-sonnet-4'},
+    {match:['data','analy','metric','chart','report'],name:'Data Analyst',emoji:'&#x1F4CA;',caps:['analysis','visualization','statistics','reporting'],tools:['file_read','web_search','file_write'],model:'gpt-4o'},
+    {match:['test','qa','quality','bug'],name:'QA Engineer',emoji:'&#x1F9EA;',caps:['testing','automation','bug-reporting','regression'],tools:['file_read','execute_command','web_search'],model:'gpt-4o'},
+    {match:['design','ui','ux','frontend','css'],name:'UI Designer',emoji:'&#x1F3A8;',caps:['ui-design','prototyping','css','responsive'],tools:['file_write','web_search','file_read'],model:'claude-sonnet-4'},
+    {match:['research','investigate','explore','find'],name:'Research Agent',emoji:'&#x1F50E;',caps:['research','summarization','fact-checking'],tools:['web_search','file_write'],model:'gpt-4o'},
+    {match:['manage','project','plan','coordinate','lead'],name:'Project Manager',emoji:'&#x1F4CB;',caps:['planning','coordination','task-breakdown','delegation'],tools:['dispatch_subtasks','web_search'],model:'gpt-4o'},
+    {match:['email','outreach','communication','message'],name:'Communications Agent',emoji:'&#x1F4E7;',caps:['email','messaging','outreach'],tools:['send_email','web_search'],model:'gpt-4o'},
+    {match:['devops','deploy','ci','docker','server'],name:'DevOps Agent',emoji:'&#x2699;&#xFE0F;',caps:['deployment','infrastructure','monitoring'],tools:['execute_command','file_read','file_write'],model:'gpt-4o'},
+  ];
+
+  let matched=patterns.find(p=>p.match.some(m=>lc.includes(m)))||{name:'Custom Agent',emoji:'&#x1F916;',caps:['general'],tools:['web_search','file_read'],model:'gpt-4o'};
+
+  // Provider detection
+  let provider='OpenRouter',model=matched.model,baseUrl='';
+  if(lc.includes('ollama')){provider='Ollama';model='deepseek-coder';baseUrl='http://localhost:11434';}
+  else if(lc.includes('claude')||lc.includes('anthropic')){provider='Anthropic';model='claude-sonnet-4';}
+  else if(lc.includes('codex')||lc.includes('custom')||lc.includes('local')){provider='Custom';model='gpt-5.4';baseUrl='http://localhost:5001/v1';}
+  else if(lc.includes('groq')){provider='Groq';model='llama-3.3-70b';}
+  else if(lc.includes('openai')||lc.includes('gpt')){provider='OpenAI';model='gpt-4o';}
+
+  // Extract custom name if quoted
+  const nameMatch=input.match(/["']([^"']+)["']/);
+  const agentName=nameMatch?nameMatch[1]:matched.name;
+
+  // Build system prompt
+  const systemPrompt=`You are ${agentName}, a specialized AI agent. ${input}\n\nCapabilities: ${matched.caps.join(', ')}\nAvailable tools: ${matched.tools.join(', ')}\n\nAlways use the most appropriate tool for each step. Report progress clearly.`;
+
+  const config={
+    name:agentName,
+    emoji:matched.emoji,
+    description:input.substring(0,150),
+    systemPrompt,
+    provider,
+    model,
+    ...(baseUrl&&{baseUrl}),
+    capabilities:matched.caps,
+    tools:matched.tools
+  };
+
+  result.innerHTML=`<div style="margin-bottom:8px;font-size:10px;font-weight:700;color:var(--lime)">Generated Agent Config:</div>
+<pre style="font-size:10px;color:var(--text);background:var(--surface);padding:10px;border-radius:4px;overflow-x:auto;line-height:1.6;border:1px solid var(--border)">${JSON.stringify(config,null,2)}</pre>
+<div style="margin-top:8px;display:flex;gap:6px">
+  <button class="ws-btn primary" onclick="addGeneratedAgent('${agentName.replace(/'/g,"\\'")}','${matched.emoji}','${provider}','${model}')">Add to Workspace</button>
+  <button class="ws-btn" onclick="document.getElementById('ai-result').className='ai-result'">Dismiss</button>
+</div>`;
+}
+
+function addGeneratedAgent(name,emoji,provider,model){
+  wsNodes.push({id:'a'+wsIdCounter++,type:'agent',name,emoji,status:'on',provider,model,x:100+Math.random()*500,y:30+Math.random()*100});
+  renderWorkspace();
+  document.getElementById('workspace').scrollIntoView({behavior:'smooth'});
+}
+
+// ── ROUTING MERGED INTO WORKSPACE ──
+// Toggle + Delegate buttons are in the workspace toolbar.
+// All old demo code removed. Routing runs on the actual workspace nodes.
+
+let wsFix=false;
+let wsRunning=false;
+
+function toggleWsFix(){
+  wsFix=!wsFix;
+  const btn=document.getElementById('ws-fix-btn');
+  btn.textContent=wsFix?'ON':'OFF';
+  btn.classList.toggle('active',wsFix);
+}
+
+function wsLog(msg){
+  const log=document.getElementById('ws-log');
+  log.style.display='block';
+  const t=new Date().toLocaleTimeString('en-GB');
+  const d=document.createElement('div');
+  d.className='log-entry';
+  d.innerHTML=`<span style="color:var(--dim);margin-right:6px">${t}</span>${msg}`;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+
+async function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function runWsDemo(){
+  if(wsRunning)return;
+  wsRunning=true;
+  const log=document.getElementById('ws-log');
+  log.innerHTML='<div class="log-head">Delegation Log</div>';
+  log.style.display='block';
+
+  const ceo=wsNodes.find(n=>n.type==='agent'&&(n.name.toLowerCase().includes('ceo')||n.name.toLowerCase().includes('orchestrat')));
+  if(!ceo){wsLog('<span style="color:#dc2626">No CEO/Orchestrator agent found. Create one first.</span>');wsRunning=false;return;}
+
+  const tasks=wsNodes.filter(n=>n.type==='task');
+  if(!tasks.length){wsLog('<span style="color:#dc2626">No tasks found. Create tasks first.</span>');wsRunning=false;return;}
+
+  const taskEdges=wsEdges.filter(e=>tasks.some(t=>t.id===e.to)&&wsNodes.some(n=>n.id===e.from&&n.type==='agent'));
+
+  // Step 1: Highlight CEO
+  wsSel=ceo.id;renderWorkspace();wsApplyTransform();renderDetail();
+  wsLog(`<span style="font-weight:700;color:#d97706">${ceo.name}</span> received delegation request`);
+  await wait(800);
+
+  // Step 2: Dispatch tasks
+  wsLog(`Dispatching ${tasks.length} subtask(s) via dispatch_subtasks...`);
+  await wait(500);
+  tasks.forEach(t=>wsLog(`Created: "${t.name}"`));
+  await wait(600);
+
+  // Step 3: Route each task
+  for(const task of tasks){
+    const edge=taskEdges.find(e=>e.to===task.id);
+    const agent=edge?wsNodes.find(n=>n.id===edge.from):null;
+
+    if(wsFix&&agent){
+      // Fix ON: route to assigned agent
+      wsLog(`<span style="color:#16a34a;font-weight:600">Reading task.agent...</span> getAgent("${agent.name}") -> ${agent.provider||'default'}`);
+      wsSel=agent.id;renderWorkspace();wsApplyTransform();renderDetail();
+      await wait(700);
+      wsLog(`<span style="font-weight:600;color:#4f46e5">${agent.name}</span> executing "${task.name}" via <span style="color:#16a34a;font-weight:600">${agent.provider||'default'}</span>`);
+      task.status='on';
+      wsSel=task.id;renderWorkspace();wsApplyTransform();renderDetail();
+      await wait(800);
+      task.status='on';
+      wsLog(`<span style="color:#16a34a">"${task.name}" completed by ${agent.name}</span>`);
+      await wait(400);
+    } else if(!wsFix&&agent){
+      // Fix OFF: ignore assigned agent
+      wsLog(`<span style="color:#dc2626;font-weight:600">task.agent="${agent.name}" IGNORED</span>`);
+      await wait(400);
+      wsLog(`<span style="color:#dc2626">"${task.name}" routed to DEFAULT provider instead of ${agent.provider||'default'}</span>`);
+      wsSel=task.id;renderWorkspace();wsApplyTransform();renderDetail();
+      await wait(600);
+    } else {
+      wsLog(`"${task.name}" - no agent assigned, using default`);
+      wsSel=task.id;renderWorkspace();wsApplyTransform();renderDetail();
+      await wait(400);
+    }
+  }
+
+  // Step 4: Summary
+  await wait(500);
+  if(wsFix){
+    wsLog('');
+    wsLog(`<span style="color:#16a34a;font-weight:700">RESULT: All ${tasks.length} task(s) completed successfully.</span>`);
+    wsLog(`<span style="color:#16a34a">Each task used its assigned agent's provider, model, and system prompt.</span>`);
+  } else {
+    wsLog('');
+    wsLog(`<span style="color:#dc2626;font-weight:700">RESULT: All ${tasks.length} task(s) ran on DEFAULT provider.</span>`);
+    wsLog(`<span style="color:#dc2626">Agent specialization lost. Custom providers unused. System prompts ignored.</span>`);
+    wsLog(`<span style="color:#dc2626">Toggle Routing ON and run again to see the fix.</span>`);
+  }
+  wsSel=null;renderWorkspace();wsApplyTransform();renderDetail();
+  wsRunning=false;
+}
+
+function _removed(){ /*
+  let s='',h='';
+
+  // CEO to agent edges
+  demoAgents.slice(1).forEach(a=>{
+    const x1=demoAgents[0].x+70,y1=demoAgents[0].y+50;
+    const x2=a.x+70,y2=a.y;
+    s+=`<path d="${bezier(x1,y1,x2,y2)}" stroke="${demoAgents[0].color}" stroke-width="1.2" fill="none" opacity="0.4" stroke-linecap="round"/>`;
+    s+=`<circle cx="${x1}" cy="${y1}" r="3" fill="#fff" stroke="${demoAgents[0].color}" stroke-width="1" opacity="0.4"/>`;
+    s+=`<circle cx="${x2}" cy="${y2}" r="3" fill="#fff" stroke="${demoAgents[0].color}" stroke-width="1" opacity="0.4"/>`;
+  });
+
+  svg.innerHTML=s;
+
+  // Agent nodes - clickable
+  demoAgents.forEach(a=>{
+    const sel=demoSel===a.id?' selected':'';
+    h+=`<div class="ws-node${sel}" id="${a.id}" style="left:${a.x}px;top:${a.y}px;min-width:140px;cursor:pointer" onclick="demoSelect('${a.id}')">
+      <div class="ws-port bottom" style="background:${a.color}"></div>
+      <div class="ws-port top" style="background:${a.color}"></div>
+      <div class="ws-node-head"><div class="ws-node-color" style="background:${a.color}"></div><span class="ws-node-emoji">${a.emoji}</span><span class="ws-node-name">${a.name}</span><div class="ws-node-dot on" id="${a.id}-dot"></div></div>
+      <div class="ws-node-body"><div class="ws-node-row"><span>Provider</span><span class="ws-node-val">${a.provider}</span></div></div>
+    </div>`;
+  });
+
+  // Task nodes - clickable, hidden initially
+  demoTasks.forEach(t=>{
+    const sel=demoSel===t.id?' selected':'';
+    h+=`<div class="ws-node${sel}" id="${t.id}" style="left:${t.x}px;top:${t.y}px;min-width:140px;opacity:0;transition:opacity .3s;cursor:pointer" onclick="demoSelect('${t.id}')">
+      <div class="ws-port top" style="background:${t.color}"></div>
+      <div class="ws-node-head"><div class="ws-node-color" style="background:${t.color}"></div><span class="ws-node-emoji">&#x1F4CB;</span><span class="ws-node-name">${t.name}</span><div class="ws-node-dot" id="${t.id}-dot"></div></div>
+      <div class="ws-node-body"><div class="ws-node-row"><span>Routed to</span><span class="ws-node-val" id="${t.id}-route">--</span></div></div>
+    </div>`;
+  });
+
+  nodes.innerHTML=h;
+  updateStepLabel();
+}
+
+function demoSelect(id){
+  demoSel=demoSel===id?null:id;
+  // Update selection visually
+  document.querySelectorAll('#demo-nodes .ws-node').forEach(n=>n.classList.toggle('selected',n.id===id&&demoSel));
+  renderDemoDetail();
+}
+
+function renderDemoDetail(){
+  const panel=document.getElementById('demo-detail');
+  if(!demoSel){panel.className='ws-detail';panel.innerHTML='';return;}
+  const agent=demoAgents.find(a=>a.id===demoSel);
+  const task=demoTasks.find(t=>t.id===demoSel);
+  const item=agent||task;
+  if(!item){panel.className='ws-detail';return;}
+
+  let rows='',actions='';
+  if(agent){
+    rows=`<div class="ws-detail-row"><span class="key">Provider</span><span class="val">${agent.provider}</span></div>
+      <div class="ws-detail-row"><span class="key">Type</span><span class="val">Agent</span></div>
+      <div class="ws-detail-row"><span class="key">Status</span><span class="val" style="color:var(--green)">Online</span></div>
+      <div class="ws-detail-row"><span class="key">Routing</span><span class="val">${demoFix?'Active - tasks route here':'Inactive - ignored by executor'}</span></div>`;
+    const connectedTasks=demoTasks.filter(t=>t.agent===agent.id);
+    if(connectedTasks.length){
+      rows+=`<div style="margin-top:6px;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Assigned Tasks:</div>`;
+      connectedTasks.forEach(t=>{rows+=`<div class="ws-detail-row"><span class="key">${t.name}</span><span class="val" style="cursor:pointer;color:var(--indigo)" onclick="demoSelect('${t.id}')">view</span></div>`;});
+    }
+  } else if(task){
+    const assignedAgent=demoAgents.find(a=>a.id===task.agent);
+    rows=`<div class="ws-detail-row"><span class="key">Type</span><span class="val">Task</span></div>
+      <div class="ws-detail-row"><span class="key">Assigned to</span><span class="val" style="cursor:pointer;color:${assignedAgent?.color||'var(--muted)'}" onclick="demoSelect('${task.agent}')">${assignedAgent?.name||'--'}</span></div>
+      <div class="ws-detail-row"><span class="key">Expected provider</span><span class="val">${assignedAgent?.provider||'default'}</span></div>
+      <div class="ws-detail-row"><span class="key">Actual provider</span><span class="val" style="color:${demoFix?'var(--green)':'var(--red)'}">${demoFix?assignedAgent?.provider||'default':'DEFAULT (bug)'}</span></div>`;
+  }
+
+  panel.className='ws-detail open';
+  panel.innerHTML=`<div class="ws-detail-head">
+    <span class="emoji">${item.emoji}</span>
+    <span class="name">${item.name}</span>
+    <span class="type-badge" style="background:${item.color}15;color:${item.color}">${agent?'agent':'task'}</span>
+    <button class="close" onclick="demoSel=null;renderDemoDetail()">&#x2715;</button>
+  </div>
+  <div class="ws-detail-body">${rows}</div>`;
+}
+
+function updateStepLabel(){
+  const el=document.getElementById('demo-step-label');
+  if(el)el.textContent=`Step ${demoStep} / ${DEMO_STEPS}`;
+}
+
+function toggleDemo(){
+  demoFix=!demoFix;
+  document.getElementById('demo-toggle').classList.toggle('on',demoFix);
+  const s=document.getElementById('demo-status');
+  s.textContent=demoFix?'ON - Tasks route to assigned agent':'OFF - All tasks use default provider';
+  s.style.color=demoFix?'var(--lime)':'var(--red)';
+  resetDemo();
+}
+
+function resetDemo(){demoRunning=false;demoStep=0;demoSel=null;renderDemo();renderDemoDetail();document.getElementById('demo-log').innerHTML='<div class="log-head">Execution Log</div><div class="log-entry" style="color:var(--dim)">Click a node to inspect, or run the delegation.</div>';}
+
+async function stepDemo(){
+  if(demoStep===0)resetDemo();
+  demoStep++;
+  updateStepLabel();
+  const svg=document.getElementById('demo-svg');
+
+  if(demoStep===1){
+    dLog('<span style="color:#f59e0b;font-weight:700">CEO Agent</span> received task: coordinate team deliverables');
+    document.getElementById('d-ceo').classList.add('selected');
+  }
+  else if(demoStep===2){
+    dLog('Dispatching 3 subtasks via <span style="font-weight:600">dispatch_subtasks</span>...');
+    demoTasks.forEach(t=>document.getElementById(t.id).style.opacity='1');
+    dLog('Created: Review PR #42 (agent: code_assistant)');
+    dLog('Created: Write blog post (agent: content_writer)');
+    dLog('Created: Analyze metrics (agent: data_analyst)');
+  }
+  else if(demoStep===3){
+    if(demoFix){
+      dLog('<span style="color:var(--green)">Reading task.agent field...</span>');
+      demoTasks.forEach(t=>{
+        const agent=demoAgents.find(a=>a.id===t.agent);
+        dLog(`getAgent("${agent.name}") -> ${agent.provider}`);
+        document.getElementById(t.id+'-route').textContent=agent.name.split(' ')[0];
+        document.getElementById(t.id+'-route').style.color=agent.color;
+      });
+    } else {
+      dLog('<span style="color:var(--red)">task.agent field IGNORED</span>');
+      demoTasks.forEach(t=>{
+        document.getElementById(t.id+'-route').textContent='DEFAULT';
+        document.getElementById(t.id+'-route').style.color='var(--red)';
+      });
+      demoAgents.slice(1).forEach(a=>document.getElementById(a.id).style.opacity='.15');
+    }
+  }
+  else if(demoStep===4){
+    if(demoFix){
+      for(const t of demoTasks){
+        const agent=demoAgents.find(a=>a.id===t.agent);
+        document.getElementById(agent.id).classList.add('selected');
+        const x1=agent.x+70,y1=agent.y+50,x2=t.x+70,y2=t.y;
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d',bezier(x1,y1,x2,y2));path.setAttribute('stroke',agent.color);
+        path.setAttribute('stroke-width','1.5');path.setAttribute('fill','none');
+        path.setAttribute('opacity','0.6');path.setAttribute('stroke-linecap','round');
+        svg.appendChild(path);
+        [x1,y1,x2,y2].forEach((_,i)=>{
+          if(i%2===0){
+            const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+            c.setAttribute('cx',i===0?x1:x2);c.setAttribute('cy',i===0?y1:y2);
+            c.setAttribute('r','3');c.setAttribute('fill','#fff');
+            c.setAttribute('stroke',agent.color);c.setAttribute('stroke-width','1');c.setAttribute('opacity','0.6');
+            svg.appendChild(c);
+          }
+        });
+      }
+      dLog('Routing connections established to assigned agents');
+    } else {
+      dLog('<span style="color:var(--red)">All 3 tasks executing on default provider</span>');
+    }
+  }
+  else if(demoStep===5){
+    demoTasks.forEach(t=>{
+      document.getElementById(t.id+'-dot').className='ws-node-dot';
+      document.getElementById(t.id+'-dot').style.background=demoFix?'#f59e0b':'#f59e0b';
+    });
+    dLog(demoFix?'Executing with assigned agents and providers...':'Executing with generic default prompt...');
+  }
+  else if(demoStep===6){
+    if(demoFix){
+      demoTasks.forEach(t=>{
+        document.getElementById(t.id+'-dot').style.background='var(--green)';
+        document.getElementById(t.id).classList.add('selected');
+      });
+      dLog('<span style="color:var(--green);font-weight:700">All 3 completed. Each used their assigned agent, provider, and prompt.</span>');
+    } else {
+      demoTasks.forEach(t=>{
+        document.getElementById(t.id+'-dot').style.background='var(--red)';
+      });
+      dLog('<span style="color:var(--red);font-weight:700">Completed with wrong routing. Specialization lost. Custom providers unused.</span>');
+    }
+    demoStep=0; // reset for next cycle
+  }
+}
+
+function dLog(msg){
+  const t=new Date().toLocaleTimeString('en-GB');
+  const el=document.getElementById('demo-log');
+  const d=document.createElement('div');d.className='log-entry';d.innerHTML=`<span style="color:var(--dim);margin-right:6px">${t}</span>${msg}`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+async function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function runDemo(){
+  if(demoRunning)return;demoRunning=true;resetDemo();await wait(200);
+  const svg=document.getElementById('demo-svg');
+
+  dLog('<span style="color:#f59e0b;font-weight:700">CEO Agent</span> dispatching 3 subtasks...');
+  await wait(600);
+
+  // Show tasks
+  demoTasks.forEach(t=>document.getElementById(t.id).style.opacity='1');
+  dLog('Created: Review PR #42 (agent: code_assistant)');
+  dLog('Created: Write blog post (agent: content_writer)');
+  dLog('Created: Analyze metrics (agent: data_analyst)');
+  await wait(400);
+
+  if(demoFix){
+    // Draw agent-to-task edges
+    for(const t of demoTasks){
+      const agent=demoAgents.find(a=>a.id===t.agent);
+      const x1=agent.x+70,y1=agent.y+50,x2=t.x+70,y2=t.y;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',bezier(x1,y1,x2,y2));
+      path.setAttribute('stroke',agent.color);path.setAttribute('stroke-width','1.5');
+      path.setAttribute('fill','none');path.setAttribute('opacity','0');path.setAttribute('stroke-linecap','round');
+      svg.appendChild(path);
+      const c1=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c1.setAttribute('cx',x1);c1.setAttribute('cy',y1);c1.setAttribute('r','3');
+      c1.setAttribute('fill','#fff');c1.setAttribute('stroke',agent.color);c1.setAttribute('stroke-width','1');c1.setAttribute('opacity','0');
+      svg.appendChild(c1);
+      const c2=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c2.setAttribute('cx',x2);c2.setAttribute('cy',y2);c2.setAttribute('r','3');
+      c2.setAttribute('fill','#fff');c2.setAttribute('stroke',agent.color);c2.setAttribute('stroke-width','1');c2.setAttribute('opacity','0');
+      svg.appendChild(c2);
+      setTimeout(()=>{path.setAttribute('opacity','0.7');c1.setAttribute('opacity','0.7');c2.setAttribute('opacity','0.7');},50);
+
+      dLog(`<span style="color:var(--lime)">getAgent("${agent.name}")</span> -> provider: ${agent.provider}`);
+      document.getElementById(t.id+'-route').textContent=agent.name.split(' ')[0];
+      document.getElementById(t.id+'-route').style.color=agent.color;
+      document.getElementById(agent.id).classList.add('selected');
+      await wait(400);
+    }
+
+    for(const t of demoTasks){
+      const agent=demoAgents.find(a=>a.id===t.agent);
+      dLog(`<span style="color:${agent.color};font-weight:600">${agent.name}</span> executing "${t.name}" via <span style="color:var(--lime)">${agent.provider}</span>`);
+      document.getElementById(t.id+'-dot').className='ws-node-dot on';
+      document.getElementById(t.id+'-dot').style.background='#f59e0b';
+      await wait(700);
+    }
+
+    for(const t of demoTasks){
+      document.getElementById(t.id+'-dot').style.background='var(--lime)';
+      document.getElementById(t.id).classList.add('selected');
+    }
+    dLog('<span style="color:var(--lime);font-weight:700">All 3 subtasks completed. Each used their assigned agent and provider.</span>');
+  } else {
+    dLog('<span style="color:var(--red)">task.agent field IGNORED by executeTask()</span>');
+    dLog('All 3 tasks routed to <span style="color:var(--red)">DEFAULT provider</span>');
+
+    demoAgents.slice(1).forEach(a=>{document.getElementById(a.id).style.opacity='.15';});
+    demoTasks.forEach(t=>{
+      document.getElementById(t.id+'-route').textContent='DEFAULT';
+      document.getElementById(t.id+'-route').style.color='var(--red)';
+    });
+    await wait(800);
+
+    demoTasks.forEach(t=>{
+      document.getElementById(t.id+'-dot').className='ws-node-dot off';
+    });
+    dLog('<span style="color:var(--red);font-weight:700">Agent specialization lost. Custom providers unused. All tasks got generic output.</span>');
+  }
+  demoRunning=false;
+}
+*/ }
+
+// ── Workspace Zoom / Pan / Drag ──
+let wsZm=1,wsPx=0,wsPy=0,wsPanning=false,wsDragId=null;
+let wsDsx=0,wsDsy=0,wsPsx=0,wsPsy=0,wsDnox=0,wsDnoy=0;
+let wsDragged=false; // true if pointer moved during drag (distinguishes click from drag)
+const GRID=40;
+function wsSnap(v){return Math.round(v/GRID)*GRID;}
+function wsApplyTransform(){
+  const el=document.getElementById('ws-inner');
+  el.style.transform=`translate(${wsPx}px,${wsPy}px) scale(${wsZm})`;
+}
+const wsCanvas=document.getElementById('ws-canvas');
+
+wsCanvas.addEventListener('pointerdown',e=>{
+  const nd=e.target.closest('.ws-node');
+  if(nd){
+    e.stopPropagation();
+    wsDragId=nd.dataset.id;
+    wsDragged=false;
+    const n=wsNodes.find(n=>n.id===wsDragId);
+    wsDsx=e.clientX;wsDsy=e.clientY;wsDnox=n.x;wsDnoy=n.y;
+    wsCanvas.setPointerCapture(e.pointerId);
+    return;
+  }
+  wsPanning=true;wsDragged=false;wsDsx=e.clientX;wsDsy=e.clientY;wsPsx=wsPx;wsPsy=wsPy;
+  wsCanvas.classList.add('grabbing');
+  wsCanvas.setPointerCapture(e.pointerId);
+});
+wsCanvas.addEventListener('pointermove',e=>{
+  if(wsDragId){
+    const dx=e.clientX-wsDsx,dy=e.clientY-wsDsy;
+    if(Math.abs(dx)>3||Math.abs(dy)>3) wsDragged=true;
+    if(wsDragged){
+      const n=wsNodes.find(n=>n.id===wsDragId);
+      n.x=wsSnap(wsDnox+dx/wsZm);
+      n.y=wsSnap(wsDnoy+dy/wsZm);
+      renderWorkspace();wsApplyTransform();
+    }
+    return;
+  }
+  if(wsPanning){
+    wsDragged=true;
+    wsPx=wsPsx+(e.clientX-wsDsx);wsPy=wsPsy+(e.clientY-wsDsy);wsApplyTransform();
+  }
+});
+wsCanvas.addEventListener('pointerup',e=>{
+  if(wsDragId&&!wsDragged){
+    // Click, not drag - select/deselect the node
+    wsSel=wsSel===wsDragId?null:wsDragId;
+    renderWorkspace();wsApplyTransform();renderDetail();
+  }
+  if(wsPanning&&!wsDragged){
+    // Clicked canvas background - deselect
+    if(wsSel){wsSel=null;renderWorkspace();wsApplyTransform();renderDetail();}
+  }
+  wsDragId=null;wsPanning=false;wsCanvas.classList.remove('grabbing');
+});
+wsCanvas.addEventListener('wheel',e=>{
+  if(!e.ctrlKey)return; // normal scroll = page scroll, Ctrl+scroll = canvas zoom
+  e.preventDefault();
+  const r=wsCanvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,oz=wsZm;
+  wsZm=Math.max(.3,Math.min(2.5,wsZm+(e.deltaY>0?-.06:.06)));
+  wsPx=mx-(mx-wsPx)*(wsZm/oz);wsPy=my-(my-wsPy)*(wsZm/oz);
+  wsApplyTransform();
+},{passive:false});
+
+function fitWorkspace(){
+  if(!wsNodes.length)return;
+  const minX=Math.min(...wsNodes.map(n=>n.x)),maxX=Math.max(...wsNodes.map(n=>n.x+160));
+  const minY=Math.min(...wsNodes.map(n=>n.y)),maxY=Math.max(...wsNodes.map(n=>n.y+60));
+  const cw=wsCanvas.clientWidth,ch=500;
+  const spanX=maxX-minX+80,spanY=maxY-minY+80;
+  wsZm=Math.min(cw/spanX,ch/spanY,1)*.82;
+  wsPx=(cw-spanX*wsZm)/2-minX*wsZm+20;
+  wsPy=(ch-spanY*wsZm)/2-minY*wsZm+10;
+  wsApplyTransform();renderWorkspace();
+}
+function resetWorkspace(){
+  wsSel=null;wsZm=1;wsPx=0;wsPy=0;wsApplyTransform();renderWorkspace();
+}
+
+// Init
+renderWorkspace();
+// Autofit after page settles
+setTimeout(()=>fitWorkspace(),300);
+</script>
+</body>
+</html>
