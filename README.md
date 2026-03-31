@@ -1,12 +1,12 @@
 <div align="center">
   <p>If you find this useful, a ⭐ helps others discover it</p>
-  <br>
-  <a href="https://skales.app">
-    <img src="https://skales.app/rm_logo.png" alt="Skales Local AI Agent Logo" width="250" />
-  </a>
-
   <h1>Skales 🦎</h1>
-
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=k83NlptVmfc">
+    <img src="https://img.youtube.com/vi/k83NlptVmfc/maxresdefault.jpg" 
+         alt="Skales Demo Video" width="100%" />
+  </a>
+</p>
   <p>
     <strong>Your Local AI Desktop Agent for Windows, macOS & Linux</strong>
   </p>
@@ -17,7 +17,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/skalesapp/skales/releases/tag/v8.0.0"><img src="https://img.shields.io/badge/version-8.0.0-84cc16?style=flat-square" alt="Version 8.0.0" /></a>
+    <a href="https://github.com/skalesapp/skales/releases/tag/v8.0.2"><img src="https://img.shields.io/badge/version-8.0.2-84cc16?style=flat-square" alt="Version 8.0.2" /></a>
     <a href="https://skales.app"><img src="https://img.shields.io/badge/license-BSL_1.1-84cc16?style=flat-square" alt="License" /></a>
     <a href="https://skales.app"><img src="https://img.shields.io/badge/Windows_+_macOS_+_Linux-84cc16?style=flat-square&logo=windows&logoColor=white" alt="Platform" /></a>
     <a href="https://github.com/skalesapp/skales/stargazers"><img src="https://img.shields.io/github/stars/skalesapp/skales?style=flat-square&color=84cc16" alt="Stars" /></a>
@@ -73,7 +73,18 @@ Skales is an AI agent that lives on your desktop. Not in a browser tab, not behi
 <p align="center">
   <img src="https://skales.app/magic.gif" alt="Desktop Buddy, Companion, Execution Commands, Reminder, Notification" width="100%" />
 </p>
-A floating animated mascot that lives on your screen. 3 skins (Skales the gecko, Bubbles the blob, and a Clippy tribute). Click to chat, approve tool executions directly from the speech bubble, or minimize to tray. **It's your AI, visible.**
+
+A floating animated mascot that lives on your screen. 
+
+### Three Skins included
+<p align="left">
+  <a href="https://skales.app">
+    <img src="https://skales.app/rm_logo.png" alt="Skales Local AI Agent Logo" width="250" />
+  </a><br>
+  </p>
+  
+Skins: Skales the gecko, Bubbles the Bubble and Capy the Capybara. 
+Click to chat, approve tool executions directly from the speech bubble, or minimize to tray. **It's your AI, visible.**
 
 ### 🦁 Lio AI (Code Builder)
 <p align="center">

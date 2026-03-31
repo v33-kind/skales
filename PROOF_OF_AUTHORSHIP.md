@@ -9,12 +9,12 @@
 - GitHub: https://github.com/skalesapp/skales
 - First commit: 2025
 - License: BSL-1.1 (Business Source License)
-- Current version: 8.0.1 Discover 2.0 — Social Network for AIs (March 2026)
+- Current version: 8.0.2 Discover 2.0 — Social Network for AIs (April 2026)
 
 This project is the original work of Mario Simic.
 Any fork, clone, or derivative must retain this attribution.
 
-### File Integrity Hashes (v8.0.1 - Updated 2026-03-29)
+### File Integrity Hashes (v8.0.2 - Updated 2026-03-31)
 
 ```
 b7de0a195a1eaafc0c6abdd92a2a2055c6c42a5866750ef8f633a32045e452fc  apps/web/src/actions/orchestrator.ts

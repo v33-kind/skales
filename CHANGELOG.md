@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v8.0.2 — Hotfix (April 2026)
+
+### Fixed
+- Chat Error 400: reverted apiMessages reconstruction to simple mapping
+- Agent "Done" response: removed incorrect tool_calls stripping that caused infinite ReAct loops with Gemini
+- IMAP Email: reverted broken host resolution (connects to real server again)
+- Custom Skills iframe: buttons, inputs, and saves now functional
+- Planner weekdays: now respect app language setting instead of system locale
+- Chat message source badges restored (Desktop, Buddy, Telegram, Spotlight)
+- Toast notifications: added X button and click-to-close
+- AbortController: reverted to stable unmount behavior
+- Chat bubble word-break: fixed mid-word splitting ("correc\nt?" → "correct?")
+- Think tags (`<think>…</think>`) no longer leak in Lio AI and Skill AI outputs
+- TTS "default" provider: added browser voice selector with async voice loading
+- Custom OpenAI-compatible provider: status indicator reflects actual URL config
+- Skill Generator: defaults to user's active provider instead of hardcoded OpenRouter
+- Telegram bot: auto-reconnects on app restart via `ensureTelegramBot()`
+- Telegram Safety Mode: approval buttons (Approve/Deny) now use inline keyboard
+- Desktop Buddy: sound/notification suppressed when main chat window is focused
+- macOS auto-updater: added required ZIP target alongside DMG
+
+### Added
+- Notification delete: X button per notification + "Clear All" to dismiss all
+- ReAct loop debug logging for provider-specific exit condition diagnostics
+
+---
+
 ## v8.0.1 — Hotfix (March 2026)
 
 ### Fixed
